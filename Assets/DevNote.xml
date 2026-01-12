@@ -1,4 +1,7 @@
 <Dev>
   將Inventory.cs附加在player上以使用，目前看起來非必要
   考慮把Inventory做成singleton，放在場景中獨立的物件
+  
+  目標清單：
+    
 </Dev>

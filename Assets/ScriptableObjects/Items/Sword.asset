@@ -16,4 +16,6 @@ MonoBehaviour:
   icon: {fileID: 21300000, guid: 8adc9910d2c597d4d8cc296addfa36ed, type: 3}
   description: A sword
   stackable: 0
-  maxStack: 99
+  maxStack: 1
+  worldPrefab: {fileID: 8639874640458565144, guid: a451ad2734ed5b04786c7d04c4011555, type: 3}
+  consumable: 0

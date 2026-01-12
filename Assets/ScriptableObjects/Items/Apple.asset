@@ -17,3 +17,5 @@ MonoBehaviour:
   description: An apple
   stackable: 1
   maxStack: 99
+  worldPrefab: {fileID: 7530928612593318890, guid: 16416c75e10cea14288db8528e852091, type: 3}
+  consumable: 1

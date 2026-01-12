@@ -1,19 +1,44 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using TMPro;
 
 public class InventorySlotUI : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IPointerClickHandler
 {
     public int slotIndex;
     public Image iconImage;
+    public TMP_Text countText;
     Inventory inventory;
-    DraggableItemUI dragUI;
+    public ContextMenuUI contextMenuUI;
+    public DraggableItemUI dragUI;
     bool isDragging = false;
 
-    void Start()
+    public void Setup(Inventory inv, int idx)
     {
-        inventory = FindFirstObjectByType<Inventory>();
-        dragUI = FindFirstObjectByType<DraggableItemUI>();
+        inventory = inv;
+        slotIndex = idx;
+    }
+
+    public void Refresh()
+    {
+        var slot = inventory.slots[slotIndex];
+
+        if (slot.item == null)
+        {
+            iconImage.sprite = null;
+            iconImage.enabled = false;
+            countText.text = "";
+        }
+        else
+        {
+            iconImage.sprite = slot.item.icon;
+            iconImage.enabled = true;
+            iconImage.preserveAspect = true;
+
+            countText.text = slot.item.stackable && slot.count > 1 
+                ? slot.count.ToString() 
+                : "";
+        }
     }
 
     public void SetItem(Sprite sprite)
@@ -101,7 +126,22 @@ public class InventorySlotUI : MonoBehaviour, IPointerDownHandler, IPointerUpHan
     public void OnPointerClick(PointerEventData eventData)
     {
         if (eventData.button == PointerEventData.InputButton.Right)
-            SplitStack();
+        {
+            // If the slot is empty
+            if (inventory.slots[slotIndex].item == null)
+                return;
+
+            // Shift + right click -> Split Stack
+            if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+            {
+                SplitStack();
+            }
+            else // Right Click -> Open Context Menu
+            {
+                // Open Context Menu
+                contextMenuUI.ShowAt(eventData.position, inventory, slotIndex);
+            }
+        }
     }
 
     void SplitStack()

@@ -11,6 +11,11 @@ public class DraggableItemUI : MonoBehaviour
         rect = GetComponent<RectTransform>();
     }
 
+    private void Start()
+    {
+        //Hide();
+    }
+
     public void SetSprite(Sprite sprite)
     {
         icon.sprite = sprite;

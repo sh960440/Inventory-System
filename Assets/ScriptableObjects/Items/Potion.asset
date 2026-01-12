@@ -17,3 +17,5 @@ MonoBehaviour:
   description: A bottle of potion
   stackable: 1
   maxStack: 99
+  worldPrefab: {fileID: 8518699678800482236, guid: 7c6e81fb968fcb14da9deb20275a7df5, type: 3}
+  consumable: 1
