@@ -15,6 +15,7 @@ MonoBehaviour:
   itemName: Frying Pan
   icon: {fileID: 21300000, guid: 08aa6c06e064487488befcaf97b2188e, type: 3}
   description: A frying Pan
+  rarity: 2
   stackable: 0
   maxStack: 1
   worldPrefab: {fileID: 7007734947862316347, guid: 61a523715f1f1f1449522ac6efaf639c, type: 3}

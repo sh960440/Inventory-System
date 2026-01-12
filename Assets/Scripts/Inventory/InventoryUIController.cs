@@ -17,6 +17,16 @@ public class InventoryUIController : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Tab))
         {
+            bool open = !panel.gameObject.activeSelf;
+            //panel.gameObject.SetActive(open);
+
+            GameEvents.OnInventoryToggle?.Invoke(open);
+
+            if (!open)
+            {
+                GameEvents.OnInventoryClosed?.Invoke();
+            }
+
             if (isOpen) Close();
             else Open();
         }
@@ -37,7 +47,6 @@ public class InventoryUIController : MonoBehaviour
 
         LeanTween.moveX(panel, 400, 0.25f).setEaseInCubic()
             .setOnComplete(() => panel.gameObject.SetActive(false));
-
         LeanTween.alphaCanvas(canvasGroup, 0, 0.2f);
     }
 }

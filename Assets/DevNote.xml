@@ -1,7 +1,8 @@
 <Dev>
   將Inventory.cs附加在player上以使用，目前看起來非必要
   考慮把Inventory做成singleton，放在場景中獨立的物件
-  
+  Inactive的物件在遊戲一開始不會執行任何Awake、OnEnable之類的函數中的事件訂閱
+  事件系統(Action)不吃回傳值，也就是說綁定的函數不能有回傳值
   目標清單：
     
 </Dev>

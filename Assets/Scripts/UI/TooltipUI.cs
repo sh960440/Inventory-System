@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 
 public class TooltipUI : MonoBehaviour
@@ -6,11 +7,16 @@ public class TooltipUI : MonoBehaviour
     public TMP_Text nameText;
     public TMP_Text countText;
     public TMP_Text descriptionText;
+    public Image background;
+    public CanvasGroup canvasGroup;
     bool isFollowingMouse = false;
 
     void Awake()
     {
-        gameObject.SetActive(false);
+        GameEvents.OnSlotHovered += ShowForSlot;
+        GameEvents.OnSlotHoverExit += Hide;
+        GameEvents.OnInventoryClosed += Hide;
+        Hide();
     }
 
     void Update()
@@ -19,22 +25,43 @@ public class TooltipUI : MonoBehaviour
         UpdatePosition(Input.mousePosition);
     }
 
+    void OnDestroy()
+    {
+        GameEvents.OnSlotHovered -= ShowForSlot;
+        GameEvents.OnSlotHoverExit -= Hide;
+        GameEvents.OnInventoryClosed -= Hide;
+    }
+
+    void ShowForSlot(int slotIndex)
+    {
+        var inventory = FindFirstObjectByType<Inventory>();
+        var slot = inventory.slots[slotIndex];
+        if (slot.item == null) return;
+
+        Show(slot.item, slot.count);
+    }
+
     public void Show(ItemData item, int count)
     {
         nameText.text = item.itemName;
+        nameText.color = ItemRarityColor.Get(item.rarity);
+
         countText.text = count > 1 ? $"x{count}" : "";
         descriptionText.text = item.description;
+
+        // TODO: Change the look of the tooltip based on the rarity
+        // background.color = ItemRarityColor.Get(item.rarity) * new Color(1, 1, 1, 0.15f);
 
         isFollowingMouse = true;
         UpdatePosition(Input.mousePosition);
 
-        gameObject.SetActive(true);
+        canvasGroup.alpha = 1;
     }
 
     public void Hide()
     {
         isFollowingMouse = false;
-        gameObject.SetActive(false);
+        canvasGroup.alpha = 0;
     }
 
     void UpdatePosition(Vector2 mousePos)

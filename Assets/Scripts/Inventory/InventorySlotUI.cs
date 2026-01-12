@@ -141,7 +141,8 @@ public class InventorySlotUI : MonoBehaviour, IPointerDownHandler, IPointerUpHan
             else // Right Click -> Open Context Menu
             {
                 // Open Context Menu
-                contextMenuUI.ShowAt(eventData.position, inventory, slotIndex);
+                //contextMenuUI.ShowAt(eventData.position, inventory, slotIndex);
+                GameEvents.OnContextMenuRequest?.Invoke(inventory, slotIndex);
             }
         }
     }
@@ -180,7 +181,8 @@ public class InventorySlotUI : MonoBehaviour, IPointerDownHandler, IPointerUpHan
         var slot = inventory.slots[slotIndex];
         if (slot.item == null) return;
 
-        tooltipUI.Show(slot.item, slot.count);
+        //tooltipUI.Show(slot.item, slot.count);
+        GameEvents.OnSlotHovered?.Invoke(slotIndex);
     }
 
     public void OnPointerExit(PointerEventData eventData)
@@ -188,6 +190,7 @@ public class InventorySlotUI : MonoBehaviour, IPointerDownHandler, IPointerUpHan
         background.color = Color.white;
         transform.localScale = Vector3.one;
 
-        tooltipUI.Hide();
+        //tooltipUI.Hide();
+        GameEvents.OnSlotHoverExit?.Invoke();
     }
 }

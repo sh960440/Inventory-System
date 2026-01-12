@@ -15,6 +15,10 @@ public class Inventory : MonoBehaviour
             for (int i = 0; i < initialCapacity; i++)
                 slots.Add(new InventorySlot());
         }
+
+        GameEvents.OnItemUsed += UseItem;
+        GameEvents.OnItemDropped += DropItem;
+        GameEvents.OnItemPicked += OnItemPickedHandler;
     }
 
     void Start()
@@ -26,6 +30,24 @@ public class Inventory : MonoBehaviour
         }
 
         UpdateUI();
+    }
+
+    private void OnDestroy()
+    {
+        GameEvents.OnItemUsed -= UseItem;
+        GameEvents.OnItemDropped -= DropItem;
+        GameEvents.OnItemPicked -= OnItemPickedHandler;
+    }
+
+    // Action<T> doesn't return a value, so the OnItemPicked event is bound to this handler instead of AddItem.
+    private void OnItemPickedHandler(ItemData item, int amount)
+    {
+        bool success = AddItem(item, amount);
+        
+        if (!success)
+        {
+            Debug.Log("Inventory full");
+        }
     }
 
     public bool AddItem(ItemData item, int amount)
@@ -65,6 +87,7 @@ public class Inventory : MonoBehaviour
         }
 
         UpdateUI();
+        // True: Item(s) added successfully. False: Inventory is full.
         return amount <= 0;
     }
 

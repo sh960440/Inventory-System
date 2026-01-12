@@ -15,6 +15,7 @@ MonoBehaviour:
   itemName: Beet
   icon: {fileID: 21300000, guid: 26453a43a434c8647b4b92b92ad8163a, type: 3}
   description: A beet
+  rarity: 1
   stackable: 1
   maxStack: 99
   worldPrefab: {fileID: 8076815214844044617, guid: 51714a5bddc3ff948a6b0529c1db652f, type: 3}
