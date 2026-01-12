@@ -4,6 +4,8 @@ using System;
 
 public class ContextMenuUI : MonoBehaviour
 {
+    public CanvasGroup canvasGroup;
+    public RectTransform rectTransform;
     public Button useButton;
     public Button dropButton;
     public Button inspectButton;
@@ -23,11 +25,15 @@ public class ContextMenuUI : MonoBehaviour
     {
         boundInventory = inventory;
         boundSlotIndex = slotIndex;
+
+        rectTransform.position = screenPos;
+        rectTransform.localScale = Vector3.one * 0.8f;
+        canvasGroup.alpha = 0;
+
         gameObject.SetActive(true);
 
-        // Move to the mouse position
-        var rt = (RectTransform)transform;
-        rt.position = screenPos;
+        LeanTween.scale(rectTransform, Vector3.one, 0.15f);
+        LeanTween.alphaCanvas(canvasGroup, 1, 0.15f);
     }
 
     public void Hide()

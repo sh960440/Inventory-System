@@ -34,9 +34,9 @@ RectTransform:
   - {fileID: 6959503565045584750}
   m_Father: {fileID: 3856507716882567596}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 86, y: -55}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1218267852690969735
@@ -313,9 +313,9 @@ RectTransform:
   - {fileID: 5236123987282131140}
   m_Father: {fileID: 3856507716882567596}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 86, y: -21}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &7352748479849158786
@@ -434,9 +434,9 @@ RectTransform:
   - {fileID: 6490479481682505747}
   m_Father: {fileID: 3856507716882567596}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 86, y: -89}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6457938024554632307
@@ -850,6 +850,7 @@ GameObject:
   - component: {fileID: 9048582343530782812}
   - component: {fileID: 6712477671167731020}
   - component: {fileID: 6190919467139882581}
+  - component: {fileID: 2954220447530946534}
   - component: {fileID: 5395000849757952154}
   m_Layer: 5
   m_Name: ContextMenu
@@ -958,6 +959,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.ContentSizeFitter
   m_HorizontalFit: 2
   m_VerticalFit: 2
+--- !u!225 &2954220447530946534
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9222012672643235070}
+  m_Enabled: 1
+  m_Alpha: 0
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!114 &5395000849757952154
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -970,6 +983,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d0118edf62ff81a47a14e60f4fe0ed32, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ContextMenuUI
+  canvasGroup: {fileID: 2954220447530946534}
+  rectTransform: {fileID: 3856507716882567596}
   useButton: {fileID: 7867504493896130376}
   dropButton: {fileID: 1750086755340237123}
   inspectButton: {fileID: 5774297897905904035}

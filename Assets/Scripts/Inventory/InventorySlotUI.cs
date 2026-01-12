@@ -3,14 +3,16 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using TMPro;
 
-public class InventorySlotUI : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IPointerClickHandler
+public class InventorySlotUI : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
 {
     public int slotIndex;
+    public Image background;
     public Image iconImage;
     public TMP_Text countText;
     Inventory inventory;
     public ContextMenuUI contextMenuUI;
     public DraggableItemUI dragUI;
+    public TooltipUI tooltipUI;
     bool isDragging = false;
 
     public void Setup(Inventory inv, int idx)
@@ -168,5 +170,24 @@ public class InventorySlotUI : MonoBehaviour, IPointerDownHandler, IPointerUpHan
                 return;
             }
         }
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        background.color = new Color(1f, 1f, 1f, 0.9f);
+        transform.localScale = Vector3.one * 1.05f;
+
+        var slot = inventory.slots[slotIndex];
+        if (slot.item == null) return;
+
+        tooltipUI.Show(slot.item, slot.count);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        background.color = Color.white;
+        transform.localScale = Vector3.one;
+
+        tooltipUI.Hide();
     }
 }
