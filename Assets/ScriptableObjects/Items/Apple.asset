@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Apple
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Apple
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: a64ac86022e71354590a5d0b70ebfb4a, type: 3}
   description: An apple
   stackable: 1
   maxStack: 99

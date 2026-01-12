@@ -5,7 +5,7 @@ public class PlayerPickup : MonoBehaviour
     private ItemPickup currentPickup;
     private Inventory playerInventory;
 
-    private void Start()
+    void Start()
     {
         playerInventory = transform.parent.GetComponentInChildren<Inventory>();
     }
@@ -20,36 +20,30 @@ public class PlayerPickup : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        Debug.Log("Press E to pick " + other.gameObject.name);
-        var pickup = other.GetComponent<ItemPickup>();
-        if (pickup != null)
+        var ip = other.GetComponent<ItemPickup>();
+        if (ip != null)
         {
-            currentPickup = pickup;
+            currentPickup = ip;
+            Debug.Log("Enter pickup range: " + ip.itemData.itemName);
         }
     }
 
     private void OnTriggerExit(Collider other)
     {
-        Debug.Log("Get closer");
-        if (other.GetComponent<ItemPickup>() == currentPickup)
+        var ip = other.GetComponent<ItemPickup>();
+        if (ip != null && ip == currentPickup)
         {
             currentPickup = null;
-        }    
+            Debug.Log("Exit pickup range");
+        }
     }
 
     private void PickupItem()
     {
-        Debug.Log("Checking...");
-        if (playerInventory == null)
-            Debug.Log("playerInventory == null");
-        if (currentPickup == null)
-            Debug.Log("currentPickup == null");
-
         if (playerInventory == null || currentPickup == null) return;
 
-        Debug.Log("Picking...");
         playerInventory.AddItem(currentPickup.itemData, currentPickup.amount);
-
+        Debug.Log($"Picked up {currentPickup.itemData.itemName} x{currentPickup.amount}");
         Destroy(currentPickup.gameObject);
         currentPickup = null;
     }
