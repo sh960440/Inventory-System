@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: Apple
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Apple
-  icon: {fileID: 21300000, guid: a64ac86022e71354590a5d0b70ebfb4a, type: 3}
+  icon: {fileID: 21300000, guid: 26e898a919458c543bb696fb7ebc9c8b, type: 3}
   description: An apple
   stackable: 1
   maxStack: 99
-  worldPrefab: {fileID: 7530928612593318890, guid: 16416c75e10cea14288db8528e852091, type: 3}
+  worldPrefab: {fileID: 8642970100882730276, guid: 2fb145a11da3e3e4a9949b6fec9c0710, type: 3}
   consumable: 1
