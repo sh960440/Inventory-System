@@ -11,12 +11,19 @@ public class TooltipUI : MonoBehaviour
     public CanvasGroup canvasGroup;
     bool isFollowingMouse = false;
 
-    void Awake()
+    void OnEnable()
     {
         GameEvents.OnSlotHovered += ShowForSlot;
         GameEvents.OnSlotHoverExit += Hide;
         GameEvents.OnInventoryClosed += Hide;
         Hide();
+    }
+
+    void OnDisable()
+    {
+        GameEvents.OnSlotHovered -= ShowForSlot;
+        GameEvents.OnSlotHoverExit -= Hide;
+        GameEvents.OnInventoryClosed -= Hide;
     }
 
     void Update()
@@ -25,16 +32,8 @@ public class TooltipUI : MonoBehaviour
         UpdatePosition(Input.mousePosition);
     }
 
-    void OnDestroy()
+    void ShowForSlot(Inventory inventory, int slotIndex)
     {
-        GameEvents.OnSlotHovered -= ShowForSlot;
-        GameEvents.OnSlotHoverExit -= Hide;
-        GameEvents.OnInventoryClosed -= Hide;
-    }
-
-    void ShowForSlot(int slotIndex)
-    {
-        var inventory = FindFirstObjectByType<Inventory>();
         var slot = inventory.slots[slotIndex];
         if (slot.item == null) return;
 

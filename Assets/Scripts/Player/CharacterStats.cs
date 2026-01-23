@@ -11,6 +11,30 @@ public class CharacterStats : MonoBehaviour
 
     private List<StatModifier> modifiers = new List<StatModifier>();
 
+    void OnEnable()
+    {
+        GameEvents.OnEquipped += OnEquipped;
+        GameEvents.OnUnequipped += OnUnequipped;
+    }
+
+    void OnDisable()
+    {
+        GameEvents.OnEquipped -= OnEquipped;
+        GameEvents.OnUnequipped -= OnUnequipped;
+    }
+
+    void OnEquipped(EquipmentData item, List<StatModifier> mods)
+    {
+        foreach (var mod in mods)
+            AddModifier(mod);
+    }
+
+    void OnUnequipped(EquipmentData item, List<StatModifier> mods)
+    {
+        foreach (var mod in mods)
+            RemoveModifier(mod);
+    }
+
     // ---------- Public API ----------
 
     public void AddModifier(StatModifier mod)

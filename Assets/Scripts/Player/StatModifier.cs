@@ -13,6 +13,11 @@ public class StatModifier
         this.value = value;
         modifierType = modType;
     }
+
+    public StatModifier Clone()
+    {
+        return new StatModifier(statType, value, modifierType);
+    }
 }
 
 public enum ModifierType

@@ -7,6 +7,8 @@ public class InventorySlotUI : MonoBehaviour, IPointerDownHandler, IPointerUpHan
 {
     public int slotIndex;
     public Image background;
+    [Header("Equipped Visual")]
+    public GameObject equippedMark;
     public Image iconImage;
     public TMP_Text countText;
     Inventory inventory;
@@ -14,12 +16,57 @@ public class InventorySlotUI : MonoBehaviour, IPointerDownHandler, IPointerUpHan
     public DraggableItemUI dragUI;
     public TooltipUI tooltipUI;
     bool isDragging = false;
+    private EquipmentManager equipmentManager;
+
+    void Start()
+    {
+        equipmentManager = FindFirstObjectByType<EquipmentManager>();
+    }
+
+    void OnEnable()
+    {
+        // Refresh when an item is equipped / unequipped
+        GameEvents.OnEquipmentChanged += Refresh;
+    }
+
+    void OnDisable()
+    {
+        GameEvents.OnEquipmentChanged -= Refresh;
+    }
+
+    //void OnEquipmentChanged(EquipmentData item, System.Collections.Generic.List<StatModifier> mods)
+    //{
+    //    // Refresh when an item is equipped / unequipped
+    //    Refresh();
+    //}
 
     public void Setup(Inventory inv, int idx)
     {
         inventory = inv;
         slotIndex = idx;
     }
+
+    //public void Refresh()
+    //{
+    //    var slot = inventory.slots[slotIndex];
+
+    //    if (slot.item == null)
+    //    {
+    //        iconImage.sprite = null;
+    //        iconImage.enabled = false;
+    //        countText.text = "";
+    //    }
+    //    else
+    //    {
+    //        iconImage.sprite = slot.item.icon;
+    //        iconImage.enabled = true;
+    //        iconImage.preserveAspect = true;
+
+    //        countText.text = slot.item.stackable && slot.count > 1 
+    //            ? slot.count.ToString() 
+    //            : "";
+    //    }
+    //}
 
     public void Refresh()
     {
@@ -30,17 +77,32 @@ public class InventorySlotUI : MonoBehaviour, IPointerDownHandler, IPointerUpHan
             iconImage.sprite = null;
             iconImage.enabled = false;
             countText.text = "";
-        }
-        else
-        {
-            iconImage.sprite = slot.item.icon;
-            iconImage.enabled = true;
-            iconImage.preserveAspect = true;
 
-            countText.text = slot.item.stackable && slot.count > 1 
-                ? slot.count.ToString() 
-                : "";
+            // NEW
+            if (equippedMark != null)
+                equippedMark.SetActive(false);
+
+            return;
         }
+
+        iconImage.sprite = slot.item.icon;
+        iconImage.enabled = true;
+        iconImage.preserveAspect = true;
+
+        countText.text = slot.item.stackable && slot.count > 1
+            ? slot.count.ToString()
+            : "";
+
+        // ---------- NEW: Equipped State ----------
+        bool isEquipped = false;
+
+        if (slot.item is EquipmentData eq)
+        {
+            isEquipped = equipmentManager != null && equipmentManager.IsEquipped(eq);
+        }
+
+        if (equippedMark != null)
+            equippedMark.SetActive(isEquipped);
     }
 
     public void SetItem(Sprite sprite)
@@ -122,7 +184,8 @@ public class InventorySlotUI : MonoBehaviour, IPointerDownHandler, IPointerUpHan
             b.count = tempCount;
         }
 
-        inventory.UpdateUI();
+        //inventory.UpdateUI();
+        GameEvents.OnInventoryChanged?.Invoke();
     }
 
     public void OnPointerClick(PointerEventData eventData)
@@ -142,7 +205,16 @@ public class InventorySlotUI : MonoBehaviour, IPointerDownHandler, IPointerUpHan
             {
                 // Open Context Menu
                 //contextMenuUI.ShowAt(eventData.position, inventory, slotIndex);
-                GameEvents.OnContextMenuRequest?.Invoke(inventory, slotIndex);
+                var item = inventory.slots[slotIndex].item;
+                bool isEquipped = false;
+
+                if (item is EquipmentData eq)
+                {
+                    isEquipped = equipmentManager.IsEquipped(eq);
+                }
+
+                GameEvents.OnContextMenuRequest?.Invoke(inventory, slotIndex, isEquipped);
+
             }
         }
     }
@@ -167,7 +239,8 @@ public class InventorySlotUI : MonoBehaviour, IPointerDownHandler, IPointerUpHan
                 // original slot
                 slot.count -= half;
 
-                inventory.UpdateUI();
+                //inventory.UpdateUI();
+                GameEvents.OnInventoryChanged?.Invoke();
                 return;
             }
         }
@@ -182,7 +255,7 @@ public class InventorySlotUI : MonoBehaviour, IPointerDownHandler, IPointerUpHan
         if (slot.item == null) return;
 
         //tooltipUI.Show(slot.item, slot.count);
-        GameEvents.OnSlotHovered?.Invoke(slotIndex);
+        GameEvents.OnSlotHovered?.Invoke(inventory, slotIndex);
     }
 
     public void OnPointerExit(PointerEventData eventData)

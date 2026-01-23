@@ -4,7 +4,7 @@ using UnityEngine;
 public class Inventory : MonoBehaviour
 {
     public List<InventorySlot> slots = new List<InventorySlot>();
-    public InventorySlotUI[] slotsUI;
+    //public InventorySlotUI[] slotsUI;
     public int initialCapacity = 9;
 
     void Awake()
@@ -21,7 +21,7 @@ public class Inventory : MonoBehaviour
         GameEvents.OnItemPicked += OnItemPickedHandler;
     }
 
-    void Start()
+    /*void Start()
     {
         // 綁定 UI → InventorySlotUI 會自動找 Inventory
         for (int i = 0; i < slotsUI.Length; i++)
@@ -29,8 +29,9 @@ public class Inventory : MonoBehaviour
             slotsUI[i].Setup(this, i);
         }
 
-        UpdateUI();
-    }
+        //UpdateUI();
+        GameEvents.OnInventoryChanged?.Invoke();
+    }*/
 
     private void OnDestroy()
     {
@@ -67,7 +68,8 @@ public class Inventory : MonoBehaviour
 
                     if (amount <= 0)
                     {
-                        UpdateUI();
+                        //UpdateUI();
+                        GameEvents.OnInventoryChanged?.Invoke();
                         return true;
                     }
                 }
@@ -86,7 +88,8 @@ public class Inventory : MonoBehaviour
             }
         }
 
-        UpdateUI();
+        //UpdateUI();
+        GameEvents.OnInventoryChanged?.Invoke();
         // True: Item(s) added successfully. False: Inventory is full.
         return amount <= 0;
     }
@@ -96,13 +99,13 @@ public class Inventory : MonoBehaviour
         return AddItem(item, 1);
     }
 
-    public void UpdateUI()
+    /*public void UpdateUI()
     {
         for (int i = 0; i < slotsUI.Length; i++)
         {
             slotsUI[i].Refresh();
         }
-    }
+    }*/
 
     // ---------------------------------------------------------
     // Use Item
@@ -132,7 +135,8 @@ public class Inventory : MonoBehaviour
             Debug.Log(item.itemName + " is non-consumable.");
         }
 
-        UpdateUI();
+        //UpdateUI();
+        GameEvents.OnInventoryChanged?.Invoke();
     }
 
     // ---------------------------------------------------------
@@ -173,7 +177,8 @@ public class Inventory : MonoBehaviour
             slot.count = 0;
         }
 
-        UpdateUI();
+        //UpdateUI();
+        GameEvents.OnInventoryChanged?.Invoke();
     }
 
     public void InspectItem(int slotIndex)
