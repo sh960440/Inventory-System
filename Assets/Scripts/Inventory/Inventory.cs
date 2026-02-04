@@ -3,8 +3,7 @@ using UnityEngine;
 
 public class Inventory : MonoBehaviour
 {
-    public List<InventorySlot> slots = new List<InventorySlot>();
-    //public InventorySlotUI[] slotsUI;
+    public List<InventorySlot> slots = new();
     public int initialCapacity = 9;
 
     void Awake()
@@ -15,40 +14,28 @@ public class Inventory : MonoBehaviour
             for (int i = 0; i < initialCapacity; i++)
                 slots.Add(new InventorySlot());
         }
+    }
 
+    void OnEnable()
+    {
         GameEvents.OnItemUsed += UseItem;
         GameEvents.OnItemDropped += DropItem;
+        GameEvents.OnItemInspected += InspectItem;
         GameEvents.OnItemPicked += OnItemPickedHandler;
     }
 
-    /*void Start()
-    {
-        // 綁定 UI → InventorySlotUI 會自動找 Inventory
-        for (int i = 0; i < slotsUI.Length; i++)
-        {
-            slotsUI[i].Setup(this, i);
-        }
-
-        //UpdateUI();
-        GameEvents.OnInventoryChanged?.Invoke();
-    }*/
-
-    private void OnDestroy()
+    void OnDisable()
     {
         GameEvents.OnItemUsed -= UseItem;
         GameEvents.OnItemDropped -= DropItem;
+        GameEvents.OnItemInspected -= InspectItem;
         GameEvents.OnItemPicked -= OnItemPickedHandler;
     }
 
-    // Action<T> doesn't return a value, so the OnItemPicked event is bound to this handler instead of AddItem.
-    private void OnItemPickedHandler(ItemData item, int amount)
+    void OnItemPickedHandler(ItemData item, int amount)
     {
-        bool success = AddItem(item, amount);
-        
-        if (!success)
-        {
+        if (!AddItem(item, amount))
             Debug.Log("Inventory full");
-        }
     }
 
     public bool AddItem(ItemData item, int amount)
@@ -56,19 +43,16 @@ public class Inventory : MonoBehaviour
         // If stackable
         if (item.stackable)
         {
-            for (int i = 0; i < slots.Count; i++)
+            foreach (var slot in slots)
             {
-                if (slots[i].item == item && slots[i].count < item.maxStack)
+                if (slot.item == item && slot.count < item.maxStack)
                 {
-                    int space = item.maxStack - slots[i].count;
-                    int toAdd = Mathf.Min(space, amount);
-
-                    slots[i].count += toAdd;
-                    amount -= toAdd;
-
+                    int space = item.maxStack - slot.count;
+                    int add = Mathf.Min(space, amount);
+                    slot.count += add;
+                    amount -= add;
                     if (amount <= 0)
                     {
-                        //UpdateUI();
                         GameEvents.OnInventoryChanged?.Invoke();
                         return true;
                     }
@@ -77,18 +61,17 @@ public class Inventory : MonoBehaviour
         }
 
         // Find an empty slot
-        for (int i = 0; i < slots.Count && amount > 0; i++)
+        foreach (var slot in slots)
         {
-            if (slots[i].item == null)
+            if (slot.item == null && amount > 0)
             {
-                int toAdd = Mathf.Min(item.maxStack, amount);
-                slots[i].item = item;
-                slots[i].count = toAdd;
-                amount -= toAdd;
+                int add = Mathf.Min(item.maxStack, amount);
+                slot.item = item;
+                slot.count = add;
+                amount -= add;
             }
         }
 
-        //UpdateUI();
         GameEvents.OnInventoryChanged?.Invoke();
         // True: Item(s) added successfully. False: Inventory is full.
         return amount <= 0;
@@ -99,101 +82,60 @@ public class Inventory : MonoBehaviour
         return AddItem(item, 1);
     }
 
-    /*public void UpdateUI()
+    void UseItem(int index)
     {
-        for (int i = 0; i < slotsUI.Length; i++)
-        {
-            slotsUI[i].Refresh();
-        }
-    }*/
+        if (!Valid(index)) return;
+        var slot = slots[index];
+        if (slot.item == null) return;
 
-    // ---------------------------------------------------------
-    // Use Item
-    // ---------------------------------------------------------
-    public void UseItem(int slotIndex)
-    {
-        if (!Valid(slotIndex)) return;
-
-        var slot = slots[slotIndex];
-        var item = slot.item;
-
-        if (item == null) return;
-
-        Debug.Log("Use: " + item.itemName);
-
-        if (item.consumable)
-        {
-            slot.count--;
-            if (slot.count <= 0)
-            {
-                slot.item = null;
-                slot.count = 0;
-            }
-        }
+        Debug.Log("Use: " + slot.item.itemName);
+        if (slot.item.consumable)
+            Consume(slot);
         else
         {
-            Debug.Log(item.itemName + " is non-consumable.");
+            Debug.Log(slot.item.itemName + " is non-consumable.");
         }
 
-        //UpdateUI();
         GameEvents.OnInventoryChanged?.Invoke();
     }
 
-    // ---------------------------------------------------------
-    // Drop Item (Generate worldPrefab)
-    // ---------------------------------------------------------
-    public void DropItem(int slotIndex)
+    void Consume(InventorySlot slot)
     {
-        if (!Valid(slotIndex)) return;
-
-        var slot = slots[slotIndex];
-        var item = slot.item;
-
-        if (item == null) return;
-
-        Debug.Log("Drop: " + item.itemName);
-
-        // If there's a worldPrefab
-        if (item.worldPrefab != null)
-        {
-            Transform p = GetComponentInParent<Transform>();
-            Vector3 pos = p.position + p.forward * 1.2f + Vector3.up * 0.5f;
-            Instantiate(item.worldPrefab, pos, Quaternion.identity);
-        }
-
-        // Minus 1 from the inventory
-        if (item.stackable)
-        {
-            slot.count--;
-            if (slot.count <= 0)
-            {
-                slot.item = null;
-                slot.count = 0;
-            }
-        }
-        else
+        slot.count--;
+        if (slot.count <= 0)
         {
             slot.item = null;
             slot.count = 0;
         }
+    }
 
-        //UpdateUI();
+    void DropItem(int index)
+    {
+        if (!Valid(index)) return;
+        var slot = slots[index];
+        if (slot.item == null) return;
+
+        Debug.Log("Drop: " + slot.item.itemName);
+
+        if (slot.item.worldPrefab != null)
+        {
+            var t = transform;
+            Instantiate(slot.item.worldPrefab,
+                t.position + t.forward * 1.2f + Vector3.up * 0.5f,
+                Quaternion.identity);
+        }
+
+        Consume(slot);
         GameEvents.OnInventoryChanged?.Invoke();
     }
 
-    public void InspectItem(int slotIndex)
+    void InspectItem(int index)
     {
-        if (!Valid(slotIndex)) return;
-
-        var slot = slots[slotIndex];
-        if (slot.item == null) return;
-
-        Debug.Log($"Inspect: {slot.item.itemName}\n{slot.item.description}");
+        if (!Valid(index)) return;
+        var item = slots[index].item;
+        if (item == null) return;
+        Debug.Log($"{item.itemName}\n{item.description}");
     }
 
-    // ---------------------------------------------------------
-    bool Valid(int i)
-    {
-        return i >= 0 && i < slots.Count;
-    }
+    bool Valid(int i) => i >= 0 && i < slots.Count;
 }

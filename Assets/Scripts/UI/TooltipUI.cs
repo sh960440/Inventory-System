@@ -7,54 +7,66 @@ public class TooltipUI : MonoBehaviour
     public TMP_Text nameText;
     public TMP_Text countText;
     public TMP_Text descriptionText;
+    public TMP_Text statsText;
     public Image background;
     public CanvasGroup canvasGroup;
-    bool isFollowingMouse = false;
+
+    bool isFollowingMouse;
 
     void OnEnable()
     {
-        GameEvents.OnSlotHovered += ShowForSlot;
-        GameEvents.OnSlotHoverExit += Hide;
+        GameEvents.OnTooltipRequest += Show;
+        GameEvents.OnTooltipHide += Hide;
         GameEvents.OnInventoryClosed += Hide;
         Hide();
     }
 
     void OnDisable()
     {
-        GameEvents.OnSlotHovered -= ShowForSlot;
-        GameEvents.OnSlotHoverExit -= Hide;
+        GameEvents.OnTooltipRequest -= Show;
+        GameEvents.OnTooltipHide -= Hide;
         GameEvents.OnInventoryClosed -= Hide;
     }
 
     void Update()
     {
-        if (!isFollowingMouse) return;
-        UpdatePosition(Input.mousePosition);
+        if (isFollowingMouse)
+            UpdatePosition(Input.mousePosition);
     }
 
-    void ShowForSlot(Inventory inventory, int slotIndex)
+    void Show(ItemUIContext ctx)
     {
-        var slot = inventory.slots[slotIndex];
-        if (slot.item == null) return;
+        if (ctx.item == null) return;
 
-        Show(slot.item, slot.count);
-    }
+        nameText.text = ctx.item.itemName;
+        nameText.color = ItemRarityColor.Get(ctx.item.rarity);
 
-    public void Show(ItemData item, int count)
-    {
-        nameText.text = item.itemName;
-        nameText.color = ItemRarityColor.Get(item.rarity);
+        countText.text = ctx.count > 1 ? $"x{ctx.count}" : "";
+        descriptionText.text = ctx.item.description;
 
-        countText.text = count > 1 ? $"x{count}" : "";
-        descriptionText.text = item.description;
+        statsText.text = "";
+        statsText.gameObject.SetActive(false);
+
+        if (ctx.item is EquipmentData eq)
+        {
+            statsText.gameObject.SetActive(true);
+            statsText.text += $"{eq.equipSlot}\n";
+
+            foreach (var mod in eq.modifiers)
+            {
+                statsText.text +=
+                    mod.modifierType == ModifierType.Percent
+                    ? $"+{mod.value}% {mod.statType}\n"
+                    : $"+{mod.value} {mod.statType}\n";
+            }
+        }
 
         // TODO: Change the look of the tooltip based on the rarity
         // background.color = ItemRarityColor.Get(item.rarity) * new Color(1, 1, 1, 0.15f);
 
+        canvasGroup.alpha = 1;
         isFollowingMouse = true;
         UpdatePosition(Input.mousePosition);
-
-        canvasGroup.alpha = 1;
     }
 
     public void Hide()
@@ -67,9 +79,6 @@ public class TooltipUI : MonoBehaviour
     {
         Vector2 offset = new Vector2(16, -16);
         Vector2 pos = mousePos + offset;
-
-        Canvas canvas = GetComponentInParent<Canvas>();
-        RectTransform canvasRT = canvas.transform as RectTransform;
 
         RectTransform rt = transform as RectTransform;
         Vector2 size = rt.sizeDelta;

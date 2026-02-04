@@ -190,34 +190,65 @@ public class InventorySlotUI : MonoBehaviour, IPointerDownHandler, IPointerUpHan
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        if (eventData.button == PointerEventData.InputButton.Right)
+        if (eventData.button != PointerEventData.InputButton.Right) return;
+
+        var slot = inventory.slots[slotIndex];
+        // If the slot is empty
+        if (slot.item == null) return;
+
+        // Shift + right click -> Split Stack
+        if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
         {
-            // If the slot is empty
-            if (inventory.slots[slotIndex].item == null)
-                return;
-
-            // Shift + right click -> Split Stack
-            if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
-            {
-                SplitStack();
-            }
-            else // Right Click -> Open Context Menu
-            {
-                // Open Context Menu
-                //contextMenuUI.ShowAt(eventData.position, inventory, slotIndex);
-                var item = inventory.slots[slotIndex].item;
-                bool isEquipped = false;
-
-                if (item is EquipmentData eq)
-                {
-                    isEquipped = equipmentManager.IsEquipped(eq);
-                }
-
-                GameEvents.OnContextMenuRequest?.Invoke(inventory, slotIndex, isEquipped);
-
-            }
+            SplitStack();
         }
+        else // Right Click -> Open Context Menu
+        {
+            // Open Context Menu
+            bool isEquipped = false;
+            if (slot.item is EquipmentData eq)
+                isEquipped = equipmentManager.IsEquipped(eq);
+
+            GameEvents.OnContextMenuRequest?.Invoke(new ItemUIContext
+            {
+                item = slot.item,
+                isFromInventory = true,
+                isEquipped = isEquipped,
+                slotIndex = slotIndex,
+                count = slot.item.stackable && slot.count >= 1 ? slot.count : -1
+            });
+        }        
     }
+
+    //public void OnPointerClick(PointerEventData eventData)
+    //{
+    //    if (eventData.button == PointerEventData.InputButton.Right)
+    //    {
+    //        // If the slot is empty
+    //        if (inventory.slots[slotIndex].item == null)
+    //            return;
+
+    //        // Shift + right click -> Split Stack
+    //        if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+    //        {
+    //            SplitStack();
+    //        }
+    //        else // Right Click -> Open Context Menu
+    //        {
+    //            // Open Context Menu
+    //            //contextMenuUI.ShowAt(eventData.position, inventory, slotIndex);
+    //            var item = inventory.slots[slotIndex].item;
+    //            bool isEquipped = false;
+
+    //            if (item is EquipmentData eq)
+    //            {
+    //                isEquipped = equipmentManager.IsEquipped(eq);
+    //            }
+
+    //            GameEvents.OnContextMenuRequest?.Invoke(inventory, slotIndex);
+
+    //        }
+    //    }
+    //}
 
     void SplitStack()
     {
@@ -246,6 +277,16 @@ public class InventorySlotUI : MonoBehaviour, IPointerDownHandler, IPointerUpHan
         }
     }
 
+    //public void OnPointerEnter(PointerEventData eventData)
+    //{
+    //    background.color = new Color(1f, 1f, 1f, 0.9f);
+    //    transform.localScale = Vector3.one * 1.05f;
+
+    //    var slot = inventory.slots[slotIndex];
+    //    if (slot.item == null) return;
+
+    //    GameEvents.OnSlotHovered?.Invoke(inventory, slotIndex);
+    //}
     public void OnPointerEnter(PointerEventData eventData)
     {
         background.color = new Color(1f, 1f, 1f, 0.9f);
@@ -254,16 +295,32 @@ public class InventorySlotUI : MonoBehaviour, IPointerDownHandler, IPointerUpHan
         var slot = inventory.slots[slotIndex];
         if (slot.item == null) return;
 
-        //tooltipUI.Show(slot.item, slot.count);
-        GameEvents.OnSlotHovered?.Invoke(inventory, slotIndex);
+        bool isEquipped = false;
+        if (slot.item is EquipmentData eq)
+            isEquipped = equipmentManager.IsEquipped(eq);
+
+        GameEvents.OnTooltipRequest?.Invoke(new ItemUIContext
+        {
+            item = slot.item,
+            slotIndex = slotIndex,
+            isFromInventory = true,
+            isEquipped = isEquipped,
+            count = slot.item.stackable && slot.count >= 1 ? slot.count : -1
+        });
     }
 
+    //public void OnPointerExit(PointerEventData eventData)
+    //{
+    //    background.color = Color.white;
+    //    transform.localScale = Vector3.one;
+
+    //    GameEvents.OnSlotHoverExit?.Invoke();
+    //}
     public void OnPointerExit(PointerEventData eventData)
     {
         background.color = Color.white;
         transform.localScale = Vector3.one;
 
-        //tooltipUI.Hide();
-        GameEvents.OnSlotHoverExit?.Invoke();
+        GameEvents.OnTooltipHide?.Invoke();
     }
 }

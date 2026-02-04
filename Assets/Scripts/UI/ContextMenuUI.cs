@@ -1,41 +1,53 @@
 using UnityEngine;
 using UnityEngine.UI;
-using System;
 
 public class ContextMenuUI : MonoBehaviour
 {
     public CanvasGroup canvasGroup;
     public RectTransform rectTransform;
+
     public Button useButton;
     public Button dropButton;
     public Button inspectButton;
     public Button equipButton;
     public Button unequipButton;
 
-    private int boundSlotIndex = -1;
-    private Inventory boundInventory;
+    ItemUIContext context;
 
     void Awake()
     {
-        // Button binding behavior (using lambda to delay binding slots)
-        useButton.onClick.AddListener(() => { if (boundInventory != null) GameEvents.OnItemUsed?.Invoke(boundSlotIndex); Hide(); });
-        dropButton.onClick.AddListener(() => { if (boundInventory != null) boundInventory.DropItem(boundSlotIndex); Hide(); });
-        inspectButton.onClick.AddListener(() => { if (boundInventory != null) boundInventory.InspectItem(boundSlotIndex); /* Keep open? close */ Hide(); });
+        useButton.onClick.AddListener(() =>
+        {
+            if (context.isFromInventory)
+                GameEvents.OnItemUsed?.Invoke(context.slotIndex);
+            Hide();
+        });
+
+        inspectButton.onClick.AddListener(() =>
+        {
+            if (context.isFromInventory)
+                GameEvents.OnItemInspected?.Invoke(context.slotIndex);
+            Hide();
+        });
+
+        dropButton.onClick.AddListener(() =>
+        {
+            if (context.isFromInventory && !context.isEquipped)
+                GameEvents.OnItemDropped?.Invoke(context.slotIndex);
+            Hide();
+        });
 
         equipButton.onClick.AddListener(() =>
         {
-            var item = boundInventory.slots[boundSlotIndex].item as EquipmentData;
-            if (item != null)
-                GameEvents.OnEquipRequested?.Invoke(item);
-
+            if (context.item is EquipmentData eq)
+                GameEvents.OnEquipRequested?.Invoke(eq);
             Hide();
         });
+
         unequipButton.onClick.AddListener(() =>
         {
-            var item = boundInventory.slots[boundSlotIndex].item as EquipmentData;
-            if (item != null)
-                GameEvents.OnUnequipRequested?.Invoke(item.equipSlot);
-
+            if (context.item is EquipmentData eq)
+                GameEvents.OnUnequipRequested?.Invoke(eq.equipSlot);
             Hide();
         });
     }
@@ -52,44 +64,40 @@ public class ContextMenuUI : MonoBehaviour
         GameEvents.OnInventoryClosed -= Hide;
     }
 
-
-    public void Show(Inventory inventory, int slotIndex, bool isEquipped)
+    void Show(ItemUIContext ctx)
     {
-        if (inventory == null || slotIndex < 0 || slotIndex >= inventory.slots.Count)
-            return;
-        
-        boundInventory = inventory;
-        boundSlotIndex = slotIndex;
+        context = ctx;
 
-        var slot = inventory.slots[slotIndex];
-        var item = slot.item;
-
-        // Buttons are unenabled by default
+        // Reset
         useButton.gameObject.SetActive(false);
+        dropButton.gameObject.SetActive(false);
+        inspectButton.gameObject.SetActive(false);
         equipButton.gameObject.SetActive(false);
         unequipButton.gameObject.SetActive(false);
 
-        // Consumable
-        if (item != null && item.consumable)
+        if (ctx.item == null) return;
+
+        // Inventory only
+        if (ctx.isFromInventory)
         {
-            useButton.gameObject.SetActive(true);
+            inspectButton.gameObject.SetActive(true);
+
+            if (ctx.item.consumable)
+                useButton.gameObject.SetActive(true);
+
+            if (!ctx.isEquipped)
+                dropButton.gameObject.SetActive(true);
         }
 
-        // Equipment
-        if (item is EquipmentData eq)
+        // Equipment logic
+        if (ctx.item is EquipmentData)
         {
-            equipButton.gameObject.SetActive(!isEquipped);
-            unequipButton.gameObject.SetActive(isEquipped);
+            equipButton.gameObject.SetActive(ctx.isFromInventory && !ctx.isEquipped);
+            unequipButton.gameObject.SetActive(ctx.isEquipped);
         }
 
-        // Set the position to display
         rectTransform.position = Input.mousePosition;
-        rectTransform.localScale = Vector3.one * 0.8f;
-
-        // Display the menu
-        canvasGroup.alpha = 0;
-        LeanTween.scale(rectTransform, Vector3.one, 0.15f);
-        LeanTween.alphaCanvas(canvasGroup, 1, 0.15f);
+        canvasGroup.alpha = 1;
         canvasGroup.blocksRaycasts = true;
     }
 
@@ -97,7 +105,5 @@ public class ContextMenuUI : MonoBehaviour
     {
         canvasGroup.alpha = 0;
         canvasGroup.blocksRaycasts = false;
-        boundInventory = null;
-        boundSlotIndex = -1;
     }
 }

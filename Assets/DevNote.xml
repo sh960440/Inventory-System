@@ -1,8 +1,19 @@
 <Dev>
-  將Inventory.cs附加在player上以使用，目前看起來非必要
-  考慮把Inventory做成singleton，放在場景中獨立的物件
-  Inactive的物件在遊戲一開始不會執行任何Awake、OnEnable之類的函數中的事件訂閱
-  事件系統(Action)不吃回傳值，也就是說綁定的函數不能有回傳值
-  目標清單：
-    
+	將Inventory.cs附加在player上以使用，目前看起來非必要
+	考慮把Inventory做成singleton，放在場景中獨立的物件
+	Inactive的物件在遊戲一開始不會執行任何Awake、OnEnable之類的函數中的事件訂閱
+	事件系統(Action<T>)不吃回傳值，也就是說綁定的函數不能有回傳值
+	Button component可以提供raycast、可以被EventSystem偵測，用於處理跟滑鼠互動的動作
+	
+	public List<InventorySlot> slots = new List<InventorySlot>(); // 明確寫出型別
+	public List<InventorySlot> slots = new(); // C# 9 引入的 target-typed new：由左邊的型別「推斷」右邊的型別，代碼更簡潔
+	
+	匯入的模組顯示全粉紅色的顯示錯誤
+		原因:
+			材質所用的著色器（Shader）無法被找到或編譯失敗。最常見的原因是渲染管線不相容（URP/HDRP 與 Built‑in 混用）。
+		解決方法:
+			Window → Rendering → Render Pipeline Converter
+			勾擇Built-in to URP
+			勾選Material Upgrade，也可以一起勾選Readonly Material Converter、Rendering Settings、Animation Clip Converter
+			點選Initialize And Convert
 </Dev>

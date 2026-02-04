@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EquipmentData
   itemName: Frying Pan
   icon: {fileID: 21300000, guid: 08aa6c06e064487488befcaf97b2188e, type: 3}
-  description: A frying Pan
+  description: A frying pan
   rarity: 2
   stackable: 0
   maxStack: 1
