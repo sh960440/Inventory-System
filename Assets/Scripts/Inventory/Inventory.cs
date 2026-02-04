@@ -5,6 +5,14 @@ public class Inventory : MonoBehaviour
 {
     public List<InventorySlot> slots = new();
     public int initialCapacity = 9;
+    public ItemCategory[] currentCategories;
+    string currentSearch = "";
+
+    bool IsAllCategory =>
+    currentCategories == null || currentCategories.Length == 0;
+
+    bool HasSearch =>
+        !string.IsNullOrEmpty(currentSearch);
 
     void Awake()
     {
@@ -138,4 +146,79 @@ public class Inventory : MonoBehaviour
     }
 
     bool Valid(int i) => i >= 0 && i < slots.Count;
+
+    bool PassCategory(InventorySlot slot)
+    {
+        // All category = Always pass
+        if (currentCategories == null || currentCategories.Length == 0)
+            return true;
+
+        if (slot.item == null)
+            return false;
+
+        foreach (var c in currentCategories)
+        {
+            if (slot.item.category == c)
+                return true;
+        }
+
+        return false;
+    }
+
+    bool PassSearch(InventorySlot slot)
+    {
+        if (string.IsNullOrEmpty(currentSearch))
+            return true;
+
+        if (slot.item == null)
+            return false;
+
+        string q = currentSearch.ToLower();
+
+        return
+            slot.item.itemName.ToLower().Contains(q) ||
+            slot.item.description.ToLower().Contains(q);
+    }
+
+    // An API for UI
+    public List<int> GetFilteredSlotIndices()
+    {
+        var result = new List<int>();
+
+        for (int i = 0; i < slots.Count; i++)
+        {
+            if (PassCategory(slots[i]))
+                result.Add(i);
+        }
+
+        return result;
+    }
+
+    public void SetCategoryFilter(ItemCategory[] categories)
+    {
+        currentCategories = categories;
+        GameEvents.OnInventoryChanged.Invoke();
+    }
+
+    public void SetSearchKeyword(string keyword)
+    {
+        currentSearch = keyword;
+        GameEvents.OnInventoryChanged?.Invoke();
+    }
+
+    public bool ShouldShowEmptySlot()
+    {
+        return IsAllCategory && !HasSearch;
+    }
+
+    public bool PassFilter(InventorySlot slot)
+    {
+        if (slot.item == null)
+            return ShouldShowEmptySlot();
+
+        if (!PassCategory(slot)) return false;
+        if (!PassSearch(slot)) return false;
+
+        return true;
+    }
 }

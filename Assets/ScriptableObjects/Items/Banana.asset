@@ -15,7 +15,9 @@ MonoBehaviour:
   itemName: Banana
   icon: {fileID: 21300000, guid: ecdf5114d4bdd0c4083de7c9a85576db, type: 3}
   description: A banana
+  rarity: 0
   stackable: 1
   maxStack: 99
   worldPrefab: {fileID: 783532251604496243, guid: d767d03e88d766541849f1de23b77d5d, type: 3}
   consumable: 1
+  category: 3

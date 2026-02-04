@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class InventoryUIController : MonoBehaviour
 {
@@ -24,6 +25,7 @@ public class InventoryUIController : MonoBehaviour
     {
         GameEvents.OnInventoryChanged += RefreshAll;
         GameEvents.OnEquipmentChanged += RefreshAll;
+        RefreshAll();
     }
 
     void OnDisable()
@@ -69,7 +71,15 @@ public class InventoryUIController : MonoBehaviour
 
     void RefreshAll()
     {
-        foreach (var slot in slotsUI)
-            slot.Refresh();
+        var visibleSet = new HashSet<int>(inventory.GetFilteredSlotIndices());
+
+        for (int i = 0; i < slotsUI.Length; i++)
+        {
+            bool visible = visibleSet.Contains(i);
+            slotsUI[i].SetVisible(visible);
+
+            if (visible)
+                slotsUI[i].Refresh();
+        }
     }
 }

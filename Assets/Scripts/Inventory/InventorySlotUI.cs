@@ -72,13 +72,15 @@ public class InventorySlotUI : MonoBehaviour, IPointerDownHandler, IPointerUpHan
     {
         var slot = inventory.slots[slotIndex];
 
+        bool pass = inventory.PassFilter(slot);
+        gameObject.SetActive(pass);
+
         if (slot.item == null)
         {
             iconImage.sprite = null;
             iconImage.enabled = false;
             countText.text = "";
 
-            // NEW
             if (equippedMark != null)
                 equippedMark.SetActive(false);
 
@@ -116,6 +118,11 @@ public class InventorySlotUI : MonoBehaviour, IPointerDownHandler, IPointerUpHan
     {
         iconImage.sprite = null;
         iconImage.enabled = false;
+    }
+
+    public void SetVisible(bool visiable)
+    {
+        gameObject.SetActive(visiable);
     }
 
     public void OnPointerDown(PointerEventData eventData)

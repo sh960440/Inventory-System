@@ -20,3 +20,4 @@ MonoBehaviour:
   maxStack: 99
   worldPrefab: {fileID: 259444606660548062, guid: 4bc3d421acf211f4d862e7393c45084a, type: 3}
   consumable: 1
+  category: 3
