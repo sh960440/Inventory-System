@@ -7,6 +7,8 @@ public class Inventory : MonoBehaviour
     public int initialCapacity = 9;
     public ItemCategory[] currentCategories;
     string currentSearch = "";
+    public InventorySortType currentSortType = InventorySortType.None;
+    public SortOrder currentSortOrder = SortOrder.Ascending;
 
     bool IsAllCategory =>
     currentCategories == null || currentCategories.Length == 0;
@@ -220,5 +222,65 @@ public class Inventory : MonoBehaviour
         if (!PassSearch(slot)) return false;
 
         return true;
+    }
+
+    public void SetSort(InventorySortType type, SortOrder order)
+    {
+        currentSortType = type;
+        currentSortOrder = order;
+        ApplySort();
+        GameEvents.OnInventoryChanged?.Invoke();
+    }
+
+    void ApplySort()
+    {
+        // Identify which slots are occupied and which are empty
+        var filled = new List<InventorySlot>();
+        var empty = new List<InventorySlot>();
+
+        foreach (var s in slots)
+        {
+            if (s.item == null) empty.Add(s);
+            else filled.Add(s);
+        }
+
+        // Sort slots with items
+        filled.Sort(CompareSlots);
+
+        slots.Clear();
+        slots.AddRange(filled);
+        slots.AddRange(empty);
+    }
+
+    int CompareSlots(InventorySlot a, InventorySlot b)
+    {
+        if (a.item == null || b.item == null)
+            return 0;
+
+        int result = 0;
+
+        switch (currentSortType)
+        {
+            case InventorySortType.Name:
+                result = string.Compare(a.item.itemName, b.item.itemName);
+                break;
+
+            case InventorySortType.Rarity:
+                result = a.item.rarity.CompareTo(b.item.rarity);
+                break;
+
+            case InventorySortType.Category:
+                result = a.item.category.CompareTo(b.item.category);
+                break;
+
+            case InventorySortType.Count:
+                result = a.count.CompareTo(b.count);
+                break;
+        }
+
+        if (currentSortOrder == SortOrder.Descending)
+            result = -result;
+
+        return result;
     }
 }
