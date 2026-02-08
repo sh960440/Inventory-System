@@ -19,6 +19,9 @@ public static class GameEvents
     public static Action<ItemUIContext> OnTooltipRequest;
     public static Action OnTooltipHide;
 
+    public static Action<DragItemContext> OnItemDragBegin;
+    public static Action OnItemDragEnd;
+
     // Inventory logic
     public static Action<int> OnItemUsed;               // slotIndex
     public static Action<int> OnItemDropped;
@@ -31,6 +34,10 @@ public static class GameEvents
     public static Action<EquipmentData, List<StatModifier>> OnUnequipped;
     public static Action<EquipmentData> OnEquipmentSlotHovered;
     public static Action<EquipmentData> OnEquipmentContextMenuRequest;
+
+    // Hotbar
+    public static Action<InventorySlot> OnHotbarUseRequested;
+    public static Action OnHotbarChanged;
 
     // World
     public static Action<ItemData, int> OnItemPicked;

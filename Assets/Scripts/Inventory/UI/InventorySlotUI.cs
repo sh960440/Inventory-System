@@ -3,7 +3,7 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using TMPro;
 
-public class InventorySlotUI : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
+public class InventorySlotUI : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
     public int slotIndex;
     public Image background;
@@ -134,14 +134,14 @@ public class InventorySlotUI : MonoBehaviour, IPointerDownHandler, IPointerUpHan
             return;
 
         isDragging = true;
-        dragUI.SetSprite(inventory.slots[slotIndex].item.icon);
+        //dragUI.SetSprite(inventory.slots[slotIndex].item.icon);
     }
 
     public void OnPointerUp(PointerEventData eventData)
     {
         if (!isDragging) return;
         isDragging = false;
-        dragUI.Hide();
+        //dragUI.Hide();
 
         // Raycast UI to find which slot to drop
         var results = new System.Collections.Generic.List<RaycastResult>();
@@ -160,8 +160,8 @@ public class InventorySlotUI : MonoBehaviour, IPointerDownHandler, IPointerUpHan
 
     void Update()
     {
-        if (isDragging)
-            dragUI.FollowMouse();
+        //if (isDragging)
+            //dragUI.FollowMouse();
     }
 
     void DropOnto(int targetIndex)
@@ -329,5 +329,32 @@ public class InventorySlotUI : MonoBehaviour, IPointerDownHandler, IPointerUpHan
         transform.localScale = Vector3.one;
 
         GameEvents.OnTooltipHide?.Invoke();
+    }
+
+    public void OnBeginDrag(PointerEventData eventData)
+    {
+        var slot = inventory.slots[slotIndex];
+        if (slot.item == null) return;
+
+        var ctx = new DragItemContext
+        {
+            inventory = inventory,
+            inventorySlotIndex = slotIndex,
+            item = slot.item
+        };
+
+        dragUI.SetSprite(slot.item.icon);
+        GameEvents.OnItemDragBegin?.Invoke(ctx);
+    }
+
+    public void OnDrag(PointerEventData eventData)
+    {
+        dragUI.FollowMouse();
+    }
+
+    public void OnEndDrag(PointerEventData eventData)
+    {
+        dragUI.Hide();
+        GameEvents.OnItemDragEnd?.Invoke();
     }
 }
