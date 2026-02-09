@@ -4,6 +4,7 @@ public class HotbarUI : MonoBehaviour
 {
     public Hotbar hotbar;
     public HotbarSlotUI slotPrefab;
+    public DraggableItemUI dragUI;
     public Transform container;
 
     HotbarSlotUI[] slotUIs;
@@ -33,6 +34,7 @@ public class HotbarUI : MonoBehaviour
         {
             var ui = Instantiate(slotPrefab, container);
             ui.Setup(hotbar, i);
+            ui.SetDragUI(dragUI);
             slotUIs[i] = ui;
         }
     }

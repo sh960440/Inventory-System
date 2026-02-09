@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class Hotbar : MonoBehaviour
@@ -9,11 +8,8 @@ public class Hotbar : MonoBehaviour
 
     public List<HotbarSlot> slots = new();
 
-    Inventory inventory;
-
     void Awake()
     {
-        inventory = FindFirstObjectByType<Inventory>();
         InitSlots();
     }
 
@@ -33,19 +29,22 @@ public class Hotbar : MonoBehaviour
         for (int i = 0; i < hotbarSize; i++)
             slots.Add(new HotbarSlot());
     }
-
-    public void Assign(int hotbarIndex, int inventorySlotIndex)
+    public void Assign(int hotbarIndex, Inventory inventory, int inventorySlotIndex)
     {
         if (!ValidHotbarIndex(hotbarIndex)) return;
-        if (!inventorySlotIndexValid(inventorySlotIndex)) return;
+        if (inventory == null) return;
+        if (!ValidInventoryIndex(inventory, inventorySlotIndex)) return;
 
+        slots[hotbarIndex].inventory = inventory;
         slots[hotbarIndex].inventorySlotIndex = inventorySlotIndex;
+
         GameEvents.OnHotbarChanged?.Invoke();
     }
 
     public void Clear(int hotbarIndex)
     {
         if (!ValidHotbarIndex(hotbarIndex)) return;
+
         slots[hotbarIndex].Clear();
         GameEvents.OnHotbarChanged?.Invoke();
     }
@@ -54,36 +53,50 @@ public class Hotbar : MonoBehaviour
     {
         if (!ValidHotbarIndex(hotbarIndex)) return null;
 
-        int invIndex = slots[hotbarIndex].inventorySlotIndex;
-        if (!inventorySlotIndexValid(invIndex)) return null;
+        var slot = slots[hotbarIndex];
+        if (slot.inventory == null) return null;
 
-        return inventory.slots[invIndex];
+        int invIndex = slot.inventorySlotIndex;
+        if (!ValidInventoryIndex(slot.inventory, invIndex)) return null;
+
+        return slot.inventory.slots[invIndex];
     }
 
+    // Validation
     void ValidateSlots()
     {
         foreach (var slot in slots)
         {
             if (slot.IsEmpty) continue;
 
-            if (!inventorySlotIndexValid(slot.inventorySlotIndex))
+            if (slot.inventory == null)
+            {
                 slot.Clear();
-            else if (inventory.slots[slot.inventorySlotIndex].item == null)
+                continue;
+            }
+
+            int i = slot.inventorySlotIndex;
+            if (!ValidInventoryIndex(slot.inventory, i))
+            {
                 slot.Clear();
+                continue;
+            }
+
+            var invSlot = slot.inventory.GetSlot(i);
+            if (invSlot == null || invSlot.item == null)
+            {
+                slot.Clear();
+                continue;
+            }
         }
 
         GameEvents.OnHotbarChanged?.Invoke();
     }
 
-    bool ValidHotbarIndex(int i) => i >= 0 && i < slots.Count;
-    bool inventorySlotIndexValid(int i) => inventory != null && i >= 0 && i < inventory.slots.Count;
+    // Helpers
+    public bool ValidHotbarIndex(int i) =>
+        i >= 0 && i < slots.Count;
 
-    public void Assign(int hotbarIndex, Inventory inv, int inventorySlotIndex)
-    {
-        slots[hotbarIndex].inventory = inv;
-        slots[hotbarIndex].inventorySlotIndex = inventorySlotIndex;
-
-        GameEvents.OnHotbarChanged?.Invoke();
-    }
-
+    public bool ValidInventoryIndex(Inventory inv, int i) =>
+        inv != null && i >= 0 && i < inv.slots.Count;
 }

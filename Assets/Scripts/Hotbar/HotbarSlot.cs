@@ -16,6 +16,16 @@ public class HotbarSlot
             ? inventory.slots[inventorySlotIndex].count
             : 0;
 
+    public bool IsValid(Inventory inventory)
+    {
+        if (inventory == null) return false;
+        if (inventorySlotIndex < 0) return false;
+        if (inventorySlotIndex >= inventory.SlotCount) return false;
+
+        var slot = inventory.GetSlot(inventorySlotIndex);
+        return slot != null && slot.item != null;
+    }
+
     public void Clear()
     {
         inventorySlotIndex = -1;

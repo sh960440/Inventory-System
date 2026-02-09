@@ -28,8 +28,19 @@ public class HotbarInput : MonoBehaviour
 
     void TriggerHotbar(int index)
     {
+        if (!hotbar.ValidHotbarIndex(index))
+        {
+            hotbar.Clear(index);
+            return;
+        }
+
         var invSlot = hotbar.GetInventorySlot(index);
-        if (invSlot == null || invSlot.item == null) return;
+        if (invSlot == null || invSlot.item == null)
+        {
+
+            hotbar.Clear(index);
+            return;
+        }
 
         GameEvents.OnHotbarUseRequested?.Invoke(invSlot);
     }

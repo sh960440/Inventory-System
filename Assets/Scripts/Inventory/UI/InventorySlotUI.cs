@@ -3,7 +3,7 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using TMPro;
 
-public class InventorySlotUI : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler, IBeginDragHandler, IDragHandler, IEndDragHandler
+public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandler, IPointerEnterHandler, IPointerExitHandler, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
     public int slotIndex;
     public Image background;
@@ -195,36 +195,44 @@ public class InventorySlotUI : MonoBehaviour, IPointerDownHandler, IPointerUpHan
         GameEvents.OnInventoryChanged?.Invoke();
     }
 
-    public void OnPointerClick(PointerEventData eventData)
+    protected override void OnDoubleClick()
     {
-        if (eventData.button != PointerEventData.InputButton.Right) return;
+        if (inventory == null) return;
+        if (!inventory.Valid(slotIndex)) return;
 
         var slot = inventory.slots[slotIndex];
-        // If the slot is empty
+        if (slot.item == null) return;
+
+        GameEvents.OnHotbarUseRequested?.Invoke(slot);
+    }
+
+    protected override void OnRightClick(PointerEventData eventData)
+    {
+        var slot = inventory.slots[slotIndex];
         if (slot.item == null) return;
 
         // Shift + right click -> Split Stack
         if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
         {
             SplitStack();
+            return;
         }
-        else // Right Click -> Open Context Menu
-        {
-            // Open Context Menu
-            bool isEquipped = false;
-            if (slot.item is EquipmentData eq)
-                isEquipped = equipmentManager.IsEquipped(eq);
 
-            GameEvents.OnContextMenuRequest?.Invoke(new ItemUIContext
-            {
-                item = slot.item,
-                isFromInventory = true,
-                isEquipped = isEquipped,
-                slotIndex = slotIndex,
-                count = slot.item.stackable && slot.count >= 1 ? slot.count : -1
-            });
-        }        
+        // Open Context Menu
+        bool isEquipped = false;
+        if (slot.item is EquipmentData eq)
+            isEquipped = equipmentManager.IsEquipped(eq);
+
+        GameEvents.OnContextMenuRequest?.Invoke(new ItemUIContext
+        {
+            item = slot.item,
+            isFromInventory = true,
+            isEquipped = isEquipped,
+            slotIndex = slotIndex,
+            count = slot.item.stackable && slot.count >= 1 ? slot.count : -1
+        });
     }
+
 
     //public void OnPointerClick(PointerEventData eventData)
     //{
@@ -343,7 +351,7 @@ public class InventorySlotUI : MonoBehaviour, IPointerDownHandler, IPointerUpHan
             item = slot.item
         };
 
-        dragUI.SetSprite(slot.item.icon);
+        dragUI.BeginDrag(ctx, slot.item.icon);
         GameEvents.OnItemDragBegin?.Invoke(ctx);
     }
 
@@ -354,7 +362,13 @@ public class InventorySlotUI : MonoBehaviour, IPointerDownHandler, IPointerUpHan
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        dragUI.Hide();
+        dragUI.EndDrag();
         GameEvents.OnItemDragEnd?.Invoke();
     }
+
+    public void DropItem()
+    {
+        inventory.DropItem(slotIndex, 1);
+    }
+
 }

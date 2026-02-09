@@ -16,6 +16,16 @@ public class Inventory : MonoBehaviour
     bool HasSearch =>
         !string.IsNullOrEmpty(currentSearch);
 
+    public int SlotCount => slots.Count;
+
+    public bool Valid(int i) => i >= 0 && i < slots.Count;
+    
+    public InventorySlot GetSlot(int index)
+    {
+        if (!Valid(index)) return null;
+        return slots[index];
+    }
+
     void Awake()
     {
         // If there is no default slot，create empty slots for UI to use
@@ -32,6 +42,7 @@ public class Inventory : MonoBehaviour
         GameEvents.OnItemDropped += DropItem;
         GameEvents.OnItemInspected += InspectItem;
         GameEvents.OnItemPicked += OnItemPickedHandler;
+        GameEvents.OnHotbarUseRequested += OnHotbarUseRequested;
     }
 
     void OnDisable()
@@ -40,6 +51,7 @@ public class Inventory : MonoBehaviour
         GameEvents.OnItemDropped -= DropItem;
         GameEvents.OnItemInspected -= InspectItem;
         GameEvents.OnItemPicked -= OnItemPickedHandler;
+        GameEvents.OnHotbarUseRequested -= OnHotbarUseRequested;
     }
 
     void OnItemPickedHandler(ItemData item, int amount)
@@ -111,7 +123,16 @@ public class Inventory : MonoBehaviour
 
     void Consume(InventorySlot slot)
     {
-        slot.count--;
+        Consume(slot, 1);
+    }
+
+    void Consume(InventorySlot slot, int amount)
+    {
+        if (slot.item == null) return;
+        if (amount <= 0) return;
+
+        slot.count -= amount;
+
         if (slot.count <= 0)
         {
             slot.item = null;
@@ -119,24 +140,38 @@ public class Inventory : MonoBehaviour
         }
     }
 
-    void DropItem(int index)
+    public void DropItem(int index, int amount)
     {
         if (!Valid(index)) return;
+
         var slot = slots[index];
         if (slot.item == null) return;
+        if (amount <= 0) return;
 
-        Debug.Log("Drop: " + slot.item.itemName);
+        int dropCount = Mathf.Min(amount, slot.count);
 
+        // Get the world prefab of the item and instantiate it in front of the player
         if (slot.item.worldPrefab != null)
         {
             var t = transform;
-            Instantiate(slot.item.worldPrefab,
-                t.position + t.forward * 1.2f + Vector3.up * 0.5f,
-                Quaternion.identity);
+            for (int i = 0; i < dropCount; i++)
+            {
+                Instantiate(
+                    slot.item.worldPrefab,
+                    t.position + t.forward * 1.2f - Vector3.up * 1.0f,
+                    Quaternion.identity
+                );
+            }
         }
 
-        Consume(slot);
+        Consume(slot, dropCount);
         GameEvents.OnInventoryChanged?.Invoke();
+    }
+
+
+    void DropItem(int index)
+    {
+        DropItem(index, 1);
     }
 
     void InspectItem(int index)
@@ -146,8 +181,6 @@ public class Inventory : MonoBehaviour
         if (item == null) return;
         Debug.Log($"{item.itemName}\n{item.description}");
     }
-
-    bool Valid(int i) => i >= 0 && i < slots.Count;
 
     bool PassCategory(InventorySlot slot)
     {
@@ -282,5 +315,36 @@ public class Inventory : MonoBehaviour
             result = -result;
 
         return result;
+    }
+
+    void OnHotbarUseRequested(InventorySlot slot)
+    {
+        if (slot == null || slot.item == null)
+            return;
+
+        // Consumable
+        if (slot.item.consumable)
+        {
+            Consume(slot);
+            GameEvents.OnInventoryChanged?.Invoke();
+            return;
+        }
+
+        // Equipment
+        if (slot.item is EquipmentData eq)
+        {
+            if (FindFirstObjectByType<EquipmentManager>()?.IsEquipped(eq) == true)
+            {
+                GameEvents.OnUnequipRequested?.Invoke(eq.equipSlot);
+            }
+            else
+            {
+                GameEvents.OnEquipRequested?.Invoke(eq);
+            }
+
+            return;
+        }
+
+        Debug.Log($"Hotbar used item: {slot.item.itemName}");
     }
 }

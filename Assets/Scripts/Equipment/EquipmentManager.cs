@@ -30,7 +30,13 @@ public class EquipmentManager : MonoBehaviour
 
     public bool IsEquipped(EquipmentData item)
     {
-        return equipped.ContainsValue(item);
+        if (item == null)
+            return false;
+        
+        if (!equipped.TryGetValue(item.equipSlot, out var equippedItem))
+            return false;
+
+        return equippedItem == item;
     }
 
     // ---------- API ----------
