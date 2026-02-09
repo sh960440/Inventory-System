@@ -107,17 +107,17 @@ public class HotbarSlotUI : UISlotBase, IBeginDragHandler, IDragHandler, IEndDra
     public void OnBeginDrag(PointerEventData eventData)
     {
         var invSlot = hotbar.GetInventorySlot(index);
-        if (invSlot == null || invSlot.item == null) return;
+        if (invSlot == null) return;
 
         var ctx = new DragItemContext
         {
             inventory = null,               // Hotbar source doesn't have an inventory reference
             inventorySlotIndex = -1,
-            item = invSlot.item,
-            //hotbarIndex = index
+            hotbarIndex = index,
+            item = invSlot.item
         };
-        dragUI.BeginDrag(ctx, invSlot.item.icon);
 
+        dragUI.BeginDrag(ctx, invSlot.item.icon);
         GameEvents.OnItemDragBegin?.Invoke(ctx);
     }
 
@@ -138,20 +138,22 @@ public class HotbarSlotUI : UISlotBase, IBeginDragHandler, IDragHandler, IEndDra
     public void OnDrop(PointerEventData eventData)
     {
         if (currentDrag == null) return;
-
         var ctx = currentDrag.Value;
 
+        // Inventory -> Hotbar
         if (ctx.inventory != null)
         {
-            // From inventory -> hotbar
             hotbar.Assign(index, ctx.inventory, ctx.inventorySlotIndex);
+            return;
         }
-        //else if (ctx.hotbarIndex >= 0 && ctx.hotbarIndex != index)
-        //{
-        //    // Hotbar swap
-        //    hotbar.Swap(index, ctx.hotbarIndex);
-        //}
+
+        // Hotbar -> Hotbar swap
+        if (ctx.hotbarIndex >= 0 && ctx.hotbarIndex != index)
+        {
+            hotbar.Swap(index, ctx.hotbarIndex);
+        }
     }
+
 
     protected override void OnRightClick(PointerEventData eventData)
     {
