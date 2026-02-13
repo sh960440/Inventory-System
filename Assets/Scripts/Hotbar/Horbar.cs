@@ -156,4 +156,46 @@ public class Hotbar : MonoBehaviour
 
     public bool ValidInventoryIndex(Inventory inv, int i) =>
         inv != null && i >= 0 && i < inv.slots.Count;
+
+    public HotbarSaveData ToSaveData()
+    {
+        var data = new HotbarSaveData();
+
+        foreach (var slot in slots)
+        {
+            data.itemIds.Add(new HotbarSlotSaveData
+            {
+                itemId = slot.item != null
+                    ? slot.item.itemName
+                    : null
+            });
+        }
+
+        return data;
+    }
+
+    public void LoadFromSaveData(HotbarSaveData data, Inventory inventory)
+    {
+        for (int i = 0; i < slots.Count; i++)
+            slots[i].Clear();
+
+        for (int i = 0; i < data.itemIds.Count && i < slots.Count; i++)
+        {
+            var itemId = data.itemIds[i].itemId;
+            if (string.IsNullOrEmpty(itemId)) continue;
+
+            for (int invIndex = 0; invIndex < inventory.slots.Count; invIndex++)
+            {
+                var invSlot = inventory.slots[invIndex];
+                if (invSlot.item != null &&
+                    invSlot.item.itemName == itemId)
+                {
+                    Assign(i, inventory, invIndex);
+                    break;
+                }
+            }
+        }
+
+        GameEvents.OnHotbarChanged?.Invoke();
+    }
 }

@@ -3,6 +3,9 @@ using UnityEngine;
 
 public class Inventory : MonoBehaviour
 {
+    [Header("Item Library (Temp before ItemDatabase)")]
+    public List<ItemData> allItems = new();
+
     public List<InventorySlot> slots = new();
     public int initialCapacity = 9;
     public ItemCategory[] currentCategories;
@@ -347,4 +350,85 @@ public class Inventory : MonoBehaviour
 
         Debug.Log($"Hotbar used item: {slot.item.itemName}");
     }
+
+    public InventorySaveData ToSaveData()
+    {
+        var data = new InventorySaveData();
+
+        foreach (var slot in slots)
+        {
+            if (slot.item == null)
+            {
+                data.slots.Add(new InventorySlotSaveData
+                {
+                    itemId = null,
+                    count = 0
+                });
+            }
+            else
+            {
+                data.slots.Add(new InventorySlotSaveData
+                {
+                    itemId = slot.item.itemName,
+                    count = slot.count
+                });
+            }
+        }
+
+        return data;
+    }
+
+    public void LoadFromSaveData(InventorySaveData data, Inventory sourceInventory)
+    {
+        slots.Clear();
+
+        foreach (var s in data.slots)
+        {
+            if (string.IsNullOrEmpty(s.itemId))
+            {
+                slots.Add(new InventorySlot());
+            }
+            else
+            {
+                //var item = ItemLookup.FindInInventory(
+                //    sourceInventory,
+                //    s.itemId
+                //);
+                var item = CreateItemById(s.itemId);
+
+                slots.Add(
+                    item != null
+                        ? new InventorySlot(item, s.count)
+                        : new InventorySlot()
+                );
+            }
+        }
+
+        GameEvents.OnInventoryChanged?.Invoke();
+    }
+
+    ItemData CreateItemById(string itemId)
+    {
+        foreach (var item in allItems)
+        {
+            if (item.itemName == itemId)
+                return item;
+        }
+
+        Debug.LogWarning($"Item not found for id: {itemId}");
+        return null;
+    }
+
+    public ItemData CreateItemByName(string itemName)
+    {
+        foreach (var item in allItems)
+        {
+            if (item.itemName == itemName)
+                return item;
+        }
+
+        Debug.LogWarning($"Item not found: {itemName}");
+        return null;
+    }
+
 }

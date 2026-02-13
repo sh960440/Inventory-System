@@ -110,4 +110,86 @@ public class EquipmentManager : MonoBehaviour
         Debug.Log($"[Unequip] equipped.Count = {equipped.Count}");
         Debug.Log($"Unequipped {item.itemName}");
     }
+
+    public void UnequipAll()
+    {
+        var slots = new List<EquipmentSlot>(equipped.Keys);
+
+        foreach (var slot in slots)
+        {
+            Unequip(slot);
+        }
+    }
+
+    //public EquipmentSaveData ToSaveData()
+    //{
+    //    var data = new EquipmentSaveData();
+
+    //    foreach (var kv in equipped)
+    //    {
+    //        data.equippedItems[kv.Key.ToString()] =
+    //            kv.Value != null ? kv.Value.itemName : null;
+    //    }
+
+    //    return data;
+    //}
+
+    public EquipmentSaveData ToSaveData()
+    {
+        var data = new EquipmentSaveData();
+
+        foreach (var kv in equipped)
+        {
+            data.slots.Add(new EquipmentSlotSaveData
+            {
+                slotName = kv.Key.ToString(),
+                itemId = kv.Value != null ? kv.Value.itemName : null
+            });
+        }
+
+        return data;
+    }
+
+
+    //    public void LoadFromSaveData(
+    //    EquipmentSaveData data,
+    //    Inventory inventory
+    //)
+    //    {
+    //        UnequipAll();
+
+    //        foreach (var kv in data.equippedItems)
+    //        {
+    //            if (string.IsNullOrEmpty(kv.Value)) continue;
+
+    //            var item = ItemLookup.FindInInventory(
+    //                inventory,
+    //                kv.Value
+    //            );
+
+    //            if (item is EquipmentData eq)
+    //                Equip(eq);
+    //        }
+    //    }
+
+    public void LoadFromSaveData(
+    EquipmentSaveData data,
+    Inventory inventory
+)
+    {
+        UnequipAll();
+
+        foreach (var slot in data.slots)
+        {
+            if (string.IsNullOrEmpty(slot.itemId))
+                continue;
+
+            var item = inventory.CreateItemByName(slot.itemId);
+
+            if (item is EquipmentData eq)
+            {
+                Equip(eq);
+            }
+        }
+    }
 }
