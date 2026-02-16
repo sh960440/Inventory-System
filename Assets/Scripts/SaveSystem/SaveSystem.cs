@@ -29,10 +29,15 @@ public class SaveSystem : MonoBehaviour
         Debug.Log($"Saving to {SavePath}");
     }
 
+    public void LoadV1(SaveData data)
+    {
+        inventory.LoadFromSaveData(data.inventory);
+        hotbar.LoadFromSaveData(data.hotbar, inventory);
+        equipment.LoadFromSaveData(data.equipment, inventory);
+    }
+
     public void Load()
     {
-        Debug.Log("Load called");
-
         if (!File.Exists(SavePath))
         {
             Debug.LogWarning("Save file not found");
@@ -65,16 +70,17 @@ public class SaveSystem : MonoBehaviour
             return;
         }
 
-        // Check version compatibility
-        // TODO: Create LoadV1, LoadV2, etc. for different versions
-        if (data.version != 1)
+        switch (data.version)
         {
-            Debug.LogWarning($"Unsupported save version: {data.version}");
-            return;
+            case 1:
+                LoadV1(data);
+                break;
+            //case 2:
+            //    LoadV2(data);
+            //    break;
+            default:
+                Debug.LogWarning($"Unsupported save version: {data.version}");
+                break;
         }
-
-        inventory.LoadFromSaveData(data.inventory, inventory);
-        hotbar.LoadFromSaveData(data.hotbar, inventory);
-        equipment.LoadFromSaveData(data.equipment, inventory);
     }
 }

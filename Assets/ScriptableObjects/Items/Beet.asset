@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 52b888552a0aff0458cbd6496d37d8be, type: 3}
   m_Name: Beet
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
+  id: consumable_beet_01
   itemName: Beet
   icon: {fileID: 21300000, guid: 26453a43a434c8647b4b92b92ad8163a, type: 3}
   description: A beet

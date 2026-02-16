@@ -8,6 +8,15 @@
 	public List<InventorySlot> slots = new List<InventorySlot>(); // 明確寫出型別
 	public List<InventorySlot> slots = new(); // C# 9 引入的 target-typed new：由左邊的型別「推斷」右邊的型別，代碼更簡潔
 	
+  ItemData.cs的命名規則：
+  [category]_[item]_[variant##]，例如：consumable_apple_01
+  Release後就絕不改動id
+  
+  ItemDatabase使用singleton的原因：
+  	確保全局只有一個實例，方便在任何地方訪問和管理物品數據。
+  ItemDatabase使用Dictionary的原因：
+		提供快速的查找和存取，尤其是當物品數量增加時，Dictionary的效率優於List。O(1) 查找。
+  
 	匯入的模組顯示全粉紅色的顯示錯誤
 		原因:
 			材質所用的著色器（Shader）無法被找到或編譯失敗。最常見的原因是渲染管線不相容（URP/HDRP 與 Built‑in 混用）。

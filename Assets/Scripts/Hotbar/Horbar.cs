@@ -166,7 +166,7 @@ public class Hotbar : MonoBehaviour
             data.itemIds.Add(new HotbarSlotSaveData
             {
                 itemId = slot.item != null
-                    ? slot.item.itemName
+                    ? slot.item.Id
                     : null
             });
         }
@@ -184,11 +184,14 @@ public class Hotbar : MonoBehaviour
             var itemId = data.itemIds[i].itemId;
             if (string.IsNullOrEmpty(itemId)) continue;
 
-            for (int invIndex = 0; invIndex < inventory.slots.Count; invIndex++)
+            var targetItem = ItemDatabase.Instance.Get(itemId);
+            if (targetItem == null) continue;
+
+            for (int invIndex = 0; invIndex < inventory.SlotCount; invIndex++)
             {
-                var invSlot = inventory.slots[invIndex];
-                if (invSlot.item != null &&
-                    invSlot.item.itemName == itemId)
+                var invSlot = inventory.GetSlot(invIndex);
+
+                if (invSlot.item == targetItem)
                 {
                     Assign(i, inventory, invIndex);
                     break;

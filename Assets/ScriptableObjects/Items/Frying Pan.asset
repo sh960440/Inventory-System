@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc4a56c3bd9960949860fea1678f515c, type: 3}
   m_Name: Frying Pan
   m_EditorClassIdentifier: Assembly-CSharp::EquipmentData
+  id: equipment_fryingpan_01
   itemName: Frying Pan
   icon: {fileID: 21300000, guid: 08aa6c06e064487488befcaf97b2188e, type: 3}
   description: A frying pan

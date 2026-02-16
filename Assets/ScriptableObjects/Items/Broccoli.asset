@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 52b888552a0aff0458cbd6496d37d8be, type: 3}
   m_Name: Broccoli
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
+  id: consumable_broccoli_01
   itemName: Broccoli
   icon: {fileID: 21300000, guid: 5a9bed9a3b1302544b0559de6bbffa15, type: 3}
   description: A head of broccoli

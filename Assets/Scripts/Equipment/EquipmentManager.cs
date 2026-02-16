@@ -121,19 +121,6 @@ public class EquipmentManager : MonoBehaviour
         }
     }
 
-    //public EquipmentSaveData ToSaveData()
-    //{
-    //    var data = new EquipmentSaveData();
-
-    //    foreach (var kv in equipped)
-    //    {
-    //        data.equippedItems[kv.Key.ToString()] =
-    //            kv.Value != null ? kv.Value.itemName : null;
-    //    }
-
-    //    return data;
-    //}
-
     public EquipmentSaveData ToSaveData()
     {
         var data = new EquipmentSaveData();
@@ -143,39 +130,14 @@ public class EquipmentManager : MonoBehaviour
             data.slots.Add(new EquipmentSlotSaveData
             {
                 slotName = kv.Key.ToString(),
-                itemId = kv.Value != null ? kv.Value.itemName : null
+                itemId = kv.Value != null ? kv.Value.Id : null
             });
         }
 
         return data;
     }
 
-
-    //    public void LoadFromSaveData(
-    //    EquipmentSaveData data,
-    //    Inventory inventory
-    //)
-    //    {
-    //        UnequipAll();
-
-    //        foreach (var kv in data.equippedItems)
-    //        {
-    //            if (string.IsNullOrEmpty(kv.Value)) continue;
-
-    //            var item = ItemLookup.FindInInventory(
-    //                inventory,
-    //                kv.Value
-    //            );
-
-    //            if (item is EquipmentData eq)
-    //                Equip(eq);
-    //        }
-    //    }
-
-    public void LoadFromSaveData(
-    EquipmentSaveData data,
-    Inventory inventory
-)
+    public void LoadFromSaveData(EquipmentSaveData data, Inventory inventory)
     {
         UnequipAll();
 
@@ -184,7 +146,7 @@ public class EquipmentManager : MonoBehaviour
             if (string.IsNullOrEmpty(slot.itemId))
                 continue;
 
-            var item = inventory.CreateItemByName(slot.itemId);
+            var item = ItemDatabase.Instance.Get(slot.itemId);
 
             if (item is EquipmentData eq)
             {

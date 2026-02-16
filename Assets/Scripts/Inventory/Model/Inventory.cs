@@ -3,9 +3,6 @@ using UnityEngine;
 
 public class Inventory : MonoBehaviour
 {
-    [Header("Item Library (Temp before ItemDatabase)")]
-    public List<ItemData> allItems = new();
-
     public List<InventorySlot> slots = new();
     public int initialCapacity = 9;
     public ItemCategory[] currentCategories;
@@ -369,7 +366,7 @@ public class Inventory : MonoBehaviour
             {
                 data.slots.Add(new InventorySlotSaveData
                 {
-                    itemId = slot.item.itemName,
+                    itemId = slot.item.Id,
                     count = slot.count
                 });
             }
@@ -378,7 +375,7 @@ public class Inventory : MonoBehaviour
         return data;
     }
 
-    public void LoadFromSaveData(InventorySaveData data, Inventory sourceInventory)
+    public void LoadFromSaveData(InventorySaveData data)
     {
         slots.Clear();
 
@@ -390,11 +387,7 @@ public class Inventory : MonoBehaviour
             }
             else
             {
-                //var item = ItemLookup.FindInInventory(
-                //    sourceInventory,
-                //    s.itemId
-                //);
-                var item = CreateItemById(s.itemId);
+                var item = ItemDatabase.Instance.Get(s.itemId);
 
                 slots.Add(
                     item != null
@@ -406,29 +399,4 @@ public class Inventory : MonoBehaviour
 
         GameEvents.OnInventoryChanged?.Invoke();
     }
-
-    ItemData CreateItemById(string itemId)
-    {
-        foreach (var item in allItems)
-        {
-            if (item.itemName == itemId)
-                return item;
-        }
-
-        Debug.LogWarning($"Item not found for id: {itemId}");
-        return null;
-    }
-
-    public ItemData CreateItemByName(string itemName)
-    {
-        foreach (var item in allItems)
-        {
-            if (item.itemName == itemName)
-                return item;
-        }
-
-        Debug.LogWarning($"Item not found: {itemName}");
-        return null;
-    }
-
 }

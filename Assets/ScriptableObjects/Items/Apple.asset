@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 52b888552a0aff0458cbd6496d37d8be, type: 3}
   m_Name: Apple
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
+  id: consumable_apple_01
   itemName: Apple
   icon: {fileID: 21300000, guid: 26e898a919458c543bb696fb7ebc9c8b, type: 3}
   description: An apple
