@@ -11,14 +11,14 @@ public class Equipment : MonoBehaviour
 
     void OnEnable()
     {
-        InventoryEvents.OnEquipRequested += Equip;
-        InventoryEvents.OnUnequipRequested += Unequip;
+        InventoryEvents.EquipRequested += Equip;
+        InventoryEvents.UnequipRequested += Unequip;
     }
 
     void OnDisable()
     {
-        InventoryEvents.OnEquipRequested -= Equip;
-        InventoryEvents.OnUnequipRequested -= Unequip;
+        InventoryEvents.EquipRequested -= Equip;
+        InventoryEvents.UnequipRequested -= Unequip;
     }
 
     // ---------- Public API ----------
@@ -65,7 +65,7 @@ public class Equipment : MonoBehaviour
         runtimeModifiers[item] = copies;
 
         InventoryEvents.OnEquipped?.Invoke(item, runtimeModifiers[item]);
-        InventoryEvents.OnEquipmentChanged?.Invoke();
+        InventoryEvents.EquipmentChanged?.Invoke();
 
         Debug.Log($"Equipped {item.itemName}");
     }
@@ -80,7 +80,7 @@ public class Equipment : MonoBehaviour
     //    {
     //        GameEvents.OnUnequipped?.Invoke(item, mods);
     //        runtimeModifiers.Remove(item);
-    //        GameEvents.OnEquipmentChanged?.Invoke();
+    //        GameEvents.EquipmentChanged?.Invoke();
     //    }
 
     //    equipped.Remove(slot);
@@ -105,7 +105,7 @@ public class Equipment : MonoBehaviour
         }
 
         // Inform the system to refresh
-        InventoryEvents.OnEquipmentChanged?.Invoke();
+        InventoryEvents.EquipmentChanged?.Invoke();
 
         Debug.Log($"[Unequip] equipped.Count = {equipped.Count}");
         Debug.Log($"Unequipped {item.itemName}");

@@ -43,7 +43,7 @@ public class PlayerPickup : MonoBehaviour
         if (playerInventory == null || currentPickup == null) return;
 
         //playerInventory.AddItem(currentPickup.itemData, currentPickup.amount);
-        InventoryEvents.OnItemPicked?.Invoke(currentPickup.itemData, currentPickup.amount);
+        InventoryEvents.ItemPicked?.Invoke(currentPickup.itemData, currentPickup.amount);
         Debug.Log($"Picked up {currentPickup.itemData.itemName} x{currentPickup.amount}");
         Destroy(currentPickup.gameObject);
         currentPickup = null;

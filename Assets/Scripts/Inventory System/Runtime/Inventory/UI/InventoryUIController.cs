@@ -9,7 +9,7 @@ public class InventoryUIController : MonoBehaviour
     public Inventory inventory;
     public InventorySlotUI[] slotsUI;
 
-    bool isOpen;
+    //bool isOpen;
     Coroutine currentAnim;
     void Start()
     {
@@ -24,35 +24,51 @@ public class InventoryUIController : MonoBehaviour
 
     void OnEnable()
     {
-        InventoryEvents.OnInventoryChanged += RefreshAll;
-        InventoryEvents.OnEquipmentChanged += RefreshAll;
+        InventoryEvents.InventoryChanged += RefreshAll;
+        InventoryEvents.EquipmentChanged += RefreshAll;
+
+        InventoryEvents.InventoryToggled += HandleOpen;
+        InventoryEvents.InventoryClosed += HandleClose;
+
         RefreshAll();
     }
 
     void OnDisable()
     {
-        InventoryEvents.OnInventoryChanged -= RefreshAll;
-        InventoryEvents.OnEquipmentChanged -= RefreshAll;
+        InventoryEvents.InventoryChanged -= RefreshAll;
+        InventoryEvents.EquipmentChanged -= RefreshAll;
+
+        InventoryEvents.InventoryToggled -= HandleOpen;
+        InventoryEvents.InventoryClosed -= HandleClose;
     }
 
-    void Update()
+    //void Update()
+    //{
+    //    if (Input.GetKeyDown(KeyCode.Tab))
+    //    {
+    //        bool open = !isOpen;
+    //        InventoryEvents.InventoryToggled?.Invoke(open);
+
+    //        if (!open)
+    //            InventoryEvents.InventoryClosed?.Invoke();
+
+    //        if (isOpen) Close();
+    //        else Open();
+    //    }
+    //}
+    void HandleOpen(bool open)
     {
-        if (Input.GetKeyDown(KeyCode.Tab))
-        {
-            bool open = !isOpen;
-            InventoryEvents.OnInventoryToggle?.Invoke(open);
+        if (open) Open();
+    }
 
-            if (!open)
-                InventoryEvents.OnInventoryClosed?.Invoke();
-
-            if (isOpen) Close();
-            else Open();
-        }
+    void HandleClose()
+    {
+        Close();
     }
 
     void Open()
     {
-        isOpen = true;
+        //isOpen = true;
         panel.gameObject.SetActive(true);
 
         RefreshAll();
@@ -65,7 +81,7 @@ public class InventoryUIController : MonoBehaviour
 
     void Close()
     {
-        isOpen = false;
+        //isOpen = false;
 
         if (currentAnim != null)
             StopCoroutine(currentAnim);
@@ -119,6 +135,4 @@ public class InventoryUIController : MonoBehaviour
         panel.anchoredPosition = pos;
         canvasGroup.alpha = targetAlpha;
     }
-
-
 }

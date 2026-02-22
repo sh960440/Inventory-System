@@ -19,49 +19,49 @@ public class ContextMenuUI : MonoBehaviour
         useButton.onClick.AddListener(() =>
         {
             if (context.isFromInventory)
-                InventoryEvents.OnItemUsed?.Invoke(context.slotIndex);
+                InventoryEvents.ItemUsed?.Invoke(context.slotIndex);
             Hide();
         });
 
         inspectButton.onClick.AddListener(() =>
         {
             if (context.isFromInventory)
-                InventoryEvents.OnItemInspected?.Invoke(context.slotIndex);
+                InventoryEvents.ItemInspected?.Invoke(context.slotIndex);
             Hide();
         });
 
         dropButton.onClick.AddListener(() =>
         {
             if (context.isFromInventory && !context.isEquipped)
-                InventoryEvents.OnItemDropped?.Invoke(context.slotIndex);
+                InventoryEvents.ItemDropped?.Invoke(context.slotIndex);
             Hide();
         });
 
         equipButton.onClick.AddListener(() =>
         {
             if (context.item is EquipmentData eq)
-                InventoryEvents.OnEquipRequested?.Invoke(eq);
+                InventoryEvents.EquipRequested?.Invoke(eq);
             Hide();
         });
 
         unequipButton.onClick.AddListener(() =>
         {
             if (context.item is EquipmentData eq)
-                InventoryEvents.OnUnequipRequested?.Invoke(eq.equipSlot);
+                InventoryEvents.UnequipRequested?.Invoke(eq.equipSlot);
             Hide();
         });
     }
 
     void OnEnable()
     {
-        InventoryEvents.OnContextMenuRequest += Show;
-        InventoryEvents.OnInventoryClosed += Hide;
+        InventoryEvents.ContextMenuRequested += Show;
+        InventoryEvents.InventoryClosed += Hide;
     }
 
     void OnDisable()
     {
-        InventoryEvents.OnContextMenuRequest -= Show;
-        InventoryEvents.OnInventoryClosed -= Hide;
+        InventoryEvents.ContextMenuRequested -= Show;
+        InventoryEvents.InventoryClosed -= Hide;
     }
 
     void Show(ItemUIContext ctx)

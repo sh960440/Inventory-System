@@ -3,42 +3,57 @@ using System.Collections.Generic;
 
 public static class InventoryEvents
 {
-    // UI
-    public static Action<bool> OnInventoryToggle;       // true=open, false=close
-    public static Action OnInventoryClosed;
-    public static Action OnInventoryChanged;
-    public static Action OnEquipmentChanged;
+    // =========================
+    // Inventory State
+    // =========================
+    public static Action<bool> InventoryToggled;
+    public static Action InventoryClosed;
+    public static Action InventoryChanged;
+    
+    // =========================
+    // UI Interaction
+    // =========================
+    public static Action<ItemUIContext> ContextMenuRequested;
+    public static Action ContextMenuClosed;
+    public static Action<ItemUIContext> TooltipRequested;
+    public static Action TooltipHidden;
 
-    //public static Action<Inventory, int> OnSlotHovered;            // slotIndex
-    //public static Action OnSlotHoverExit;
+    // =========================
+    // Item Interaction
+    // =========================
+    public static Action<int> ItemUsed;
+    public static Action<int> ItemDropped;
+    public static Action<int> ItemInspected;
 
-    //public static Action<Inventory, int> OnContextMenuRequest;     // slotIndex
-    public static Action<ItemUIContext> OnContextMenuRequest;
-    public static Action OnContextMenuClose;
+    // =========================
+    // Equipment
+    // =========================
+    public static Action<EquipmentData> EquipRequested;
+    public static Action<EquipmentSlot> UnequipRequested;
+    public static Action EquipmentChanged;
 
-    public static Action<ItemUIContext> OnTooltipRequest;
-    public static Action OnTooltipHide;
+    // =========================
+    // Hotbar
+    // =========================
+    public static Action<InventorySlot> HotbarUseRequested;
+    public static Action HotbarChanged;
 
+
+
+
+    // =========================
+    // To be sorted
+    // =========================
     public static Action<DragItemContext> OnItemDragBegin;
     public static Action OnItemDragEnd;
-
-    // Inventory logic
-    public static Action<int> OnItemUsed;               // slotIndex
-    public static Action<int> OnItemDropped;
-    public static Action<int> OnItemInspected;
-
-    // Equipment logic
-    public static Action<EquipmentData> OnEquipRequested;
-    public static Action<EquipmentSlot> OnUnequipRequested;
+    
     public static Action<EquipmentData, List<StatModifier>> OnEquipped;
     public static Action<EquipmentData, List<StatModifier>> OnUnequipped;
     public static Action<EquipmentData> OnEquipmentSlotHovered;
     public static Action<EquipmentData> OnEquipmentContextMenuRequest;
 
-    // Hotbar
-    public static Action<InventorySlot> OnHotbarUseRequested;
-    public static Action OnHotbarChanged;
+    public static Action<int> SplitStackRequested;
 
     // World
-    public static Action<ItemData, int> OnItemPicked;
+    public static Action<ItemData, int> ItemPicked;
 }

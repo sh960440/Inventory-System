@@ -21,14 +21,14 @@ public class HotbarSlotUI : UISlotBase, IBeginDragHandler, IDragHandler, IEndDra
     {
         InventoryEvents.OnItemDragBegin += OnExternalDragBegin;
         InventoryEvents.OnItemDragEnd += OnExternalDragEnd;
-        InventoryEvents.OnEquipmentChanged += Refresh;
+        InventoryEvents.EquipmentChanged += Refresh;
     }
 
     void OnDisable()
     {
         InventoryEvents.OnItemDragBegin -= OnExternalDragBegin;
         InventoryEvents.OnItemDragEnd -= OnExternalDragEnd;
-        InventoryEvents.OnEquipmentChanged -= Refresh;
+        InventoryEvents.EquipmentChanged -= Refresh;
     }
 
     public void SetDragUI(DraggableItemUI ui)
@@ -167,7 +167,7 @@ public class HotbarSlotUI : UISlotBase, IBeginDragHandler, IDragHandler, IEndDra
         var invSlot = hotbar.GetInventorySlot(index);
         if (invSlot == null || invSlot.item == null) return;
 
-        InventoryEvents.OnHotbarUseRequested?.Invoke(invSlot);
+        InventoryEvents.HotbarUseRequested?.Invoke(invSlot);
     }
 
     public void ClearSelf()

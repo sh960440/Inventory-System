@@ -9,14 +9,14 @@ public class EquipmentUIController : MonoBehaviour
     {
         InventoryEvents.OnEquipped += OnEquipmentChanged;
         InventoryEvents.OnUnequipped += OnEquipmentChanged;
-        InventoryEvents.OnEquipmentChanged += OnEquipmentChanged;
+        InventoryEvents.EquipmentChanged += OnEquipmentChanged;
     }
 
     void OnDestroy()
     {
         InventoryEvents.OnEquipped -= OnEquipmentChanged;
         InventoryEvents.OnUnequipped -= OnEquipmentChanged;
-        InventoryEvents.OnEquipmentChanged -= OnEquipmentChanged;
+        InventoryEvents.EquipmentChanged -= OnEquipmentChanged;
     }
 
     void OnEquipmentChanged(EquipmentData _, System.Collections.Generic.List<StatModifier> __)

@@ -11,13 +11,13 @@ public class EquipmentSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     void OnEnable()
     {
-        InventoryEvents.OnEquipmentChanged += Refresh;
+        InventoryEvents.EquipmentChanged += Refresh;
         Refresh();
     }
 
     void OnDisable()
     {
-        InventoryEvents.OnEquipmentChanged -= Refresh;
+        InventoryEvents.EquipmentChanged -= Refresh;
     }
 
     void Refresh()
@@ -42,7 +42,7 @@ public class EquipmentSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     public void OnPointerEnter(PointerEventData eventData)
     {
         if (currentItem == null) return;
-        InventoryEvents.OnTooltipRequest?.Invoke(new ItemUIContext
+        InventoryEvents.TooltipRequested?.Invoke(new ItemUIContext
         {
             item = currentItem,
             slotIndex = -1,
@@ -54,7 +54,7 @@ public class EquipmentSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        InventoryEvents.OnTooltipHide?.Invoke();
+        InventoryEvents.TooltipHidden?.Invoke();
     }
 
     public void OnPointerClick(PointerEventData eventData)
@@ -62,7 +62,7 @@ public class EquipmentSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         if (eventData.button != PointerEventData.InputButton.Right) return;
         if (currentItem == null) return;
 
-        InventoryEvents.OnContextMenuRequest?.Invoke(new ItemUIContext
+        InventoryEvents.ContextMenuRequested?.Invoke(new ItemUIContext
         {
             item = currentItem,
             isFromInventory = false,

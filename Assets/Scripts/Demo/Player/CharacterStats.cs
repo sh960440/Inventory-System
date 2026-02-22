@@ -11,6 +11,8 @@ public class CharacterStats : MonoBehaviour
 
     private List<StatModifier> modifiers = new List<StatModifier>();
 
+    public static event System.Action OnStatsChanged;
+
     void OnEnable()
     {
         InventoryEvents.OnEquipped += OnEquipped;
@@ -40,11 +42,13 @@ public class CharacterStats : MonoBehaviour
     public void AddModifier(StatModifier mod)
     {
         modifiers.Add(mod);
+        OnStatsChanged?.Invoke();
     }
 
     public void RemoveModifier(StatModifier mod)
     {
         modifiers.Remove(mod);
+        OnStatsChanged?.Invoke();
     }
 
     public float GetFinalValue(StatType type)

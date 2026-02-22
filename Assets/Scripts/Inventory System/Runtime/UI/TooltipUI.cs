@@ -15,17 +15,17 @@ public class TooltipUI : MonoBehaviour
 
     void OnEnable()
     {
-        InventoryEvents.OnTooltipRequest += Show;
-        InventoryEvents.OnTooltipHide += Hide;
-        InventoryEvents.OnInventoryClosed += Hide;
+        InventoryEvents.TooltipRequested += Show;
+        InventoryEvents.TooltipHidden += Hide;
+        InventoryEvents.InventoryClosed += Hide;
         Hide();
     }
 
     void OnDisable()
     {
-        InventoryEvents.OnTooltipRequest -= Show;
-        InventoryEvents.OnTooltipHide -= Hide;
-        InventoryEvents.OnInventoryClosed -= Hide;
+        InventoryEvents.TooltipRequested -= Show;
+        InventoryEvents.TooltipHidden -= Hide;
+        InventoryEvents.InventoryClosed -= Hide;
     }
 
     void Update()

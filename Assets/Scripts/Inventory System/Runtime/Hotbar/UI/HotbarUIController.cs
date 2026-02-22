@@ -16,14 +16,14 @@ public class HotbarUIController : MonoBehaviour
 
     void OnEnable()
     {
-        InventoryEvents.OnHotbarChanged += Refresh;
-        InventoryEvents.OnInventoryChanged += Refresh;
+        InventoryEvents.HotbarChanged += Refresh;
+        InventoryEvents.InventoryChanged += Refresh;
     }
 
     void OnDisable()
     {
-        InventoryEvents.OnHotbarChanged -= Refresh;
-        InventoryEvents.OnInventoryChanged -= Refresh;
+        InventoryEvents.HotbarChanged -= Refresh;
+        InventoryEvents.InventoryChanged -= Refresh;
     }
 
     void BuildUI()

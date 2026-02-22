@@ -15,12 +15,12 @@ public class Hotbar : MonoBehaviour
 
     void OnEnable()
     {
-        InventoryEvents.OnInventoryChanged += ValidateSlots;
+        InventoryEvents.InventoryChanged += ValidateSlots;
     }
 
     void OnDisable()
     {
-        InventoryEvents.OnInventoryChanged -= ValidateSlots;
+        InventoryEvents.InventoryChanged -= ValidateSlots;
     }
 
     void InitSlots()
@@ -43,7 +43,7 @@ public class Hotbar : MonoBehaviour
         hb.item = invSlot.item;
         hb.boundInventorySlotIndex = inventorySlotIndex;
 
-        InventoryEvents.OnHotbarChanged?.Invoke();
+        InventoryEvents.HotbarChanged?.Invoke();
     }
 
     public void Clear(int hotbarIndex)
@@ -51,7 +51,7 @@ public class Hotbar : MonoBehaviour
         if (!ValidHotbarIndex(hotbarIndex)) return;
 
         slots[hotbarIndex].Clear();
-        InventoryEvents.OnHotbarChanged?.Invoke();
+        InventoryEvents.HotbarChanged?.Invoke();
     }
 
     public void Swap(int a, int b)
@@ -59,21 +59,9 @@ public class Hotbar : MonoBehaviour
         if (!ValidHotbarIndex(a) || !ValidHotbarIndex(b)) return;
 
         (slots[a], slots[b]) = (slots[b], slots[a]);
-        InventoryEvents.OnHotbarChanged?.Invoke();
+        InventoryEvents.HotbarChanged?.Invoke();
     }
 
-    //public InventorySlot GetInventorySlot(int hotbarIndex)
-    //{
-    //    if (!ValidHotbarIndex(hotbarIndex)) return null;
-
-    //    var slot = slots[hotbarIndex];
-    //    if (slot.inventory == null) return null;
-
-    //    int invIndex = slot.inventorySlotIndex;
-    //    if (!ValidInventoryIndex(slot.inventory, invIndex)) return null;
-
-    //    return slot.inventory.slots[invIndex];
-    //}
     public InventorySlot GetInventorySlot(int hotbarIndex)
     {
         if (!ValidHotbarIndex(hotbarIndex)) return null;
@@ -117,38 +105,8 @@ public class Hotbar : MonoBehaviour
                 hb.Clear();
         }
 
-        InventoryEvents.OnHotbarChanged?.Invoke();
+        InventoryEvents.HotbarChanged?.Invoke();
     }
-
-    //void ValidateSlots()
-    //{
-    //    foreach (var slot in slots)
-    //    {
-    //        if (slot.IsEmpty) continue;
-
-    //        if (slot.inventory == null)
-    //        {
-    //            slot.Clear();
-    //            continue;
-    //        }
-
-    //        int i = slot.inventorySlotIndex;
-    //        if (!ValidInventoryIndex(slot.inventory, i))
-    //        {
-    //            slot.Clear();
-    //            continue;
-    //        }
-
-    //        var invSlot = slot.inventory.GetSlot(i);
-    //        if (invSlot == null || invSlot.item == null)
-    //        {
-    //            slot.Clear();
-    //            continue;
-    //        }
-    //    }
-
-    //    GameEvents.OnHotbarChanged?.Invoke();
-    //}
 
     // Helpers
     public bool ValidHotbarIndex(int i) =>
@@ -199,6 +157,6 @@ public class Hotbar : MonoBehaviour
             }
         }
 
-        InventoryEvents.OnHotbarChanged?.Invoke();
+        InventoryEvents.HotbarChanged?.Invoke();
     }
 }

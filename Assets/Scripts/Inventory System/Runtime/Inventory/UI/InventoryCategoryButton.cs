@@ -16,13 +16,13 @@ public class InventoryCategoryButton : MonoBehaviour
         button = GetComponent<Button>();
 
         button.onClick.AddListener(OnClick);
-        InventoryEvents.OnInventoryChanged += RefreshState;
+        InventoryEvents.InventoryChanged += RefreshState;
         RefreshState();
     }
 
     void OnDestroy()
     {
-        InventoryEvents.OnInventoryChanged -= RefreshState;
+        InventoryEvents.InventoryChanged -= RefreshState;
     }
 
     void OnClick()

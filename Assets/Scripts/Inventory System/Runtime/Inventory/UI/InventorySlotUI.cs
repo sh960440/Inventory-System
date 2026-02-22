@@ -18,6 +18,8 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
     bool isDragging = false;
     private Equipment equipmentManager;
 
+    public static int CurrentHoveredIndex = -1;
+
     void Start()
     {
         equipmentManager = FindFirstObjectByType<Equipment>();
@@ -26,15 +28,15 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
     void OnEnable()
     {
         // Refresh when an item is equipped / unequipped
-        InventoryEvents.OnEquipmentChanged += Refresh;
+        InventoryEvents.EquipmentChanged += Refresh;
     }
 
     void OnDisable()
     {
-        InventoryEvents.OnEquipmentChanged -= Refresh;
+        InventoryEvents.EquipmentChanged -= Refresh;
     }
 
-    //void OnEquipmentChanged(EquipmentData item, System.Collections.Generic.List<StatModifier> mods)
+    //void EquipmentChanged(EquipmentData item, System.Collections.Generic.List<StatModifier> mods)
     //{
     //    // Refresh when an item is equipped / unequipped
     //    Refresh();
@@ -192,7 +194,7 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
         }
 
         //inventory.UpdateUI();
-        InventoryEvents.OnInventoryChanged?.Invoke();
+        InventoryEvents.InventoryChanged?.Invoke();
     }
 
     protected override void OnDoubleClick()
@@ -203,7 +205,7 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
         var slot = inventory.slots[slotIndex];
         if (slot.item == null) return;
 
-        InventoryEvents.OnHotbarUseRequested?.Invoke(slot);
+        InventoryEvents.HotbarUseRequested?.Invoke(slot);
     }
 
     protected override void OnRightClick(PointerEventData eventData)
@@ -212,18 +214,18 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
         if (slot.item == null) return;
 
         // Shift + right click -> Split Stack
-        if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
-        {
-            SplitStack();
-            return;
-        }
+        //if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+        //{
+        //    SplitStack();
+        //    return;
+        //}
 
         // Open Context Menu
         bool isEquipped = false;
         if (slot.item is EquipmentData eq)
             isEquipped = equipmentManager.IsEquipped(eq);
 
-        InventoryEvents.OnContextMenuRequest?.Invoke(new ItemUIContext
+        InventoryEvents.ContextMenuRequested?.Invoke(new ItemUIContext
         {
             item = slot.item,
             isFromInventory = true,
@@ -233,77 +235,37 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
         });
     }
 
-
-    //public void OnPointerClick(PointerEventData eventData)
+    //void SplitStack()
     //{
-    //    if (eventData.button == PointerEventData.InputButton.Right)
+    //    var slot = inventory.slots[slotIndex];
+    //    if (slot.item == null) return;
+    //    if (slot.count < 2) return;
+
+    //    int half = slot.count / 2;
+
+    //    // Find an empty slot
+    //    for (int i = 0; i < inventory.slots.Count; i++)
     //    {
-    //        // If the slot is empty
-    //        if (inventory.slots[slotIndex].item == null)
+    //        if (inventory.slots[i].item == null)
+    //        {
+    //            // fill in the slot
+    //            inventory.slots[i].item = slot.item;
+    //            inventory.slots[i].count = half;
+
+    //            // original slot
+    //            slot.count -= half;
+
+    //            //inventory.UpdateUI();
+    //            InventoryEvents.InventoryChanged?.Invoke();
     //            return;
-
-    //        // Shift + right click -> Split Stack
-    //        if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
-    //        {
-    //            SplitStack();
-    //        }
-    //        else // Right Click -> Open Context Menu
-    //        {
-    //            // Open Context Menu
-    //            //contextMenuUI.ShowAt(eventData.position, inventory, slotIndex);
-    //            var item = inventory.slots[slotIndex].item;
-    //            bool isEquipped = false;
-
-    //            if (item is EquipmentData eq)
-    //            {
-    //                isEquipped = equipmentManager.IsEquipped(eq);
-    //            }
-
-    //            GameEvents.OnContextMenuRequest?.Invoke(inventory, slotIndex);
-
     //        }
     //    }
     //}
 
-    void SplitStack()
-    {
-        var slot = inventory.slots[slotIndex];
-        if (slot.item == null) return;
-        if (slot.count < 2) return;
-
-        int half = slot.count / 2;
-
-        // Find an empty slot
-        for (int i = 0; i < inventory.slots.Count; i++)
-        {
-            if (inventory.slots[i].item == null)
-            {
-                // fill in the slot
-                inventory.slots[i].item = slot.item;
-                inventory.slots[i].count = half;
-
-                // original slot
-                slot.count -= half;
-
-                //inventory.UpdateUI();
-                InventoryEvents.OnInventoryChanged?.Invoke();
-                return;
-            }
-        }
-    }
-
-    //public void OnPointerEnter(PointerEventData eventData)
-    //{
-    //    background.color = new Color(1f, 1f, 1f, 0.9f);
-    //    transform.localScale = Vector3.one * 1.05f;
-
-    //    var slot = inventory.slots[slotIndex];
-    //    if (slot.item == null) return;
-
-    //    GameEvents.OnSlotHovered?.Invoke(inventory, slotIndex);
-    //}
     public void OnPointerEnter(PointerEventData eventData)
     {
+        CurrentHoveredIndex = slotIndex;
+
         background.color = new Color(1f, 1f, 1f, 0.9f);
         transform.localScale = Vector3.one * 1.05f;
 
@@ -314,7 +276,7 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
         if (slot.item is EquipmentData eq)
             isEquipped = equipmentManager.IsEquipped(eq);
 
-        InventoryEvents.OnTooltipRequest?.Invoke(new ItemUIContext
+        InventoryEvents.TooltipRequested?.Invoke(new ItemUIContext
         {
             item = slot.item,
             slotIndex = slotIndex,
@@ -324,19 +286,15 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
         });
     }
 
-    //public void OnPointerExit(PointerEventData eventData)
-    //{
-    //    background.color = Color.white;
-    //    transform.localScale = Vector3.one;
-
-    //    GameEvents.OnSlotHoverExit?.Invoke();
-    //}
     public void OnPointerExit(PointerEventData eventData)
     {
+        if (CurrentHoveredIndex == slotIndex)
+            CurrentHoveredIndex = -1;
+
         background.color = Color.white;
         transform.localScale = Vector3.one;
 
-        InventoryEvents.OnTooltipHide?.Invoke();
+        InventoryEvents.TooltipHidden?.Invoke();
     }
 
     public void OnBeginDrag(PointerEventData eventData)

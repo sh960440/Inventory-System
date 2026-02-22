@@ -42,6 +42,6 @@ public class HotbarInput : MonoBehaviour
             return;
         }
 
-        InventoryEvents.OnHotbarUseRequested?.Invoke(invSlot);
+        InventoryEvents.HotbarUseRequested?.Invoke(invSlot);
     }
 }

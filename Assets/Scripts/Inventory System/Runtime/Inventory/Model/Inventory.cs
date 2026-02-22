@@ -10,6 +10,21 @@ public class Inventory : MonoBehaviour
     public InventorySortType currentSortType = InventorySortType.None;
     public SortOrder currentSortOrder = SortOrder.Ascending;
 
+    public bool IsOpen { get; private set; }
+
+    public void SetOpen(bool open)
+    {
+        if (IsOpen == open)
+            return;
+
+        IsOpen = open;
+
+        if (open)
+            InventoryEvents.InventoryToggled?.Invoke(true);
+        else
+            InventoryEvents.InventoryClosed?.Invoke();
+    }
+
     bool IsAllCategory =>
     currentCategories == null || currentCategories.Length == 0;
 
@@ -38,20 +53,22 @@ public class Inventory : MonoBehaviour
 
     void OnEnable()
     {
-        InventoryEvents.OnItemUsed += UseItem;
-        InventoryEvents.OnItemDropped += DropItem;
-        InventoryEvents.OnItemInspected += InspectItem;
-        InventoryEvents.OnItemPicked += OnItemPickedHandler;
-        InventoryEvents.OnHotbarUseRequested += OnHotbarUseRequested;
+        InventoryEvents.ItemUsed += UseItem;
+        InventoryEvents.ItemDropped += DropItem;
+        InventoryEvents.ItemInspected += InspectItem;
+        InventoryEvents.ItemPicked += OnItemPickedHandler;
+        InventoryEvents.HotbarUseRequested += OnHotbarUseRequested;
+        InventoryEvents.SplitStackRequested += HandleSplitStack;
     }
 
     void OnDisable()
     {
-        InventoryEvents.OnItemUsed -= UseItem;
-        InventoryEvents.OnItemDropped -= DropItem;
-        InventoryEvents.OnItemInspected -= InspectItem;
-        InventoryEvents.OnItemPicked -= OnItemPickedHandler;
-        InventoryEvents.OnHotbarUseRequested -= OnHotbarUseRequested;
+        InventoryEvents.ItemUsed -= UseItem;
+        InventoryEvents.ItemDropped -= DropItem;
+        InventoryEvents.ItemInspected -= InspectItem;
+        InventoryEvents.ItemPicked -= OnItemPickedHandler;
+        InventoryEvents.HotbarUseRequested -= OnHotbarUseRequested;
+        InventoryEvents.SplitStackRequested -= HandleSplitStack;
     }
 
     void OnItemPickedHandler(ItemData item, int amount)
@@ -75,7 +92,7 @@ public class Inventory : MonoBehaviour
                     amount -= add;
                     if (amount <= 0)
                     {
-                        InventoryEvents.OnInventoryChanged?.Invoke();
+                        InventoryEvents.InventoryChanged?.Invoke();
                         return true;
                     }
                 }
@@ -94,7 +111,7 @@ public class Inventory : MonoBehaviour
             }
         }
 
-        InventoryEvents.OnInventoryChanged?.Invoke();
+        InventoryEvents.InventoryChanged?.Invoke();
         // True: Item(s) added successfully. False: Inventory is full.
         return amount <= 0;
     }
@@ -118,7 +135,7 @@ public class Inventory : MonoBehaviour
             Debug.Log(slot.item.itemName + " is non-consumable.");
         }
 
-        InventoryEvents.OnInventoryChanged?.Invoke();
+        InventoryEvents.InventoryChanged?.Invoke();
     }
 
     void Consume(InventorySlot slot)
@@ -165,7 +182,7 @@ public class Inventory : MonoBehaviour
         }
 
         Consume(slot, dropCount);
-        InventoryEvents.OnInventoryChanged?.Invoke();
+        InventoryEvents.InventoryChanged?.Invoke();
     }
 
 
@@ -232,13 +249,13 @@ public class Inventory : MonoBehaviour
     public void SetCategoryFilter(ItemCategory[] categories)
     {
         currentCategories = categories;
-        InventoryEvents.OnInventoryChanged.Invoke();
+        InventoryEvents.InventoryChanged.Invoke();
     }
 
     public void SetSearchKeyword(string keyword)
     {
         currentSearch = keyword;
-        InventoryEvents.OnInventoryChanged?.Invoke();
+        InventoryEvents.InventoryChanged?.Invoke();
     }
 
     public bool ShouldShowEmptySlot()
@@ -262,7 +279,7 @@ public class Inventory : MonoBehaviour
         currentSortType = type;
         currentSortOrder = order;
         ApplySort();
-        InventoryEvents.OnInventoryChanged?.Invoke();
+        InventoryEvents.InventoryChanged?.Invoke();
     }
 
     void ApplySort()
@@ -326,7 +343,7 @@ public class Inventory : MonoBehaviour
         if (slot.item.consumable)
         {
             Consume(slot);
-            InventoryEvents.OnInventoryChanged?.Invoke();
+            InventoryEvents.InventoryChanged?.Invoke();
             return;
         }
 
@@ -335,17 +352,43 @@ public class Inventory : MonoBehaviour
         {
             if (FindFirstObjectByType<Equipment>()?.IsEquipped(eq) == true)
             {
-                InventoryEvents.OnUnequipRequested?.Invoke(eq.equipSlot);
+                InventoryEvents.UnequipRequested?.Invoke(eq.equipSlot);
             }
             else
             {
-                InventoryEvents.OnEquipRequested?.Invoke(eq);
+                InventoryEvents.EquipRequested?.Invoke(eq);
             }
 
             return;
         }
 
         Debug.Log($"Hotbar used item: {slot.item.itemName}");
+    }
+
+    void HandleSplitStack(int index)
+    {
+        if (!Valid(index)) return;
+
+        var slot = slots[index];
+        if (slot.item == null) return;
+        if (!slot.item.stackable) return;
+        if (slot.count < 2) return;
+
+        int half = slot.count / 2;
+
+        for (int i = 0; i < slots.Count; i++)
+        {
+            if (slots[i].item == null)
+            {
+                slots[i].item = slot.item;
+                slots[i].count = half;
+
+                slot.count -= half;
+
+                InventoryEvents.InventoryChanged?.Invoke();
+                return;
+            }
+        }
     }
 
     public InventorySaveData ToSaveData()
@@ -397,6 +440,6 @@ public class Inventory : MonoBehaviour
             }
         }
 
-        InventoryEvents.OnInventoryChanged?.Invoke();
+        InventoryEvents.InventoryChanged?.Invoke();
     }
 }
