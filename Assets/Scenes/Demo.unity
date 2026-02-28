@@ -9560,6 +9560,7 @@ GameObject:
   - component: {fileID: 1344638776}
   - component: {fileID: 1344638779}
   - component: {fileID: 1344638778}
+  - component: {fileID: 1344638780}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -9883,6 +9884,20 @@ MonoBehaviour:
   gravity: -9.8
   shouldFaceMoveDirection: 1
   animator: {fileID: 1344638777}
+--- !u!114 &1344638780
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1344638765}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4eaaa2edb4d797f46a25607518036723, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterEquipmentView
+  visualDatabase: {fileID: 11400000, guid: edd593d6cdd80f245a31bf5113ef7218, type: 2}
+  weaponSocket: {fileID: 1636969081}
 --- !u!1 &1367776100
 GameObject:
   m_ObjectHideFlags: 0
