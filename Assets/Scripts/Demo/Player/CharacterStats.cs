@@ -1,17 +1,22 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem.LowLevel;
 
 public class CharacterStats : MonoBehaviour
 {
     [Header("Base Stats")]
-    public int baseMaxHP = 100;
+    public int maxHP = 200;
+    public int baseHP = 100;
     public int baseAttack = 10;
     public int baseDefense = 5;
     public float baseMoveSpeed = 5f;
 
     private List<StatModifier> modifiers = new List<StatModifier>();
 
-    public static event System.Action OnStatsChanged;
+    public static event Action OnStatsChanged;
+    public static event Action<int> OnHealed;
+    public static event Action<int> OnHPChanged;
 
     void OnEnable()
     {
@@ -23,6 +28,11 @@ public class CharacterStats : MonoBehaviour
     {
         InventoryEvents.OnEquipped -= OnEquipped;
         InventoryEvents.OnUnequipped -= OnUnequipped;
+    }
+
+    private void Awake()
+    {
+        baseHP = Mathf.Clamp(baseHP, 0, maxHP);
     }
 
     void OnEquipped(EquipmentData item, List<StatModifier> mods)
@@ -71,13 +81,28 @@ public class CharacterStats : MonoBehaviour
         return finalValue;
     }
 
+    public void Heal(int amount)
+    {
+        int oldHP = baseHP;
+
+        baseHP = Mathf.Min(baseHP + amount, maxHP);
+
+        int actualHeal = baseHP - oldHP;
+
+        if (actualHeal > 0)
+        {
+            OnHealed?.Invoke(actualHeal);
+            OnHPChanged?.Invoke(baseHP);
+        }
+    }
+
     // ---------- Internal ----------
 
     float GetBaseValue(StatType type)
     {
         switch (type)
         {
-            case StatType.MaxHP: return baseMaxHP;
+            case StatType.HP: return baseHP;
             case StatType.Attack: return baseAttack;
             case StatType.Defense: return baseDefense;
             case StatType.MoveSpeed: return baseMoveSpeed;

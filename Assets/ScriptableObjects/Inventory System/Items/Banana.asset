@@ -9,9 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 52b888552a0aff0458cbd6496d37d8be, type: 3}
+  m_Script: {fileID: 11500000, guid: ce96e7bd984c8fe4a9e42466cbbe7b7f, type: 3}
   m_Name: Banana
-  m_EditorClassIdentifier: Assembly-CSharp::ItemData
+  m_EditorClassIdentifier: InventorySystem.Runtime::ConsumableData
   id: consumable_banana_01
   itemName: Banana
   icon: {fileID: 21300000, guid: ecdf5114d4bdd0c4083de7c9a85576db, type: 3}
@@ -22,3 +22,9 @@ MonoBehaviour:
   worldPrefab: {fileID: 783532251604496243, guid: d767d03e88d766541849f1de23b77d5d, type: 3}
   consumable: 1
   category: 3
+  instantModifiers:
+  - statType: 0
+    value: 40
+    modifierType: 0
+  durationModifiers: []
+  duration: 0

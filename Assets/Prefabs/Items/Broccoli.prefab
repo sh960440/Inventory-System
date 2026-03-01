@@ -116,7 +116,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a545cd7ff04793408cf0f5fc6f65b98, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ItemPickup
-  itemData: {fileID: 11400000, guid: 25276fbd5c0f1be4f97d3d03b235b79d, type: 2}
+  itemData: {fileID: 11400000, guid: 94fc43b435c27b641a550f01382a96e0, type: 2}
   amount: 1
 --- !u!54 &7010582157628780612
 Rigidbody:

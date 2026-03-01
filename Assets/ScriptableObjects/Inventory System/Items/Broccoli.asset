@@ -9,9 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 52b888552a0aff0458cbd6496d37d8be, type: 3}
+  m_Script: {fileID: 11500000, guid: ce96e7bd984c8fe4a9e42466cbbe7b7f, type: 3}
   m_Name: Broccoli
-  m_EditorClassIdentifier: Assembly-CSharp::ItemData
+  m_EditorClassIdentifier: InventorySystem.Runtime::ConsumableData
   id: consumable_broccoli_01
   itemName: Broccoli
   icon: {fileID: 21300000, guid: 5a9bed9a3b1302544b0559de6bbffa15, type: 3}
@@ -22,3 +22,9 @@ MonoBehaviour:
   worldPrefab: {fileID: 5321906221883757820, guid: d8a8b868779cfc44c84a9a2556117205, type: 3}
   consumable: 1
   category: 3
+  instantModifiers: []
+  durationModifiers:
+  - statType: 2
+    value: 10
+    modifierType: 1
+  duration: 10

@@ -24,7 +24,7 @@ public class DemoStatsPanel : MonoBehaviour
 
     private void Refresh()
     {
-        hpText.text = $"HP: {characterStats.GetFinalValue(StatType.MaxHP)}";
+        hpText.text = $"HP: {characterStats.GetFinalValue(StatType.HP)}";
         atkText.text = $"ATK: {characterStats.GetFinalValue(StatType.Attack)}";
         defText.text = $"DEF: {characterStats.GetFinalValue(StatType.Defense)}";
         spdText.text = $"SPD: {characterStats.GetFinalValue(StatType.MoveSpeed)}";

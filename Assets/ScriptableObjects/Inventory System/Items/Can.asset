@@ -9,9 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 52b888552a0aff0458cbd6496d37d8be, type: 3}
+  m_Script: {fileID: 11500000, guid: ce96e7bd984c8fe4a9e42466cbbe7b7f, type: 3}
   m_Name: Can
-  m_EditorClassIdentifier: Assembly-CSharp::ItemData
+  m_EditorClassIdentifier: InventorySystem.Runtime::ConsumableData
   id: consumable_can_01
   itemName: Can
   icon: {fileID: 21300000, guid: 753cd9e3ba51aad40aec07b72ed181c2, type: 3}
@@ -22,3 +22,9 @@ MonoBehaviour:
   worldPrefab: {fileID: 259444606660548062, guid: 4bc3d421acf211f4d862e7393c45084a, type: 3}
   consumable: 1
   category: 3
+  instantModifiers:
+  - statType: 0
+    value: 80
+    modifierType: 1
+  durationModifiers: []
+  duration: 0

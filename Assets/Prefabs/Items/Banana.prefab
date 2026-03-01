@@ -62,7 +62,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 1ab9b7b6a7f35c049ad473279ef3036e, type: 3}
       propertyPath: m_Name
-      value: banana
+      value: Banana
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -116,7 +116,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a545cd7ff04793408cf0f5fc6f65b98, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ItemPickup
-  itemData: {fileID: 11400000, guid: 791cfa5967316db489a82528d248a11d, type: 2}
+  itemData: {fileID: 11400000, guid: fbe1d8f8a9740884ea1e3325390226ad, type: 2}
   amount: 1
 --- !u!54 &4729067268034173496
 Rigidbody:

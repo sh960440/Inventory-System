@@ -2,7 +2,7 @@ using UnityEngine;
 
 public enum StatType
 {
-    MaxHP,
+    HP,
     Attack,
     Defense,
     MoveSpeed

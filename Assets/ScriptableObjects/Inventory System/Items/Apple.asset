@@ -9,9 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 52b888552a0aff0458cbd6496d37d8be, type: 3}
+  m_Script: {fileID: 11500000, guid: ce96e7bd984c8fe4a9e42466cbbe7b7f, type: 3}
   m_Name: Apple
-  m_EditorClassIdentifier: Assembly-CSharp::ItemData
+  m_EditorClassIdentifier: InventorySystem.Runtime::ConsumableData
   id: consumable_apple_01
   itemName: Apple
   icon: {fileID: 21300000, guid: 26e898a919458c543bb696fb7ebc9c8b, type: 3}
@@ -22,3 +22,9 @@ MonoBehaviour:
   worldPrefab: {fileID: 8642970100882730276, guid: 2fb145a11da3e3e4a9949b6fec9c0710, type: 3}
   consumable: 1
   category: 3
+  instantModifiers:
+  - statType: 0
+    value: 20
+    modifierType: 0
+  durationModifiers: []
+  duration: 0

@@ -205,7 +205,21 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
         var slot = inventory.slots[slotIndex];
         if (slot.item == null) return;
 
-        InventoryEvents.HotbarUseRequested?.Invoke(slot);
+        if (slot.item is EquipmentData eq)
+        {
+            if (FindFirstObjectByType<Equipment>()?.IsEquipped(eq) == true)
+            {
+                InventoryEvents.UnequipRequested?.Invoke(eq.equipSlot);
+            }
+            else
+            {
+                InventoryEvents.EquipRequested?.Invoke(eq);
+            }
+        }
+        else if (slot.item is ConsumableData cd)
+        {
+            InventoryEvents.ItemUsed?.Invoke(slotIndex); // TODO: Change the parameter of ItemUsed to InventorySlot? 
+        }    
     }
 
     protected override void OnRightClick(PointerEventData eventData)

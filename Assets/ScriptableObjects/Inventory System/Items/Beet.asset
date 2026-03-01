@@ -9,9 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 52b888552a0aff0458cbd6496d37d8be, type: 3}
+  m_Script: {fileID: 11500000, guid: ce96e7bd984c8fe4a9e42466cbbe7b7f, type: 3}
   m_Name: Beet
-  m_EditorClassIdentifier: Assembly-CSharp::ItemData
+  m_EditorClassIdentifier: InventorySystem.Runtime::ConsumableData
   id: consumable_beet_01
   itemName: Beet
   icon: {fileID: 21300000, guid: 26453a43a434c8647b4b92b92ad8163a, type: 3}
@@ -22,3 +22,9 @@ MonoBehaviour:
   worldPrefab: {fileID: 8076815214844044617, guid: 51714a5bddc3ff948a6b0529c1db652f, type: 3}
   consumable: 1
   category: 3
+  instantModifiers: []
+  durationModifiers:
+  - statType: 3
+    value: 5
+    modifierType: 0
+  duration: 10

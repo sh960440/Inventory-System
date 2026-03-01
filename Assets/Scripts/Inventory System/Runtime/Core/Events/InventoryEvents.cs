@@ -24,6 +24,7 @@ public static class InventoryEvents
     public static Action<int> ItemUsed;
     public static Action<int> ItemDropped;
     public static Action<int> ItemInspected;
+    public static Action<ConsumableData> ItemConsumed;
 
     // =========================
     // Equipment

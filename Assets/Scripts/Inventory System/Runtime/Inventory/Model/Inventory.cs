@@ -127,12 +127,11 @@ public class Inventory : MonoBehaviour
         var slot = slots[index];
         if (slot.item == null) return;
 
-        Debug.Log("Use: " + slot.item.itemName);
-        if (slot.item.consumable)
-            Consume(slot);
-        else
+        if (slot.item is ConsumableData consumable)
         {
-            Debug.Log(slot.item.itemName + " is non-consumable.");
+            //InventoryEvents.ItemUsed?.Invoke(index);
+            InventoryEvents.ItemConsumed?.Invoke(consumable);
+            Consume(slot);
         }
 
         InventoryEvents.InventoryChanged?.Invoke();
