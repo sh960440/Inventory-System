@@ -6,10 +6,12 @@ using static UnityEditor.Progress;
 
 public class HotbarSlotUI : UISlotBase, IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler
 {
+    public Image backgroundImage;
     public Image icon;
     public TMP_Text keyText;
     public TMP_Text countText;
-    public Image equippedIcon;
+    public Sprite defaultBackground;
+    public Sprite equippedBackground;
     public DraggableItemUI dragUI;
 
     Hotbar hotbar;
@@ -61,7 +63,7 @@ public class HotbarSlotUI : UISlotBase, IBeginDragHandler, IDragHandler, IEndDra
         {
             icon.enabled = false;
             countText?.gameObject.SetActive(false);
-            equippedIcon?.gameObject.SetActive(false);
+            backgroundImage.sprite = defaultBackground;
             return;
         }
 
@@ -89,16 +91,16 @@ public class HotbarSlotUI : UISlotBase, IBeginDragHandler, IDragHandler, IEndDra
 
     void RefreshEquippedState(ItemData item)
     {
-        if (equippedIcon == null) return;
+        if (backgroundImage == null) return;
 
         if (item is not EquipmentData eq)
         {
-            equippedIcon.gameObject.SetActive(false);
+            backgroundImage.sprite = defaultBackground;
             return;
         }
 
         var mgr = FindFirstObjectByType<Equipment>();
-        equippedIcon.gameObject.SetActive(mgr != null && mgr.IsEquipped(eq));
+        backgroundImage.sprite = (mgr != null && mgr.IsEquipped(eq)) ? equippedBackground : defaultBackground;
     }
 
     // =========================

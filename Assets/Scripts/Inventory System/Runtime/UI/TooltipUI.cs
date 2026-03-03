@@ -62,7 +62,7 @@ public class TooltipUI : MonoBehaviour
         }
 
         // TODO: Change the look of the tooltip based on the rarity
-        // background.color = ItemRarityColor.Get(item.rarity) * new Color(1, 1, 1, 0.15f);
+        // backgroundImage.color = ItemRarityColor.Get(item.rarity) * new Color(1, 1, 1, 0.15f);
 
         canvasGroup.alpha = 1;
         isFollowingMouse = true;

@@ -6,9 +6,10 @@ using TMPro;
 public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandler, IPointerEnterHandler, IPointerExitHandler, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
     public int slotIndex;
-    public Image background;
+    public Image backgroundImage;
     [Header("Equipped Visual")]
-    public GameObject equippedMark;
+    public Sprite defaultBackground;
+    public Sprite equippedBackground;
     public Image iconImage;
     public TMP_Text countText;
     Inventory inventory;
@@ -83,8 +84,7 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
             iconImage.enabled = false;
             countText.text = "";
 
-            if (equippedMark != null)
-                equippedMark.SetActive(false);
+            backgroundImage.sprite = defaultBackground;
 
             return;
         }
@@ -105,8 +105,7 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
             isEquipped = equipmentManager != null && equipmentManager.IsEquipped(eq);
         }
 
-        if (equippedMark != null)
-            equippedMark.SetActive(isEquipped);
+        backgroundImage.sprite = isEquipped ? equippedBackground : defaultBackground;
     }
 
     public void SetItem(Sprite sprite)
@@ -280,7 +279,7 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
     {
         CurrentHoveredIndex = slotIndex;
 
-        background.color = new Color(1f, 1f, 1f, 0.9f);
+        backgroundImage.color = new Color(1f, 1f, 1f, 0.9f);
         transform.localScale = Vector3.one * 1.05f;
 
         var slot = inventory.slots[slotIndex];
@@ -305,7 +304,7 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
         if (CurrentHoveredIndex == slotIndex)
             CurrentHoveredIndex = -1;
 
-        background.color = Color.white;
+        backgroundImage.color = Color.white;
         transform.localScale = Vector3.one;
 
         InventoryEvents.TooltipHidden?.Invoke();
