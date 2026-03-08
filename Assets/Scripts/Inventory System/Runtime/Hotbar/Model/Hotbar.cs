@@ -3,14 +3,12 @@ using UnityEngine;
 
 public class Hotbar : MonoBehaviour
 {
-    [Header("Config")]
-    public int hotbarSize = 6;
-
     public List<HotbarSlot> slots = new();
+    public bool AllowDoubleClickUse { get; private set; }
 
     void Awake()
     {
-        InitSlots();
+        
     }
 
     void OnEnable()
@@ -23,11 +21,17 @@ public class Hotbar : MonoBehaviour
         InventoryEvents.InventoryChanged -= ValidateSlots;
     }
 
-    void InitSlots()
+    public void ApplyConfig(ItemSystemConfiguration config)
     {
         slots.Clear();
-        for (int i = 0; i < hotbarSize; i++)
+        for (int i = 0; i < config.hotkeyCount; i++)
             slots.Add(new HotbarSlot());
+
+        AllowDoubleClickUse = config.allowHotbarDoubleClickUse;
+    }
+    void InitSlots()
+    {
+        
     }
 
     public void Assign(int hotbarIndex, Inventory inventory, int inventorySlotIndex)

@@ -19,6 +19,10 @@ public abstract class UISlotBase : MonoBehaviour, IPointerClickHandler
             case PointerEventData.InputButton.Right:
                 OnRightClick(eventData);
                 break;
+
+            case PointerEventData.InputButton.Middle:
+                OnMiddleClick(eventData);
+                break;
         }
     }
 
@@ -44,4 +48,9 @@ public abstract class UISlotBase : MonoBehaviour, IPointerClickHandler
     /// Right click behavior (optional)
     /// </summary>
     protected virtual void OnRightClick(PointerEventData eventData) { }
+
+    /// <summary>
+    /// Middle click behavior (optional)
+    /// </summary>
+    protected virtual void OnMiddleClick(PointerEventData eventData) { }
 }

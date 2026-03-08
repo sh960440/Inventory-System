@@ -1,7 +1,7 @@
 public enum EquipmentSlot
 {
-    Weapon,
     Head,
     Chest,
+    Weapon,
     Ring
 }

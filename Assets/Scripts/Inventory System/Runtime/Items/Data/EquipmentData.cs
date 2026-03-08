@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(menuName = "Items/Equipment")]
+[CreateAssetMenu(menuName = "Inventory/Equipment")]
 public class EquipmentData : ItemData
 {
     public EquipmentSlot equipSlot;

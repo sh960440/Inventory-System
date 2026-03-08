@@ -4,17 +4,12 @@ using UnityEngine;
 public class ItemSystemConfiguration : ScriptableObject
 {
     [Header("Inventory Layout")]
-    public int inventoryRows = 5;
-    public int inventoryColumns = 8;
-    public Vector2 inventorySlotSize = new Vector2(64, 64);
+    public int inventoryRows;
+    public int inventoryColumns;
 
     [Header("Hotbar")]
     [Range(1, 9)]
-    public int hotkeyCount = 5;
-    public Vector2 hotbarSlotSize = new Vector2(64, 64);
-
-    [Header("Equipment")]
-    public Vector2 equipmentSlotSize = new Vector2(64, 64);
+    public int hotkeyCount;
 
     [Header("Stack")]
     public bool allowStacking = true;
@@ -22,11 +17,10 @@ public class ItemSystemConfiguration : ScriptableObject
 
     [Header("Interaction")]
     public bool allowInventoryDoubleClickUse = true;
-    public bool allowHotbarDoubleClickUse = false;
-    public float doubleClickThreshold = 0.25f;
+    public bool allowHotbarDoubleClickUse = true;
 
     [Header("UI Behavior")]
-    public bool pauseGameWhenOpen = true;
+    //public bool pauseGameWhenOpen = true;
     public bool useFadeAnimation = true;
-    public float fadeDuration = 0.2f;
+    public float fadeDuration = 0.25f;
 }

@@ -4,13 +4,16 @@ using UnityEngine;
 public class Inventory : MonoBehaviour
 {
     public List<InventorySlot> slots = new();
-    public int initialCapacity = 9;
+    public int initialCapacity;
     public ItemCategory[] currentCategories;
     string currentSearch = "";
     public InventorySortType currentSortType = InventorySortType.None;
     public SortOrder currentSortOrder = SortOrder.Ascending;
+    private bool allowStacking = true;
+    private bool allowSplitStack = true;
 
     public bool IsOpen { get; private set; }
+    public bool AllowDoubleClickUse { get; private set; }
 
     public void SetOpen(bool open)
     {
@@ -26,7 +29,7 @@ public class Inventory : MonoBehaviour
     }
 
     bool IsAllCategory =>
-    currentCategories == null || currentCategories.Length == 0;
+        currentCategories == null || currentCategories.Length == 0;
 
     bool HasSearch =>
         !string.IsNullOrEmpty(currentSearch);
@@ -43,12 +46,7 @@ public class Inventory : MonoBehaviour
 
     void Awake()
     {
-        // If there is no default slot，create empty slots for UI to use
-        if (slots.Count == 0)
-        {
-            for (int i = 0; i < initialCapacity; i++)
-                slots.Add(new InventorySlot());
-        }
+        
     }
 
     void OnEnable()
@@ -71,6 +69,21 @@ public class Inventory : MonoBehaviour
         InventoryEvents.SplitStackRequested -= HandleSplitStack;
     }
 
+    public void ApplyConfig(ItemSystemConfiguration config)
+    {
+        initialCapacity = config.inventoryRows * config.inventoryColumns;
+
+        if (slots.Count == 0)
+        {
+            for (int i = 0; i < initialCapacity; i++)
+                slots.Add(new InventorySlot());
+        }
+
+        allowStacking = config.allowStacking;
+        allowSplitStack = config.allowSplitStack;
+        AllowDoubleClickUse = config.allowInventoryDoubleClickUse;
+    }
+
     void OnItemPickedHandler(ItemData item, int amount)
     {
         if (!AddItem(item, amount))
@@ -79,8 +92,8 @@ public class Inventory : MonoBehaviour
 
     public bool AddItem(ItemData item, int amount)
     {
-        // If stackable
-        if (item.stackable)
+        // Try stacking into existing slots
+        if (item.stackable && allowStacking)
         {
             foreach (var slot in slots)
             {
@@ -104,7 +117,13 @@ public class Inventory : MonoBehaviour
         {
             if (slot.item == null && amount > 0)
             {
-                int add = Mathf.Min(item.maxStack, amount);
+                int add;
+
+                if (allowStacking && item.stackable)
+                    add = Mathf.Min(item.maxStack, amount);
+                else
+                    add = 1;
+
                 slot.item = item;
                 slot.count = add;
                 amount -= add;
@@ -112,8 +131,7 @@ public class Inventory : MonoBehaviour
         }
 
         InventoryEvents.InventoryChanged?.Invoke();
-        // True: Item(s) added successfully. False: Inventory is full.
-        return amount <= 0;
+        return amount <= 0; // True: Item(s) added successfully. False: Inventory is full.
     }
 
     public bool AddItem(ItemData item)
@@ -367,6 +385,7 @@ public class Inventory : MonoBehaviour
     void HandleSplitStack(int index)
     {
         if (!Valid(index)) return;
+        if (!allowSplitStack) return;
 
         var slot = slots[index];
         if (slot.item == null) return;

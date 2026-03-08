@@ -70,25 +70,6 @@ public class Equipment : MonoBehaviour
         Debug.Log($"Equipped {item.itemName}");
     }
 
-    //void Unequip(EquipmentSlot slot)
-    //{
-    //    if (!equipped.TryGetValue(slot, out var item))
-    //        return;
-
-        
-    //    if (runtimeModifiers.TryGetValue(item, out var mods))
-    //    {
-    //        GameEvents.OnUnequipped?.Invoke(item, mods);
-    //        runtimeModifiers.Remove(item);
-    //        GameEvents.EquipmentChanged?.Invoke();
-    //    }
-
-    //    equipped.Remove(slot);
-
-    //    Debug.Log($"[Unequip] equipped.Count = {equipped.Count}");
-
-    //    Debug.Log($"Unequipped {item.itemName}");
-    //}
     void Unequip(EquipmentSlot slot)
     {
         if (!equipped.TryGetValue(slot, out var item))

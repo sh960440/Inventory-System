@@ -1,25 +1,38 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class InventoryUIController : MonoBehaviour
 {
     public RectTransform panel;
     public CanvasGroup canvasGroup;
     public Inventory inventory;
+    public InventorySlotUI slotPrefab;
     public InventorySlotUI[] slotsUI;
+    public Transform container;
+    public GridLayoutGroup gridLayout;
+
+    public ContextMenuUI contextMenuUI;
+    public DraggableItemUI dragUI;
+    public TooltipUI tooltipUI;
+
+    private bool useFadeAnimation;
+    private float fadeDuration;
 
     //bool isOpen;
     Coroutine currentAnim;
+
     void Start()
     {
-        for (int i = 0; i < slotsUI.Length; i++)
-        {
-            slotsUI[i].Setup(inventory, i);
-        }
         
-        canvasGroup.alpha = 0;
-        panel.gameObject.SetActive(false);
+        //for (int i = 0; i < slotsUI.Length; i++)
+        //{
+        //    slotsUI[i].Setup(inventory, i);
+        //}
+
+
     }
 
     void OnEnable()
@@ -29,8 +42,6 @@ public class InventoryUIController : MonoBehaviour
 
         InventoryEvents.InventoryToggled += HandleOpen;
         InventoryEvents.InventoryClosed += HandleClose;
-
-        RefreshAll();
     }
 
     void OnDisable()
@@ -42,20 +53,37 @@ public class InventoryUIController : MonoBehaviour
         InventoryEvents.InventoryClosed -= HandleClose;
     }
 
-    //void Update()
-    //{
-    //    if (Input.GetKeyDown(KeyCode.Tab))
-    //    {
-    //        bool open = !isOpen;
-    //        InventoryEvents.InventoryToggled?.Invoke(open);
+    public void ApplyConfig(ItemSystemConfiguration config)
+    {
+        BuildUI(config.inventoryColumns);
 
-    //        if (!open)
-    //            InventoryEvents.InventoryClosed?.Invoke();
+        useFadeAnimation = config.useFadeAnimation;
+        fadeDuration = config.fadeDuration;
 
-    //        if (isOpen) Close();
-    //        else Open();
-    //    }
-    //}
+        RefreshAll();
+        canvasGroup.alpha = 0;
+        panel.gameObject.SetActive(false);
+    }
+
+    void BuildUI(int inventoryColumns)
+    {
+        gridLayout.cellSize = new Vector2(slotPrefab.GetComponent<RectTransform>().rect.width, slotPrefab.GetComponent<RectTransform>().rect.height);
+        gridLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+        gridLayout.constraintCount = inventoryColumns;
+        slotsUI = new InventorySlotUI[inventory.SlotCount];
+
+        for (int i = 0; i < inventory.SlotCount; i++)
+        {
+            var ui = Instantiate(slotPrefab, container);
+            ui.slotIndex = i;
+            ui.contextMenuUI = contextMenuUI;
+            ui.dragUI = dragUI;
+            ui.tooltipUI = tooltipUI;
+            slotsUI[i] = ui;
+            slotsUI[i].Setup(inventory, i);
+        }
+    }
+
     void HandleOpen(bool open)
     {
         if (open) Open();
@@ -68,20 +96,32 @@ public class InventoryUIController : MonoBehaviour
 
     void Open()
     {
-        //isOpen = true;
         panel.gameObject.SetActive(true);
-
         RefreshAll();
+
+        if (!useFadeAnimation)
+        {
+            canvasGroup.alpha = 1f;
+            var pos = panel.anchoredPosition;
+            pos.x = 0;
+            panel.anchoredPosition = pos;
+            return;
+        }
 
         if (currentAnim != null)
             StopCoroutine(currentAnim);
 
-        currentAnim = StartCoroutine(AnimatePanel(0, 1f, 0.25f));
+        currentAnim = StartCoroutine(AnimatePanel(0, 1f, fadeDuration));
     }
 
     void Close()
     {
-        //isOpen = false;
+        if (!useFadeAnimation)
+        {
+            canvasGroup.alpha = 0f;
+            panel.gameObject.SetActive(false);
+            return;
+        }
 
         if (currentAnim != null)
             StopCoroutine(currentAnim);
@@ -91,7 +131,7 @@ public class InventoryUIController : MonoBehaviour
 
     IEnumerator CloseRoutine()
     {
-        yield return AnimatePanel(400, 0f, 0.25f);
+        yield return AnimatePanel(400, 0f, fadeDuration);
         panel.gameObject.SetActive(false);
     }
 

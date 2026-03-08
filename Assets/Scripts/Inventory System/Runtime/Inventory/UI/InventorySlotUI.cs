@@ -3,7 +3,7 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using TMPro;
 
-public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandler, IPointerEnterHandler, IPointerExitHandler, IBeginDragHandler, IDragHandler, IEndDragHandler
+public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandler, IPointerEnterHandler, IPointerExitHandler, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerClickHandler
 {
     public int slotIndex;
     public Image backgroundImage;
@@ -199,6 +199,7 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
     protected override void OnDoubleClick()
     {
         if (inventory == null) return;
+        if (!inventory.AllowDoubleClickUse) return;
         if (!inventory.Valid(slotIndex)) return;
 
         var slot = inventory.slots[slotIndex];
@@ -221,7 +222,7 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
         }    
     }
 
-    protected override void OnRightClick(PointerEventData eventData)
+    protected override void OnMiddleClick(PointerEventData eventData)
     {
         var slot = inventory.slots[slotIndex];
         if (slot.item == null) return;

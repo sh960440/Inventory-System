@@ -22,7 +22,7 @@ public class EquipmentSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     void Refresh()
     {
-        if (equipmentManager == null) return;
+        if (equipmentManager == null) return;   
 
         var item = equipmentManager.GetEquipped(slotType);
         currentItem = item;

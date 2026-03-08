@@ -13,7 +13,7 @@ public class DraggableItemUI : MonoBehaviour
     void Awake()
     {
         rect = GetComponent<RectTransform>();
-        gameObject.SetActive(false);
+        //gameObject.SetActive(false);
     }
 
     public void BeginDrag(DragItemContext ctx, Sprite sprite)

@@ -22,7 +22,7 @@ MonoBehaviour:
   worldPrefab: {fileID: 7721733643825755965, guid: b9454d66b2ec6eb45be45dcb56e4080d, type: 3}
   consumable: 0
   category: 1
-  equipSlot: 0
+  equipSlot: 2
   modifiers:
   - statType: 1
     value: 10

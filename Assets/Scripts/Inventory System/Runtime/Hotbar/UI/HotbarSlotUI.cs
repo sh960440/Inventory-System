@@ -164,6 +164,8 @@ public class HotbarSlotUI : UISlotBase, IBeginDragHandler, IDragHandler, IEndDra
 
     protected override void OnDoubleClick()
     {
+        if (hotbar == null) return;
+        if (!hotbar.AllowDoubleClickUse) return;
         if (!hotbar.ValidHotbarIndex(index)) return;
 
         var invSlot = hotbar.GetInventorySlot(index);

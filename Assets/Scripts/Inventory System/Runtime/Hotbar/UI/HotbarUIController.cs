@@ -11,7 +11,7 @@ public class HotbarUIController : MonoBehaviour
 
     void Start()
     {
-        BuildUI();
+        
     }
 
     void OnEnable()
@@ -26,11 +26,11 @@ public class HotbarUIController : MonoBehaviour
         InventoryEvents.InventoryChanged -= Refresh;
     }
 
-    void BuildUI()
+    public void ApplyConfig(ItemSystemConfiguration config)
     {
-        slotUIs = new HotbarSlotUI[hotbar.slots.Count];
+        slotUIs = new HotbarSlotUI[config.hotkeyCount];
 
-        for (int i = 0; i < hotbar.slots.Count; i++)
+        for (int i = 0; i < config.hotkeyCount; i++)
         {
             var ui = Instantiate(slotPrefab, container);
             ui.Setup(hotbar, i);

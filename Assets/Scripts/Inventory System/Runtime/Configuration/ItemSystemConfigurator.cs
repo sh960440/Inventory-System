@@ -6,8 +6,11 @@ public class ItemSystemConfigurator : MonoBehaviour
 
     [Header("References")]
     [SerializeField] private Inventory inventory;
-    [SerializeField] private Hotbar hotbar;
     [SerializeField] private Equipment equipment;
+    [SerializeField] private Hotbar hotbar;
+    [SerializeField] private InventoryUIController inventoryUI;
+    [SerializeField] private EquipmentUIController equipmentUI;
+    [SerializeField] private HotbarUIController hotbarUI;
 
     private void Awake()
     {
@@ -16,8 +19,22 @@ public class ItemSystemConfigurator : MonoBehaviour
 
     private void ApplyConfig()
     {
-        //inventory.ApplyConfig(config);
-        //hotbar.ApplyConfig(config);
-        //equipment.ApplyConfig(config);
+        if (inventory != null)
+            inventory.ApplyConfig(config);
+
+        if (inventoryUI != null)
+            inventoryUI.ApplyConfig(config);
+
+        //if (equipment != null)
+        //    equipment.ApplyConfig(config);
+
+        //if (equipmentUI != null)
+        //    equipmentUI.ApplyConfig(config);
+
+        if (hotbar != null)
+            hotbar.ApplyConfig(config);
+
+        if (hotbarUI != null)
+            hotbarUI.ApplyConfig(config);
     }
 }

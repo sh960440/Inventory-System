@@ -14,15 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: InventorySystem.Runtime::ItemSystemConfiguration
   inventoryRows: 3
   inventoryColumns: 4
-  inventorySlotSize: {x: 80, y: 80}
   hotkeyCount: 6
-  hotbarSlotSize: {x: 90, y: 90}
-  equipmentSlotSize: {x: 100, y: 100}
   allowStacking: 1
   allowSplitStack: 1
   allowInventoryDoubleClickUse: 1
   allowHotbarDoubleClickUse: 1
-  doubleClickThreshold: 0.25
-  pauseGameWhenOpen: 1
   useFadeAnimation: 1
-  fadeDuration: 0.2
+  fadeDuration: 0.25
