@@ -14,6 +14,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: InventorySystem.Runtime::ItemSystemConfiguration
   inventoryRows: 3
   inventoryColumns: 4
+  categoryButtons:
+  - label: ALL
+    categories: 
+  - label: CONSUMABLE
+    categories: 03000000
+  - label: EQUIPMENT
+    categories: 0100000002000000
+  - label: MATERIAL
+    categories: 04000000
   hotkeyCount: 6
   allowStacking: 1
   allowSplitStack: 1

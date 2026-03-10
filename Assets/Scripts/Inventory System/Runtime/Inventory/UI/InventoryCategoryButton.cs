@@ -1,28 +1,35 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Linq;
+using TMPro;
 
 public class InventoryCategoryButton : MonoBehaviour
 {
     public ItemCategory[] categories;
 
-    public Image highlight;
+    public Image highlightImage;
+    public Button button;
+    public TMP_Text buttonText;
     Inventory inventory;
-    Button button;
 
     void Awake()
     {
-        inventory = FindFirstObjectByType<Inventory>();
-        button = GetComponent<Button>();
-
         button.onClick.AddListener(OnClick);
         InventoryEvents.InventoryChanged += RefreshState;
-        RefreshState();
     }
 
     void OnDestroy()
     {
         InventoryEvents.InventoryChanged -= RefreshState;
+    }
+
+    public void Initialize(Inventory inventory, ItemCategory[] categories, string label)
+    {
+        this.inventory = inventory;
+        this.categories = categories;
+        if (buttonText != null)
+            buttonText.text = label;
+        RefreshState();
     }
 
     void OnClick()
@@ -33,13 +40,13 @@ public class InventoryCategoryButton : MonoBehaviour
 
     void RefreshState()
     {
-        if (highlight == null || inventory == null) return;
+        if (highlightImage == null || inventory == null) return;
 
         bool isActive =
             inventory.currentCategories != null &&
             inventory.currentCategories.Length == categories.Length &&
             inventory.currentCategories.All(c => categories.Contains(c));
 
-        highlight.gameObject.SetActive(isActive);
+        highlightImage.gameObject.SetActive(isActive);
     }
 }

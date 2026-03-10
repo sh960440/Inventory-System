@@ -14,6 +14,8 @@ public class InventoryUIController : MonoBehaviour
     public Transform container;
     public GridLayoutGroup gridLayout;
 
+    public Transform categoryButtonContainer;
+    public InventoryCategoryButton categoryButtonPrefab;
     public ContextMenuUI contextMenuUI;
     public DraggableItemUI dragUI;
     public TooltipUI tooltipUI;
@@ -23,17 +25,6 @@ public class InventoryUIController : MonoBehaviour
 
     //bool isOpen;
     Coroutine currentAnim;
-
-    void Start()
-    {
-        
-        //for (int i = 0; i < slotsUI.Length; i++)
-        //{
-        //    slotsUI[i].Setup(inventory, i);
-        //}
-
-
-    }
 
     void OnEnable()
     {
@@ -55,7 +46,8 @@ public class InventoryUIController : MonoBehaviour
 
     public void ApplyConfig(ItemSystemConfiguration config)
     {
-        BuildUI(config.inventoryColumns);
+        BuildInventoryUI(config.inventoryColumns);
+        BuildCategoryButtons(config.categoryButtons);
 
         useFadeAnimation = config.useFadeAnimation;
         fadeDuration = config.fadeDuration;
@@ -65,7 +57,7 @@ public class InventoryUIController : MonoBehaviour
         panel.gameObject.SetActive(false);
     }
 
-    void BuildUI(int inventoryColumns)
+    void BuildInventoryUI(int inventoryColumns)
     {
         gridLayout.cellSize = new Vector2(slotPrefab.GetComponent<RectTransform>().rect.width, slotPrefab.GetComponent<RectTransform>().rect.height);
         gridLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
@@ -81,6 +73,16 @@ public class InventoryUIController : MonoBehaviour
             ui.tooltipUI = tooltipUI;
             slotsUI[i] = ui;
             slotsUI[i].Setup(inventory, i);
+        }
+    }
+
+    void BuildCategoryButtons(List<CategoryButtonConfig> configs)
+    {
+        if (categoryButtonContainer == null || categoryButtonPrefab == null || configs.Count <= 0) return;
+        foreach (var config in configs)
+        {
+            var button = Instantiate(categoryButtonPrefab, categoryButtonContainer);
+            button.Initialize(inventory, config.categories, config.label);
         }
     }
 
