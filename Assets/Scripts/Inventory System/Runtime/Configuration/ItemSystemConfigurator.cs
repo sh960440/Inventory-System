@@ -20,10 +20,10 @@ public class ItemSystemConfigurator : MonoBehaviour
     private void ApplyConfig()
     {
         if (inventory != null)
-            inventory.ApplyConfig(config);
+            inventory.ApplyConfig(config, equipment);
 
         if (inventoryUI != null)
-            inventoryUI.ApplyConfig(config);
+            inventoryUI.ApplyConfig(config, equipment);
 
         //if (equipment != null)
         //    equipment.ApplyConfig(config);
@@ -35,6 +35,6 @@ public class ItemSystemConfigurator : MonoBehaviour
             hotbar.ApplyConfig(config);
 
         if (hotbarUI != null)
-            hotbarUI.ApplyConfig(config);
+            hotbarUI.ApplyConfig(config, equipment);
     }
 }

@@ -44,9 +44,9 @@ public class InventoryUIController : MonoBehaviour
         InventoryEvents.InventoryClosed -= HandleClose;
     }
 
-    public void ApplyConfig(ItemSystemConfiguration config)
+    public void ApplyConfig(ItemSystemConfiguration config, Equipment equipmentManager)
     {
-        BuildInventoryUI(config.inventoryColumns);
+        BuildInventoryUI(config.inventoryColumns, equipmentManager);
         BuildCategoryButtons(config.categoryButtons);
 
         useFadeAnimation = config.useFadeAnimation;
@@ -57,7 +57,7 @@ public class InventoryUIController : MonoBehaviour
         panel.gameObject.SetActive(false);
     }
 
-    void BuildInventoryUI(int inventoryColumns)
+    void BuildInventoryUI(int inventoryColumns, Equipment equipmentManager)
     {
         gridLayout.cellSize = new Vector2(slotPrefab.GetComponent<RectTransform>().rect.width, slotPrefab.GetComponent<RectTransform>().rect.height);
         gridLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
@@ -72,7 +72,7 @@ public class InventoryUIController : MonoBehaviour
             ui.dragUI = dragUI;
             ui.tooltipUI = tooltipUI;
             slotsUI[i] = ui;
-            slotsUI[i].Setup(inventory, i);
+            slotsUI[i].Setup(inventory, equipmentManager, i);
         }
     }
 

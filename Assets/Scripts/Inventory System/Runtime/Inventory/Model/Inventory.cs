@@ -11,6 +11,7 @@ public class Inventory : MonoBehaviour
     public SortOrder currentSortOrder = SortOrder.Ascending;
     private bool allowStacking = true;
     private bool allowSplitStack = true;
+    private Equipment equipmentManager;
 
     public bool IsOpen { get; private set; }
     public bool AllowDoubleClickUse { get; private set; }
@@ -69,7 +70,7 @@ public class Inventory : MonoBehaviour
         InventoryEvents.SplitStackRequested -= HandleSplitStack;
     }
 
-    public void ApplyConfig(ItemSystemConfiguration config)
+    public void ApplyConfig(ItemSystemConfiguration config, Equipment em)
     {
         initialCapacity = config.inventoryRows * config.inventoryColumns;
 
@@ -79,6 +80,7 @@ public class Inventory : MonoBehaviour
                 slots.Add(new InventorySlot());
         }
 
+        equipmentManager = em;
         allowStacking = config.allowStacking;
         allowSplitStack = config.allowSplitStack;
         AllowDoubleClickUse = config.allowInventoryDoubleClickUse;
@@ -367,7 +369,8 @@ public class Inventory : MonoBehaviour
         // Equipment
         if (slot.item is EquipmentData eq)
         {
-            if (FindFirstObjectByType<Equipment>()?.IsEquipped(eq) == true)
+            if (equipmentManager == null) return;
+            if (equipmentManager.IsEquipped(eq) == true)
             {
                 InventoryEvents.UnequipRequested?.Invoke(eq.equipSlot);
             }

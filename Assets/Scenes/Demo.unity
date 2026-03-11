@@ -290,6 +290,7 @@ MonoBehaviour:
   sortOrderImage: {fileID: 1382454070}
   ascendingSprite: {fileID: 21300000, guid: 1189f317472f99147bfc3e4403000f62, type: 3}
   descendingSprite: {fileID: 21300000, guid: 091f11e3d2c6ed145b2ffbcc61abb56c, type: 3}
+  inventory: {fileID: 676156576}
 --- !u!1001 &53305255
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -9129,6 +9130,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InventorySearchInput
   input: {fileID: 2101972790}
+  inventory: {fileID: 676156576}
 --- !u!1 &2129883506
 GameObject:
   m_ObjectHideFlags: 0

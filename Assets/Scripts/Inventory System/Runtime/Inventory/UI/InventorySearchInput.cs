@@ -4,11 +4,10 @@ using TMPro;
 public class InventorySearchInput : MonoBehaviour
 {
     public TMP_InputField input;
-    Inventory inventory;
+    public Inventory inventory;
 
     void Awake()
     {
-        inventory = FindFirstObjectByType<Inventory>();
         input.onValueChanged.AddListener(OnValueChanged);
     }
 

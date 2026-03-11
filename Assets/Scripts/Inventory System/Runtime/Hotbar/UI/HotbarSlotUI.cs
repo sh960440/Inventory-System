@@ -15,6 +15,7 @@ public class HotbarSlotUI : UISlotBase, IBeginDragHandler, IDragHandler, IEndDra
     public DraggableItemUI dragUI;
 
     Hotbar hotbar;
+    Equipment equipmentManager;
     int index;
 
     DragItemContext? currentDrag;
@@ -48,9 +49,10 @@ public class HotbarSlotUI : UISlotBase, IBeginDragHandler, IDragHandler, IEndDra
         currentDrag = null;
     }
 
-    public void Setup(Hotbar hb, int slotIndex)
+    public void Setup(Hotbar hb, Equipment em, int slotIndex)
     {
         hotbar = hb;
+        equipmentManager = em;
         index = slotIndex;
         keyText.text = (slotIndex + 1).ToString(); // Display key number
     }
@@ -99,8 +101,7 @@ public class HotbarSlotUI : UISlotBase, IBeginDragHandler, IDragHandler, IEndDra
             return;
         }
 
-        var mgr = FindFirstObjectByType<Equipment>();
-        backgroundImage.sprite = (mgr != null && mgr.IsEquipped(eq)) ? equippedBackground : defaultBackground;
+        backgroundImage.sprite = (equipmentManager != null && equipmentManager.IsEquipped(eq)) ? equippedBackground : defaultBackground;
     }
 
     // =========================

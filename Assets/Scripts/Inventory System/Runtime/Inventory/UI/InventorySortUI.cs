@@ -11,7 +11,7 @@ public class InventorySortUI : MonoBehaviour
     public Sprite ascendingSprite;
     public Sprite descendingSprite;
 
-    Inventory inventory;
+    public Inventory inventory;
 
     InventorySortType[] map =
     {
@@ -23,8 +23,6 @@ public class InventorySortUI : MonoBehaviour
 
     void Awake()
     {
-        inventory = FindFirstObjectByType<Inventory>();
-
         sortTypeDropdown.onValueChanged.AddListener(OnSortTypeChanged);
         sortOrderButton.onClick.AddListener(ToggleSortOrder);
 

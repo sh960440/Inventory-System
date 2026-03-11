@@ -26,14 +26,14 @@ public class HotbarUIController : MonoBehaviour
         InventoryEvents.InventoryChanged -= Refresh;
     }
 
-    public void ApplyConfig(ItemSystemConfiguration config)
+    public void ApplyConfig(ItemSystemConfiguration config, Equipment equipmentManager)
     {
         slotUIs = new HotbarSlotUI[config.hotkeyCount];
 
         for (int i = 0; i < config.hotkeyCount; i++)
         {
             var ui = Instantiate(slotPrefab, container);
-            ui.Setup(hotbar, i);
+            ui.Setup(hotbar, equipmentManager, i);
             ui.SetDragUI(dragUI);
             slotUIs[i] = ui;
         }

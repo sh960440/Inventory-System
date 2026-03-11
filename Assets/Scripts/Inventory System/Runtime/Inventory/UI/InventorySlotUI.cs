@@ -21,11 +21,6 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
 
     public static int CurrentHoveredIndex = -1;
 
-    void Start()
-    {
-        equipmentManager = FindFirstObjectByType<Equipment>();
-    }
-
     void OnEnable()
     {
         // Refresh when an item is equipped / unequipped
@@ -43,10 +38,11 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
     //    Refresh();
     //}
 
-    public void Setup(Inventory inv, int idx)
+    public void Setup(Inventory inv, Equipment em, int idx)
     {
         inventory = inv;
         slotIndex = idx;
+        equipmentManager = em;
     }
 
     //public void Refresh()
@@ -205,9 +201,9 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
         var slot = inventory.slots[slotIndex];
         if (slot.item == null) return;
 
-        if (slot.item is EquipmentData eq)
+        if (slot.item is EquipmentData eq && equipmentManager != null)
         {
-            if (FindFirstObjectByType<Equipment>()?.IsEquipped(eq) == true)
+            if (equipmentManager.IsEquipped(eq) == true)
             {
                 InventoryEvents.UnequipRequested?.Invoke(eq.equipSlot);
             }
