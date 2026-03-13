@@ -55,7 +55,7 @@ public class Inventory : MonoBehaviour
         InventoryEvents.ItemUsed += UseItem;
         InventoryEvents.ItemDropped += DropItem;
         InventoryEvents.ItemInspected += InspectItem;
-        InventoryEvents.ItemPicked += OnItemPickedHandler;
+        InventoryEvents.ItemAdded += OnItemAddedHandler;
         InventoryEvents.HotbarUseRequested += OnHotbarUseRequested;
         InventoryEvents.SplitStackRequested += HandleSplitStack;
     }
@@ -65,7 +65,7 @@ public class Inventory : MonoBehaviour
         InventoryEvents.ItemUsed -= UseItem;
         InventoryEvents.ItemDropped -= DropItem;
         InventoryEvents.ItemInspected -= InspectItem;
-        InventoryEvents.ItemPicked -= OnItemPickedHandler;
+        InventoryEvents.ItemAdded -= OnItemAddedHandler;
         InventoryEvents.HotbarUseRequested -= OnHotbarUseRequested;
         InventoryEvents.SplitStackRequested -= HandleSplitStack;
     }
@@ -86,7 +86,7 @@ public class Inventory : MonoBehaviour
         AllowDoubleClickUse = config.allowInventoryDoubleClickUse;
     }
 
-    void OnItemPickedHandler(ItemData item, int amount)
+    void OnItemAddedHandler(ItemData item, int amount)
     {
         if (!AddItem(item, amount))
             Debug.Log("Inventory full");
@@ -133,6 +133,7 @@ public class Inventory : MonoBehaviour
         }
 
         InventoryEvents.InventoryChanged?.Invoke();
+
         return amount <= 0; // True: Item(s) added successfully. False: Inventory is full.
     }
 

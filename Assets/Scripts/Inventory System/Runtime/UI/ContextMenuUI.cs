@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
 
 public class ContextMenuUI : MonoBehaviour
 {
@@ -96,7 +97,7 @@ public class ContextMenuUI : MonoBehaviour
             unequipButton.gameObject.SetActive(ctx.isEquipped);
         }
 
-        rectTransform.position = Input.mousePosition;
+        rectTransform.position = Mouse.current.position.ReadValue();
         canvasGroup.alpha = 1;
         canvasGroup.blocksRaycasts = true;
     }

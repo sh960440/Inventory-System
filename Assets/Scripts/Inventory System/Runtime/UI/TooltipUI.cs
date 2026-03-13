@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.InputSystem;
 
 public class TooltipUI : MonoBehaviour
 {
@@ -31,7 +32,7 @@ public class TooltipUI : MonoBehaviour
     void Update()
     {
         if (isFollowingMouse)
-            UpdatePosition(Input.mousePosition);
+            UpdatePosition(Mouse.current.position.ReadValue());
     }
 
     void Show(ItemUIContext ctx)
@@ -66,7 +67,7 @@ public class TooltipUI : MonoBehaviour
 
         canvasGroup.alpha = 1;
         isFollowingMouse = true;
-        UpdatePosition(Input.mousePosition);
+        UpdatePosition(Mouse.current.position.ReadValue());
     }
 
     public void Hide()

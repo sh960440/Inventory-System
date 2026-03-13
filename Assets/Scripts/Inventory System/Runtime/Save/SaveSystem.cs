@@ -75,9 +75,6 @@ public class SaveSystem : MonoBehaviour
             case 1:
                 LoadV1(data);
                 break;
-            //case 2:
-            //    LoadV2(data);
-            //    break;
             default:
                 Debug.LogWarning($"Unsupported save version: {data.version}");
                 break;

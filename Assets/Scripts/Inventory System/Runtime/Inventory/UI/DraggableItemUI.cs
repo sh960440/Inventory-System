@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
 
 public class DraggableItemUI : MonoBehaviour
 {
@@ -13,7 +14,6 @@ public class DraggableItemUI : MonoBehaviour
     void Awake()
     {
         rect = GetComponent<RectTransform>();
-        //gameObject.SetActive(false);
     }
 
     public void BeginDrag(DragItemContext ctx, Sprite sprite)
@@ -30,9 +30,9 @@ public class DraggableItemUI : MonoBehaviour
 
     public void FollowMouse()
     {
-        if (!gameObject.activeSelf) return;
+        if (!gameObject.activeSelf || Mouse.current == null) return;
 
-        rect.position = (Vector2)Input.mousePosition + offset;
+        rect.position = Mouse.current.position.ReadValue() + offset;
     }
 
     public void EndDrag()

@@ -26,6 +26,14 @@ public class InventorySortUI : MonoBehaviour
         sortTypeDropdown.onValueChanged.AddListener(OnSortTypeChanged);
         sortOrderButton.onClick.AddListener(ToggleSortOrder);
 
+        Initialize();
+    }
+
+    void Initialize()
+    {
+        if (inventory == null) return;
+        var currentType = map[sortTypeDropdown.value];
+        inventory.SetSort(currentType, inventory.currentSortOrder);
         RefreshSortOrderIcon();
     }
 

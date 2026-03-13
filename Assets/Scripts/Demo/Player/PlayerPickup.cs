@@ -10,9 +10,9 @@ public class PlayerPickup : MonoBehaviour
         playerInventory = transform.parent.GetComponentInChildren<Inventory>();
     }
 
-    void Update()
+    public void TryPickup()
     {
-        if (currentPickup != null && Input.GetKeyDown(KeyCode.E))
+        if (currentPickup != null)
         {
             PickupItem();
         }
@@ -43,7 +43,7 @@ public class PlayerPickup : MonoBehaviour
         if (playerInventory == null || currentPickup == null) return;
 
         //playerInventory.AddItem(currentPickup.itemData, currentPickup.amount);
-        InventoryEvents.ItemPicked?.Invoke(currentPickup.itemData, currentPickup.amount);
+        InventoryEvents.ItemAdded?.Invoke(currentPickup.itemData, currentPickup.amount);
         Debug.Log($"Picked up {currentPickup.itemData.itemName} x{currentPickup.amount}");
         Destroy(currentPickup.gameObject);
         currentPickup = null;

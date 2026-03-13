@@ -1,6 +1,6 @@
 [System.Serializable]
 public class InventorySlotSaveData
 {
-    public string itemId;   // Temporarily use itemName
+    public string itemId;
     public int count;
 }

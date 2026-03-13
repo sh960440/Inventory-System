@@ -21,6 +21,7 @@ public static class InventoryEvents
     // =========================
     // Item Interaction
     // =========================
+    public static Action<ItemData, int> ItemAdded;
     public static Action<int> ItemUsed;
     public static Action<int> ItemDropped;
     public static Action<int> ItemInspected;
@@ -54,7 +55,4 @@ public static class InventoryEvents
     public static Action<EquipmentData> OnEquipmentContextMenuRequest;
 
     public static Action<int> SplitStackRequested;
-
-    // World
-    public static Action<ItemData, int> ItemPicked;
 }
