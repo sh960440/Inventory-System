@@ -98,6 +98,7 @@ public class ContextMenuUI : MonoBehaviour
         }
 
         rectTransform.position = Mouse.current.position.ReadValue();
+
         canvasGroup.alpha = 1;
         canvasGroup.blocksRaycasts = true;
     }

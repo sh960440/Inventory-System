@@ -52,21 +52,21 @@ public class Inventory : MonoBehaviour
 
     void OnEnable()
     {
-        InventoryEvents.ItemUsed += UseItem;
+        InventoryEvents.ItemUsed += UseSlot;
         InventoryEvents.ItemDropped += DropItem;
         InventoryEvents.ItemInspected += InspectItem;
         InventoryEvents.ItemAdded += OnItemAddedHandler;
-        InventoryEvents.HotbarUseRequested += OnHotbarUseRequested;
+        InventoryEvents.HotbarUseRequested += UseSlot;
         InventoryEvents.SplitStackRequested += HandleSplitStack;
     }
 
     void OnDisable()
     {
-        InventoryEvents.ItemUsed -= UseItem;
+        InventoryEvents.ItemUsed -= UseSlot;
         InventoryEvents.ItemDropped -= DropItem;
         InventoryEvents.ItemInspected -= InspectItem;
         InventoryEvents.ItemAdded -= OnItemAddedHandler;
-        InventoryEvents.HotbarUseRequested -= OnHotbarUseRequested;
+        InventoryEvents.HotbarUseRequested -= UseSlot;
         InventoryEvents.SplitStackRequested -= HandleSplitStack;
     }
 
@@ -142,21 +142,21 @@ public class Inventory : MonoBehaviour
         return AddItem(item, 1);
     }
 
-    void UseItem(int index)
-    {
-        if (!Valid(index)) return;
-        var slot = slots[index];
-        if (slot.item == null) return;
+    //void UseItem(int index)
+    //{
+    //    if (!Valid(index)) return;
+    //    var slot = slots[index];
+    //    if (slot.item == null) return;
 
-        if (slot.item is ConsumableData consumable)
-        {
-            //InventoryEvents.ItemUsed?.Invoke(index);
-            InventoryEvents.ItemConsumed?.Invoke(consumable);
-            Consume(slot);
-        }
+    //    if (slot.item is ConsumableData consumable)
+    //    {
+    //        //InventoryEvents.ItemUsed?.Invoke(index);
+    //        InventoryEvents.ItemConsumed?.Invoke(consumable);
+    //        Consume(slot);
+    //    }
 
-        InventoryEvents.InventoryChanged?.Invoke();
-    }
+    //    InventoryEvents.InventoryChanged?.Invoke();
+    //}
 
     void Consume(InventorySlot slot)
     {
@@ -175,6 +175,74 @@ public class Inventory : MonoBehaviour
             slot.item = null;
             slot.count = 0;
         }
+    }
+
+    //void OnHotbarUseRequested(InventorySlot slot)
+    //{
+    //    if (slot == null || slot.item == null)
+    //        return;
+
+    //    // Consumable
+    //    if (slot.item.consumable)
+    //    {
+    //        Consume(slot);
+    //        InventoryEvents.InventoryChanged?.Invoke();
+    //        return;
+    //    }
+
+    //    // Equipment
+    //    if (slot.item is EquipmentData eq)
+    //    {
+    //        if (equipmentManager == null) return;
+    //        if (equipmentManager.IsEquipped(eq) == true)
+    //        {
+    //            InventoryEvents.UnequipRequested?.Invoke(eq.equipSlot);
+    //        }
+    //        else
+    //        {
+    //            InventoryEvents.EquipRequested?.Invoke(eq);
+    //        }
+
+    //        return;
+    //    }
+
+    //    Debug.Log($"Hotbar used item: {slot.item.itemName}");
+    //}
+
+    void UseSlot(int index)
+    {
+        if (!Valid(index)) return;
+        UseSlot(slots[index]);
+    }
+
+    void UseSlot(InventorySlot slot)
+    {
+        if (slot == null || slot.item == null)
+            return;
+
+        // Consumable
+        if (slot.item is ConsumableData consumable)
+        {
+            InventoryEvents.ItemConsumed?.Invoke(consumable);
+            Consume(slot);
+            InventoryEvents.InventoryChanged?.Invoke();
+            return;
+        }
+
+        // Equipment
+        if (slot.item is EquipmentData eq)
+        {
+            if (equipmentManager == null) return;
+
+            if (equipmentManager.IsEquipped(eq))
+                InventoryEvents.UnequipRequested?.Invoke(eq.equipSlot);
+            else
+                InventoryEvents.EquipRequested?.Invoke(eq);
+
+            return;
+        }
+
+        Debug.Log($"Used item: {slot.item.itemName}");
     }
 
     public void DropItem(int index, int amount)
@@ -204,7 +272,6 @@ public class Inventory : MonoBehaviour
         Consume(slot, dropCount);
         InventoryEvents.InventoryChanged?.Invoke();
     }
-
 
     void DropItem(int index)
     {
@@ -352,38 +419,6 @@ public class Inventory : MonoBehaviour
             result = -result;
 
         return result;
-    }
-
-    void OnHotbarUseRequested(InventorySlot slot)
-    {
-        if (slot == null || slot.item == null)
-            return;
-
-        // Consumable
-        if (slot.item.consumable)
-        {
-            Consume(slot);
-            InventoryEvents.InventoryChanged?.Invoke();
-            return;
-        }
-
-        // Equipment
-        if (slot.item is EquipmentData eq)
-        {
-            if (equipmentManager == null) return;
-            if (equipmentManager.IsEquipped(eq) == true)
-            {
-                InventoryEvents.UnequipRequested?.Invoke(eq.equipSlot);
-            }
-            else
-            {
-                InventoryEvents.EquipRequested?.Invoke(eq);
-            }
-
-            return;
-        }
-
-        Debug.Log($"Hotbar used item: {slot.item.itemName}");
     }
 
     void HandleSplitStack(int index)
