@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Inventory : MonoBehaviour
@@ -45,15 +46,10 @@ public class Inventory : MonoBehaviour
         return slots[index];
     }
 
-    void Awake()
-    {
-        
-    }
-
     void OnEnable()
     {
         InventoryEvents.ItemUsed += UseSlot;
-        InventoryEvents.ItemDropped += DropItem;
+        InventoryEvents.ItemRemoved += RemoveItem;
         InventoryEvents.ItemInspected += InspectItem;
         InventoryEvents.ItemAdded += OnItemAddedHandler;
         InventoryEvents.HotbarUseRequested += UseSlot;
@@ -63,7 +59,7 @@ public class Inventory : MonoBehaviour
     void OnDisable()
     {
         InventoryEvents.ItemUsed -= UseSlot;
-        InventoryEvents.ItemDropped -= DropItem;
+        InventoryEvents.ItemRemoved -= RemoveItem;
         InventoryEvents.ItemInspected -= InspectItem;
         InventoryEvents.ItemAdded -= OnItemAddedHandler;
         InventoryEvents.HotbarUseRequested -= UseSlot;
@@ -142,28 +138,7 @@ public class Inventory : MonoBehaviour
         return AddItem(item, 1);
     }
 
-    //void UseItem(int index)
-    //{
-    //    if (!Valid(index)) return;
-    //    var slot = slots[index];
-    //    if (slot.item == null) return;
-
-    //    if (slot.item is ConsumableData consumable)
-    //    {
-    //        //InventoryEvents.ItemUsed?.Invoke(index);
-    //        InventoryEvents.ItemConsumed?.Invoke(consumable);
-    //        Consume(slot);
-    //    }
-
-    //    InventoryEvents.InventoryChanged?.Invoke();
-    //}
-
-    void Consume(InventorySlot slot)
-    {
-        Consume(slot, 1);
-    }
-
-    void Consume(InventorySlot slot, int amount)
+    public void RemoveItem(InventorySlot slot, int amount)
     {
         if (slot.item == null) return;
         if (amount <= 0) return;
@@ -175,39 +150,25 @@ public class Inventory : MonoBehaviour
             slot.item = null;
             slot.count = 0;
         }
+
+        InventoryEvents.InventoryChanged?.Invoke();
     }
 
-    //void OnHotbarUseRequested(InventorySlot slot)
-    //{
-    //    if (slot == null || slot.item == null)
-    //        return;
+    public void RemoveItem(InventorySlot slot)
+    {
+        RemoveItem(slot, 1);
+    }
 
-    //    // Consumable
-    //    if (slot.item.consumable)
-    //    {
-    //        Consume(slot);
-    //        InventoryEvents.InventoryChanged?.Invoke();
-    //        return;
-    //    }
+    public void RemoveItem(int index, int amount)
+    {
+        if (!Valid(index)) return;
+        RemoveItem(slots[index], amount);
+    }
 
-    //    // Equipment
-    //    if (slot.item is EquipmentData eq)
-    //    {
-    //        if (equipmentManager == null) return;
-    //        if (equipmentManager.IsEquipped(eq) == true)
-    //        {
-    //            InventoryEvents.UnequipRequested?.Invoke(eq.equipSlot);
-    //        }
-    //        else
-    //        {
-    //            InventoryEvents.EquipRequested?.Invoke(eq);
-    //        }
-
-    //        return;
-    //    }
-
-    //    Debug.Log($"Hotbar used item: {slot.item.itemName}");
-    //}
+    public void RemoveItem(int index)
+    {
+        RemoveItem(index, 1);
+    }
 
     void UseSlot(int index)
     {
@@ -224,7 +185,7 @@ public class Inventory : MonoBehaviour
         if (slot.item is ConsumableData consumable)
         {
             InventoryEvents.ItemConsumed?.Invoke(consumable);
-            Consume(slot);
+            RemoveItem(slot);
             InventoryEvents.InventoryChanged?.Invoke();
             return;
         }
@@ -245,38 +206,38 @@ public class Inventory : MonoBehaviour
         Debug.Log($"Used item: {slot.item.itemName}");
     }
 
-    public void DropItem(int index, int amount)
-    {
-        if (!Valid(index)) return;
+    //public void DropItem(int index, int amount)
+    //{
+    //    if (!Valid(index)) return;
 
-        var slot = slots[index];
-        if (slot.item == null) return;
-        if (amount <= 0) return;
+    //    var slot = slots[index];
+    //    if (slot.item == null) return;
+    //    if (amount <= 0) return;
 
-        int dropCount = Mathf.Min(amount, slot.count);
+    //    int dropCount = Mathf.Min(amount, slot.count);
 
-        // Get the world prefab of the item and instantiate it in front of the player
-        if (slot.item.worldPrefab != null)
-        {
-            var t = transform;
-            for (int i = 0; i < dropCount; i++)
-            {
-                Instantiate(
-                    slot.item.worldPrefab,
-                    t.position + t.forward * 1.2f - Vector3.up * 1.0f,
-                    Quaternion.identity
-                );
-            }
-        }
+    //    // Get the world prefab of the item and instantiate it in front of the player
+    //    if (slot.item.worldPrefab != null)
+    //    {
+    //        var t = transform;
+    //        for (int i = 0; i < dropCount; i++)
+    //        {
+    //            Instantiate(
+    //                slot.item.worldPrefab,
+    //                t.position + t.forward * 1.2f + Vector3.up * 2.0f,
+    //                Quaternion.identity
+    //            );
+    //        }
+    //    }
 
-        Consume(slot, dropCount);
-        InventoryEvents.InventoryChanged?.Invoke();
-    }
+    //    RemoveItem(slot, dropCount);
+    //    InventoryEvents.InventoryChanged?.Invoke();
+    //}
 
-    void DropItem(int index)
-    {
-        DropItem(index, 1);
-    }
+    //void DropItem(int index)
+    //{
+    //    DropItem(index, 1);
+    //}
 
     void InspectItem(int index)
     {

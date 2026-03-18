@@ -20,7 +20,9 @@ public class GlobalDropArea : MonoBehaviour, IDropHandler
         // Inventory
         else
         {
-            ctx.inventory.DropItem(ctx.inventorySlotIndex, 1);
+            //ctx.inventory.DropItem(ctx.inventorySlotIndex, 1);
+            InventoryEvents.ItemRemoved?.Invoke(ctx.inventorySlotIndex, 1);
+            InventoryEvents.ItemDropped?.Invoke(ctx.item, 1);
         }
 
         dragUI.EndDrag();

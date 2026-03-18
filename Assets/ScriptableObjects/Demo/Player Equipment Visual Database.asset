@@ -17,3 +17,5 @@ MonoBehaviour:
     prefab: {fileID: 124868415977877378, guid: c2a3ac284207c114c9a27971dea90dfd, type: 3}
   - itemId: equipment_pizzacutter_01
     prefab: {fileID: 3637837982845925108, guid: 9077019dd32137e47badefae4442fb43, type: 3}
+  - itemId: equipment_meattenderizer_01
+    prefab: {fileID: 7973590988087124676, guid: d36b0b6d4f0cf42429f5e4b31db62741, type: 3}

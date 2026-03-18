@@ -334,9 +334,9 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
         InventoryEvents.OnItemDragEnd?.Invoke();
     }
 
-    public void DropItem()
-    {
-        inventory.DropItem(slotIndex, 1);
-    }
+    //public void DropItem()
+    //{
+    //    inventory.DropItem(slotIndex, 1);
+    //}
 
 }

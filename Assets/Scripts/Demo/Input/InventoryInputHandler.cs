@@ -6,6 +6,7 @@ public class InventoryInputHandler : MonoBehaviour,
 {
     [SerializeField] private Inventory inventory;
     [SerializeField] private Hotbar hotbar;
+    [SerializeField] private ObjectPool pool;
 
     private InputSystem_Actions actions;
 
@@ -19,12 +20,16 @@ public class InventoryInputHandler : MonoBehaviour,
         actions.Enable();
         actions.Inventory.SetCallbacks(this);
         actions.Inventory.Enable();
+
+        InventoryEvents.ItemDropped += DropItem;
     }
 
     void OnDisable()
     {
         actions.Inventory.SetCallbacks(null);
         actions.Disable();
+
+        InventoryEvents.ItemDropped -= DropItem;
     }
 
     private void UpdateActionMap()
@@ -103,5 +108,45 @@ public class InventoryInputHandler : MonoBehaviour,
         }
 
         InventoryEvents.HotbarUseRequested?.Invoke(slot);
+    }
+
+    //public void DropItem(ItemData item, int amount)
+    //{
+    //    if (item.worldPrefab != null)
+    //    {
+    //        var t = transform;
+    //        for (int i = 0; i < amount; i++)
+    //        {
+    //            Instantiate(
+    //                item.worldPrefab,
+    //                t.position + t.forward * 1.2f + Vector3.up * 2.0f,
+    //                Quaternion.identity
+    //            );
+    //        }
+    //    }
+    //}
+
+    public void DropItem(ItemData item, int amount)
+    {
+        if (item.worldPrefab == null) return;
+
+        var t = transform;
+
+        for (int i = 0; i < amount; i++)
+        {
+            var obj = pool.Get(item.worldPrefab);
+
+            obj.transform.position =
+                t.position + t.forward * 1.2f + Vector3.up * 2.0f;
+
+            obj.transform.rotation = Quaternion.identity;
+
+            var pickup = obj.GetComponent<ItemPickup>();
+            if (pickup != null)
+            {
+                pickup.itemData = item;
+                pickup.amount = 1;
+            }
+        }
     }
 }

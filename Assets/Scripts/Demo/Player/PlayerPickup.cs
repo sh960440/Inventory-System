@@ -3,12 +3,8 @@ using UnityEngine;
 public class PlayerPickup : MonoBehaviour
 {
     private ItemPickup currentPickup;
-    private Inventory playerInventory;
-
-    void Start()
-    {
-        playerInventory = transform.parent.GetComponentInChildren<Inventory>();
-    }
+    public Inventory playerInventory;
+    public ObjectPool pool;
 
     public void TryPickup()
     {
@@ -44,8 +40,10 @@ public class PlayerPickup : MonoBehaviour
 
         //playerInventory.AddItem(currentPickup.itemData, currentPickup.amount);
         InventoryEvents.ItemAdded?.Invoke(currentPickup.itemData, currentPickup.amount);
-        Debug.Log($"Picked up {currentPickup.itemData.itemName} x{currentPickup.amount}");
-        Destroy(currentPickup.gameObject);
+
+        var prefab = currentPickup.itemData.worldPrefab;
+        pool.Return(prefab, currentPickup.gameObject);
+
         currentPickup = null;
     }
 }

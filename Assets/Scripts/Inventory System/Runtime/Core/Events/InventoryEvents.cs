@@ -22,10 +22,11 @@ public static class InventoryEvents
     // Item Interaction
     // =========================
     public static Action<ItemData, int> ItemAdded;
+    public static Action<int, int> ItemRemoved;
     public static Action<int> ItemUsed;
-    public static Action<int> ItemDropped;
     public static Action<int> ItemInspected;
     public static Action<ConsumableData> ItemConsumed;
+    public static Action<ItemData, int> ItemDropped;
 
     // =========================
     // Equipment

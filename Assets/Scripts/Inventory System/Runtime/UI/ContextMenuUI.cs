@@ -34,7 +34,10 @@ public class ContextMenuUI : MonoBehaviour
         dropButton.onClick.AddListener(() =>
         {
             if (context.isFromInventory && !context.isEquipped)
-                InventoryEvents.ItemDropped?.Invoke(context.slotIndex);
+            {
+                InventoryEvents.ItemRemoved?.Invoke(context.slotIndex, 1);
+                InventoryEvents.ItemDropped?.Invoke(context.item, 1);
+            }      
             Hide();
         });
 
