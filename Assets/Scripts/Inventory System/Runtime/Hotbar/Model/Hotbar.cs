@@ -100,12 +100,13 @@ public class Hotbar : MonoBehaviour
     // Validation
     void ValidateSlots()
     {
-        foreach (var hb in slots)
+        for (int i = 0; i < slots.Count; i++)
         {
+            var hb = slots[i];
             if (hb.IsEmpty) continue;
             if (hb.inventory == null) { hb.Clear(); continue; }
 
-            if (GetInventorySlot(slots.IndexOf(hb)) == null)
+            if (GetInventorySlot(i) == null)
                 hb.Clear();
         }
 
@@ -138,6 +139,11 @@ public class Hotbar : MonoBehaviour
 
     public void LoadFromSaveData(HotbarSaveData data, Inventory inventory)
     {
+        LoadFromSaveData(data, inventory, ItemDatabase.Instance);
+    }
+
+    public void LoadFromSaveData(HotbarSaveData data, Inventory inventory, IItemDatabase itemDatabase)
+    {
         for (int i = 0; i < slots.Count; i++)
             slots[i].Clear();
 
@@ -146,7 +152,7 @@ public class Hotbar : MonoBehaviour
             var itemId = data.itemIds[i].itemId;
             if (string.IsNullOrEmpty(itemId)) continue;
 
-            var targetItem = ItemDatabase.Instance.Get(itemId);
+            var targetItem = itemDatabase?.Get(itemId);
             if (targetItem == null) continue;
 
             for (int invIndex = 0; invIndex < inventory.SlotCount; invIndex++)

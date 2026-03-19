@@ -6,6 +6,7 @@ public class SaveSystem : MonoBehaviour
     public Inventory inventory;
     public Hotbar hotbar;
     public Equipment equipment;
+    [SerializeField] private MonoBehaviour itemDatabaseProvider;
 
     string SavePath =>
         Path.Combine(Application.persistentDataPath, "save.json");
@@ -31,9 +32,13 @@ public class SaveSystem : MonoBehaviour
 
     public void LoadV1(SaveData data)
     {
-        inventory.LoadFromSaveData(data.inventory);
-        hotbar.LoadFromSaveData(data.hotbar, inventory);
-        equipment.LoadFromSaveData(data.equipment, inventory);
+        var db = itemDatabaseProvider as IItemDatabase;
+        if (db == null)
+            db = ItemDatabase.Instance;
+
+        inventory.LoadFromSaveData(data.inventory, db);
+        hotbar.LoadFromSaveData(data.hotbar, inventory, db);
+        equipment.LoadFromSaveData(data.equipment, inventory, db);
     }
 
     public void Load()

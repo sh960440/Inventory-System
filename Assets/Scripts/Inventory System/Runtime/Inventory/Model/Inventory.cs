@@ -14,6 +14,7 @@ public class Inventory : MonoBehaviour
     private bool allowStacking = true;
     private bool allowSplitStack = true;
     private Equipment equipmentManager;
+    readonly List<IItemUseHandler> useHandlers = new List<IItemUseHandler>(2);
 
     public bool IsOpen { get; private set; }
     public bool AllowDoubleClickUse { get; private set; }
@@ -81,6 +82,17 @@ public class Inventory : MonoBehaviour
         allowStacking = config.allowStacking;
         allowSplitStack = config.allowSplitStack;
         AllowDoubleClickUse = config.allowInventoryDoubleClickUse;
+
+        EnsureDefaultUseHandlers();
+    }
+
+    void EnsureDefaultUseHandlers()
+    {
+        if (useHandlers.Count > 0)
+            return;
+
+        useHandlers.Add(new ConsumableUseHandler());
+        useHandlers.Add(new EquipmentUseHandler());
     }
 
     void OnItemAddedHandler(ItemData item, int amount)
@@ -182,29 +194,22 @@ public class Inventory : MonoBehaviour
         if (slot == null || slot.item == null)
             return;
 
-        // Consumable
-        if (slot.item is ConsumableData consumable)
+        EnsureDefaultUseHandlers();
+
+        var ctx = new ItemUseContext(this, equipmentManager);
+        var item = slot.item;
+
+        for (int i = 0; i < useHandlers.Count; i++)
         {
-            InventoryEvents.ItemConsumed?.Invoke(consumable);
-            RemoveItem(slot);
-            InventoryEvents.InventoryChanged?.Invoke();
-            return;
+            var h = useHandlers[i];
+            if (h != null && h.CanUse(item))
+            {
+                h.Use(ctx, slot);
+                return;
+            }
         }
 
-        // Equipment
-        if (slot.item is EquipmentData eq)
-        {
-            if (equipmentManager == null) return;
-
-            if (equipmentManager.IsEquipped(eq))
-                InventoryEvents.UnequipRequested?.Invoke(eq.equipSlot);
-            else
-                InventoryEvents.EquipRequested?.Invoke(eq);
-
-            return;
-        }
-
-        Debug.Log($"Used item: {slot.item.itemName}");
+        Debug.Log($"Used item (no handler): {slot.item.itemName}");
     }
 
     //public void DropItem(int index, int amount)
@@ -275,11 +280,11 @@ public class Inventory : MonoBehaviour
             return false;
 
         var itemName = slot.item.itemName;
-        /* var description = slot.item.description; */
+        /* var description = slot.item.description; */ // TBD
 
         return
             (!string.IsNullOrEmpty(itemName) && itemName.IndexOf(currentSearchLower, StringComparison.OrdinalIgnoreCase) >= 0)/* ||
-            (!string.IsNullOrEmpty(description) && description.IndexOf(currentSearchLower, StringComparison.OrdinalIgnoreCase) >= 0)*/;
+            (!string.IsNullOrEmpty(description) && description.IndexOf(currentSearchLower, StringComparison.OrdinalIgnoreCase) >= 0)*/; // TBD
     }
 
     // An API for UI
@@ -289,7 +294,7 @@ public class Inventory : MonoBehaviour
 
         for (int i = 0; i < slots.Count; i++)
         {
-            if (PassCategory(slots[i]))
+            if (PassFilter(slots[i]))
                 result.Add(i);
         }
 
@@ -303,7 +308,7 @@ public class Inventory : MonoBehaviour
 
         for (int i = 0; i < slots.Count; i++)
         {
-            if (PassCategory(slots[i]))
+            if (PassFilter(slots[i]))
                 result.Add(i);
         }
     }

@@ -120,6 +120,11 @@ public class Equipment : MonoBehaviour
 
     public void LoadFromSaveData(EquipmentSaveData data, Inventory inventory)
     {
+        LoadFromSaveData(data, inventory, ItemDatabase.Instance);
+    }
+
+    public void LoadFromSaveData(EquipmentSaveData data, Inventory inventory, IItemDatabase itemDatabase)
+    {
         UnequipAll();
 
         foreach (var slot in data.slots)
@@ -127,7 +132,7 @@ public class Equipment : MonoBehaviour
             if (string.IsNullOrEmpty(slot.itemId))
                 continue;
 
-            var item = ItemDatabase.Instance.Get(slot.itemId);
+            var item = itemDatabase?.Get(slot.itemId);
 
             if (item is EquipmentData eq)
             {

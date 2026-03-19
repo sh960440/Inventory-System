@@ -18,6 +18,7 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
     public TooltipUI tooltipUI;
     bool isDragging = false;
     private Equipment equipmentManager;
+    readonly System.Collections.Generic.List<RaycastResult> _raycastResults = new System.Collections.Generic.List<RaycastResult>(8);
 
     public static int CurrentHoveredIndex = -1;
 
@@ -141,10 +142,10 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
         //dragUI.Hide();
 
         // Raycast UI to find which slot to drop
-        var results = new System.Collections.Generic.List<RaycastResult>();
-        EventSystem.current.RaycastAll(eventData, results);
+        _raycastResults.Clear();
+        EventSystem.current.RaycastAll(eventData, _raycastResults);
 
-        foreach (var r in results)
+        foreach (var r in _raycastResults)
         {
             var other = r.gameObject.GetComponent<InventorySlotUI>();
             if (other != null)
@@ -201,21 +202,7 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
         var slot = inventory.slots[slotIndex];
         if (slot.item == null) return;
 
-        if (slot.item is EquipmentData eq && equipmentManager != null)
-        {
-            if (equipmentManager.IsEquipped(eq) == true)
-            {
-                InventoryEvents.UnequipRequested?.Invoke(eq.equipSlot);
-            }
-            else
-            {
-                InventoryEvents.EquipRequested?.Invoke(eq);
-            }
-        }
-        else if (slot.item is ConsumableData cd)
-        {
-            InventoryEvents.ItemUsed?.Invoke(slotIndex); // TODO: Change the parameter of ItemUsed to InventorySlot? 
-        }    
+        InventoryEvents.ItemUsed?.Invoke(slotIndex);
     }
 
     protected override void OnMiddleClick(PointerEventData eventData)

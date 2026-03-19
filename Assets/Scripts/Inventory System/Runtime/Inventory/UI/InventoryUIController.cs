@@ -26,6 +26,10 @@ public class InventoryUIController : MonoBehaviour
     //bool isOpen;
     Coroutine currentAnim;
 
+    // Reuse collections to avoid per-refresh allocations.
+    readonly HashSet<int> _visibleSet = new HashSet<int>();
+    readonly List<int> _visibleIndices = new List<int>();
+
     void OnEnable()
     {
         InventoryEvents.InventoryChanged += RefreshAll;
@@ -139,11 +143,14 @@ public class InventoryUIController : MonoBehaviour
 
     void RefreshAll()
     {
-        var visibleSet = new HashSet<int>(inventory.GetFilteredSlotIndices());
+        _visibleSet.Clear();
+        inventory.GetFilteredSlotIndices(_visibleIndices);
+        for (int i = 0; i < _visibleIndices.Count; i++)
+            _visibleSet.Add(_visibleIndices[i]);
 
         for (int i = 0; i < slotsUI.Length; i++)
         {
-            bool visible = visibleSet.Contains(i);
+            bool visible = _visibleSet.Contains(i);
             slotsUI[i].SetVisible(visible);
 
             if (visible)
