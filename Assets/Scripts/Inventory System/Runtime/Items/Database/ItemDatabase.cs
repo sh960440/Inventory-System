@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ItemDatabase : MonoBehaviour
+public class ItemDatabase : MonoBehaviour, IItemDatabase
 {
     public static ItemDatabase Instance { get; private set; }
 

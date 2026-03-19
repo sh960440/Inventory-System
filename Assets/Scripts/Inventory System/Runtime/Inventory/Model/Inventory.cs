@@ -8,6 +8,7 @@ public class Inventory : MonoBehaviour
     public int initialCapacity;
     public ItemCategory[] currentCategories;
     string currentSearch = "";
+    string currentSearchLower = "";
     public InventorySortType currentSortType = InventorySortType.None;
     public SortOrder currentSortOrder = SortOrder.Ascending;
     private bool allowStacking = true;
@@ -267,17 +268,18 @@ public class Inventory : MonoBehaviour
 
     bool PassSearch(InventorySlot slot)
     {
-        if (string.IsNullOrEmpty(currentSearch))
+        if (string.IsNullOrEmpty(currentSearchLower))
             return true;
 
         if (slot.item == null)
             return false;
 
-        string q = currentSearch.ToLower();
+        var itemName = slot.item.itemName;
+        /* var description = slot.item.description; */
 
         return
-            slot.item.itemName.ToLower().Contains(q) ||
-            slot.item.description.ToLower().Contains(q);
+            (!string.IsNullOrEmpty(itemName) && itemName.IndexOf(currentSearchLower, StringComparison.OrdinalIgnoreCase) >= 0)/* ||
+            (!string.IsNullOrEmpty(description) && description.IndexOf(currentSearchLower, StringComparison.OrdinalIgnoreCase) >= 0)*/;
     }
 
     // An API for UI
@@ -294,15 +296,28 @@ public class Inventory : MonoBehaviour
         return result;
     }
 
+    public void GetFilteredSlotIndices(List<int> result)
+    {
+        if (result == null) return;
+        result.Clear();
+
+        for (int i = 0; i < slots.Count; i++)
+        {
+            if (PassCategory(slots[i]))
+                result.Add(i);
+        }
+    }
+
     public void SetCategoryFilter(ItemCategory[] categories)
     {
         currentCategories = categories;
-        InventoryEvents.InventoryChanged.Invoke();
+        InventoryEvents.InventoryChanged?.Invoke();
     }
 
     public void SetSearchKeyword(string keyword)
     {
-        currentSearch = keyword;
+        currentSearch = keyword ?? "";
+        currentSearchLower = currentSearch.Trim();
         InventoryEvents.InventoryChanged?.Invoke();
     }
 
@@ -438,6 +453,10 @@ public class Inventory : MonoBehaviour
 
     public void LoadFromSaveData(InventorySaveData data)
     {
+        LoadFromSaveData(data, ItemDatabase.Instance);
+    }
+    public void LoadFromSaveData(InventorySaveData data, IItemDatabase itemDatabase)
+    {
         slots.Clear();
 
         foreach (var s in data.slots)
@@ -448,7 +467,7 @@ public class Inventory : MonoBehaviour
             }
             else
             {
-                var item = ItemDatabase.Instance.Get(s.itemId);
+                var item = itemDatabase?.Get(s.itemId);
 
                 slots.Add(
                     item != null
