@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class ItemSystemConfigurator : MonoBehaviour
@@ -12,6 +13,10 @@ public class ItemSystemConfigurator : MonoBehaviour
     [SerializeField] private EquipmentUIController equipmentUI;
     [SerializeField] private HotbarUIController hotbarUI;
 
+    [Header("Extension Points")]
+    [Tooltip("Optional item use handlers. Any component here that implements IItemUseHandler will be registered in order.")]
+    [SerializeField] private List<MonoBehaviour> itemUseHandlers = new List<MonoBehaviour>();
+
     private void Awake()
     {
         ApplyConfig();
@@ -21,6 +26,19 @@ public class ItemSystemConfigurator : MonoBehaviour
     {
         if (inventory != null)
             inventory.ApplyConfig(config, equipment);
+
+        if (inventory != null)
+        {
+            inventory.ClearUseHandlers();
+
+            for (int i = 0; i < itemUseHandlers.Count; i++)
+            {
+                if (itemUseHandlers[i] is IItemUseHandler h)
+                    inventory.RegisterUseHandler(h);
+            }
+
+            inventory.EnsureUseHandlers();
+        }
 
         if (inventoryUI != null)
             inventoryUI.ApplyConfig(config, equipment);

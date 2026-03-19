@@ -86,6 +86,22 @@ public class Inventory : MonoBehaviour
         EnsureDefaultUseHandlers();
     }
 
+    public void ClearUseHandlers()
+    {
+        useHandlers.Clear();
+    }
+
+    public void RegisterUseHandler(IItemUseHandler handler)
+    {
+        if (handler == null) return;
+        useHandlers.Add(handler);
+    }
+
+    public void EnsureUseHandlers()
+    {
+        EnsureDefaultUseHandlers();
+    }
+
     void EnsureDefaultUseHandlers()
     {
         if (useHandlers.Count > 0)
