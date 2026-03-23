@@ -39,7 +39,7 @@ public class PlayerPickup : MonoBehaviour
         if (playerInventory == null || currentPickup == null) return;
 
         //playerInventory.AddItem(currentPickup.itemData, currentPickup.amount);
-        InventoryEvents.ItemAdded?.Invoke(currentPickup.itemData, currentPickup.amount);
+        InventoryEvents.AddItemRequested?.Invoke(currentPickup.itemData, currentPickup.amount);
 
         var prefab = currentPickup.itemData.worldPrefab;
         pool.Return(prefab, currentPickup.gameObject);

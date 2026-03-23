@@ -21,7 +21,10 @@ public static class InventoryEvents
     // =========================
     // Item Interaction
     // =========================
-    public static Action<ItemData, int> ItemAdded;
+    /// <summary>
+    /// Request to add an item to inventory. Subscribed by Inventory.
+    /// </summary>
+    public static Action<ItemData, int> AddItemRequested;
     public static Action<int, int> ItemRemoved;
     public static Action<int> ItemUsed;
     public static Action<int> ItemInspected;

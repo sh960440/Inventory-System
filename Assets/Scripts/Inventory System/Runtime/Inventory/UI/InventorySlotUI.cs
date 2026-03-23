@@ -16,11 +16,10 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
     public ContextMenuUI contextMenuUI;
     public DraggableItemUI dragUI;
     public TooltipUI tooltipUI;
+    SlotHoverService hoverService;
     bool isDragging = false;
     private Equipment equipmentManager;
     readonly System.Collections.Generic.List<RaycastResult> _raycastResults = new System.Collections.Generic.List<RaycastResult>(8);
-
-    public static int CurrentHoveredIndex = -1;
 
     void OnEnable()
     {
@@ -39,11 +38,12 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
     //    Refresh();
     //}
 
-    public void Setup(Inventory inv, Equipment em, int idx)
+    public void Setup(Inventory inv, Equipment em, int idx, SlotHoverService hover = null)
     {
         inventory = inv;
         slotIndex = idx;
         equipmentManager = em;
+        hoverService = hover;
     }
 
     //public void Refresh()
@@ -165,32 +165,7 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
     void DropOnto(int targetIndex)
     {
         if (targetIndex == slotIndex) return;
-
-        var a = inventory.slots[slotIndex];
-        var b = inventory.slots[targetIndex];
-
-        // If the same type and stackable
-        if (a.item == b.item && a.item.stackable)
-        {
-            b.count += a.count;
-            a.item = null;
-            a.count = 0;
-        }
-        else
-        {
-            // swap
-            var tempItem = a.item;
-            var tempCount = a.count;
-
-            a.item = b.item;
-            a.count = b.count;
-
-            b.item = tempItem;
-            b.count = tempCount;
-        }
-
-        //inventory.UpdateUI();
-        InventoryEvents.InventoryChanged?.Invoke();
+        inventory.TrySwapOrStack(slotIndex, targetIndex);
     }
 
     protected override void OnDoubleClick()
@@ -261,7 +236,8 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        CurrentHoveredIndex = slotIndex;
+        if (hoverService != null)
+            hoverService.SetHovered(slotIndex);
 
         backgroundImage.color = new Color(1f, 1f, 1f, 0.9f);
         transform.localScale = Vector3.one * 1.05f;
@@ -285,8 +261,8 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        if (CurrentHoveredIndex == slotIndex)
-            CurrentHoveredIndex = -1;
+        if (hoverService != null && hoverService.CurrentHoveredIndex == slotIndex)
+            hoverService.ClearHovered();
 
         backgroundImage.color = Color.white;
         transform.localScale = Vector3.one;

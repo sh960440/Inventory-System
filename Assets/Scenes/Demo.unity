@@ -4432,8 +4432,6 @@ MonoBehaviour:
   slots: []
   initialCapacity: 12
   currentCategories: 
-  currentSortType: 0
-  currentSortOrder: 0
 --- !u!1 &676424574
 GameObject:
   m_ObjectHideFlags: 0
@@ -8934,6 +8932,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1178357975}
   - component: {fileID: 1178357976}
+  - component: {fileID: 1178357977}
   m_Layer: 0
   m_Name: Item System Configurator
   m_TagString: Untagged
@@ -8975,6 +8974,20 @@ MonoBehaviour:
   inventoryUI: {fileID: 353356865}
   equipmentUI: {fileID: 353356864}
   hotbarUI: {fileID: 353356863}
+  slotHoverService: {fileID: 1178357977}
+  itemUseHandlers: []
+--- !u!114 &1178357977
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1178357974}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0d2f9ae132b81dc499ab815709016206, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: InventorySystem.Runtime::SlotHoverService
 --- !u!1 &1180745779 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 4061294705909166529, guid: 073f34bd8355fdd4eb53617fa3b9db2f, type: 3}
@@ -9821,6 +9834,7 @@ GameObject:
   - component: {fileID: 1344638783}
   - component: {fileID: 1344638782}
   - component: {fileID: 1344638781}
+  - component: {fileID: 1344638784}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -9920,6 +9934,7 @@ MonoBehaviour:
   inventory: {fileID: 676156576}
   hotbar: {fileID: 1720750663}
   pool: {fileID: 909088137}
+  slotHoverService: {fileID: 1178357977}
 --- !u!95 &1344638777
 Animator:
   serializedVersion: 7
@@ -10223,6 +10238,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c702a9a5e6192744aaa76e82101aa4c4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ConsumableSystem
+--- !u!114 &1344638784
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1344638765}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2263f0be004f10049933f4ea92edfee1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerInputActionMapSwitcher
+  playerInput: {fileID: 1344638778}
+  inventory: {fileID: 676156576}
 --- !u!1 &1349005178 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1069567032315564, guid: bdf8e7438a7816543998181bd3067573, type: 3}
@@ -10664,6 +10693,7 @@ MonoBehaviour:
   inventory: {fileID: 676156576}
   hotbar: {fileID: 1720750663}
   equipment: {fileID: 1344638775}
+  itemDatabaseProvider: {fileID: 0}
 --- !u!4 &1394153635
 Transform:
   m_ObjectHideFlags: 0

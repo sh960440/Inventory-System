@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -48,9 +47,9 @@ public class InventoryUIController : MonoBehaviour
         InventoryEvents.InventoryClosed -= HandleClose;
     }
 
-    public void ApplyConfig(ItemSystemConfiguration config, Equipment equipmentManager)
+    public void ApplyConfig(ItemSystemConfiguration config, Equipment equipmentManager, SlotHoverService slotHoverService = null)
     {
-        BuildInventoryUI(config.inventoryColumns, equipmentManager);
+        BuildInventoryUI(config.inventoryColumns, equipmentManager, slotHoverService);
         BuildCategoryButtons(config.categoryButtons);
 
         useFadeAnimation = config.useFadeAnimation;
@@ -61,7 +60,7 @@ public class InventoryUIController : MonoBehaviour
         panel.gameObject.SetActive(false);
     }
 
-    void BuildInventoryUI(int inventoryColumns, Equipment equipmentManager)
+    void BuildInventoryUI(int inventoryColumns, Equipment equipmentManager, SlotHoverService slotHoverService = null)
     {
         gridLayout.cellSize = new Vector2(slotPrefab.GetComponent<RectTransform>().rect.width, slotPrefab.GetComponent<RectTransform>().rect.height);
         gridLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
@@ -76,7 +75,7 @@ public class InventoryUIController : MonoBehaviour
             ui.dragUI = dragUI;
             ui.tooltipUI = tooltipUI;
             slotsUI[i] = ui;
-            slotsUI[i].Setup(inventory, equipmentManager, i);
+            slotsUI[i].Setup(inventory, equipmentManager, i, slotHoverService);
         }
     }
 

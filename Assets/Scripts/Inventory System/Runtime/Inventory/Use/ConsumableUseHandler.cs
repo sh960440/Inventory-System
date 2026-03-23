@@ -9,6 +9,5 @@ public sealed class ConsumableUseHandler : IItemUseHandler
 
         InventoryEvents.ItemConsumed?.Invoke(consumable);
         context.Inventory.RemoveItem(slot);
-        InventoryEvents.InventoryChanged?.Invoke();
     }
 }

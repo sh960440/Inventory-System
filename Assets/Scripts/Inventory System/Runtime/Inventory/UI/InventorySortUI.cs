@@ -33,7 +33,7 @@ public class InventorySortUI : MonoBehaviour
     {
         if (inventory == null) return;
         var currentType = map[sortTypeDropdown.value];
-        inventory.SetSort(currentType, inventory.currentSortOrder);
+        inventory.SetSort(currentType, inventory.CurrentSortOrder);
         RefreshSortOrderIcon();
     }
 
@@ -43,7 +43,7 @@ public class InventorySortUI : MonoBehaviour
 
         var selectedType = map[index];
 
-        inventory.SetSort(selectedType, inventory.currentSortOrder);
+        inventory.SetSort(selectedType, inventory.CurrentSortOrder);
         RefreshSortOrderIcon();
     }
 
@@ -51,12 +51,7 @@ public class InventorySortUI : MonoBehaviour
     {
         if (inventory == null) return;
 
-        inventory.currentSortOrder =
-            inventory.currentSortOrder == SortOrder.Ascending
-                ? SortOrder.Descending
-                : SortOrder.Ascending;
-
-        inventory.SetSort(inventory.currentSortType, inventory.currentSortOrder);
+        inventory.ToggleSortOrder();
         RefreshSortOrderIcon();
     }
 
@@ -65,7 +60,7 @@ public class InventorySortUI : MonoBehaviour
         if (sortOrderImage == null || inventory == null) return;
 
         sortOrderImage.sprite =
-            inventory.currentSortOrder == SortOrder.Ascending
+            inventory.CurrentSortOrder == SortOrder.Ascending
                 ? ascendingSprite
                 : descendingSprite;
     }

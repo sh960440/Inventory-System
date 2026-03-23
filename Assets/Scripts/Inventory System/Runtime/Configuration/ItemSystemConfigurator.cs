@@ -12,6 +12,7 @@ public class ItemSystemConfigurator : MonoBehaviour
     [SerializeField] private InventoryUIController inventoryUI;
     [SerializeField] private EquipmentUIController equipmentUI;
     [SerializeField] private HotbarUIController hotbarUI;
+    [SerializeField] private SlotHoverService slotHoverService;
 
     [Header("Extension Points")]
     [Tooltip("Optional item use handlers. Any component here that implements IItemUseHandler will be registered in order.")]
@@ -24,6 +25,9 @@ public class ItemSystemConfigurator : MonoBehaviour
 
     private void ApplyConfig()
     {
+        if (slotHoverService == null)
+            slotHoverService = GetComponent<SlotHoverService>() ?? gameObject.AddComponent<SlotHoverService>();
+
         if (inventory != null)
             inventory.ApplyConfig(config, equipment);
 
@@ -41,7 +45,7 @@ public class ItemSystemConfigurator : MonoBehaviour
         }
 
         if (inventoryUI != null)
-            inventoryUI.ApplyConfig(config, equipment);
+            inventoryUI.ApplyConfig(config, equipment, slotHoverService);
 
         //if (equipment != null)
         //    equipment.ApplyConfig(config);

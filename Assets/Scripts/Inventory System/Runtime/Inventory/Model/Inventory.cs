@@ -9,12 +9,17 @@ public class Inventory : MonoBehaviour
     public ItemCategory[] currentCategories;
     string currentSearch = "";
     string currentSearchLower = "";
-    public InventorySortType currentSortType = InventorySortType.None;
-    public SortOrder currentSortOrder = SortOrder.Ascending;
+    private InventorySortType currentSortType = InventorySortType.None;
+    private SortOrder currentSortOrder = SortOrder.Ascending;
+
+    public InventorySortType CurrentSortType => currentSortType;
+    public SortOrder CurrentSortOrder => currentSortOrder;
     private bool allowStacking = true;
     private bool allowSplitStack = true;
     private Equipment equipmentManager;
     readonly List<IItemUseHandler> useHandlers = new List<IItemUseHandler>(2);
+    readonly List<InventorySlot> _sortFilled = new List<InventorySlot>();
+    readonly List<InventorySlot> _sortEmpty = new List<InventorySlot>();
 
     public bool IsOpen { get; private set; }
     public bool AllowDoubleClickUse { get; private set; }
@@ -53,7 +58,7 @@ public class Inventory : MonoBehaviour
         InventoryEvents.ItemUsed += UseSlot;
         InventoryEvents.ItemRemoved += RemoveItem;
         InventoryEvents.ItemInspected += InspectItem;
-        InventoryEvents.ItemAdded += OnItemAddedHandler;
+        InventoryEvents.AddItemRequested += OnItemAddedHandler;
         InventoryEvents.HotbarUseRequested += UseSlot;
         InventoryEvents.SplitStackRequested += HandleSplitStack;
     }
@@ -63,7 +68,7 @@ public class Inventory : MonoBehaviour
         InventoryEvents.ItemUsed -= UseSlot;
         InventoryEvents.ItemRemoved -= RemoveItem;
         InventoryEvents.ItemInspected -= InspectItem;
-        InventoryEvents.ItemAdded -= OnItemAddedHandler;
+        InventoryEvents.AddItemRequested -= OnItemAddedHandler;
         InventoryEvents.HotbarUseRequested -= UseSlot;
         InventoryEvents.SplitStackRequested -= HandleSplitStack;
     }
@@ -199,6 +204,56 @@ public class Inventory : MonoBehaviour
         RemoveItem(index, 1);
     }
 
+    /// <summary>
+    /// Tries to swap or stack two slots. Respects maxStack when stacking.
+    /// </summary>
+    /// <returns>True if the operation succeeded.</returns>
+    public bool TrySwapOrStack(int fromIndex, int toIndex)
+    {
+        if (!Valid(fromIndex) || !Valid(toIndex) || fromIndex == toIndex)
+            return false;
+
+        var a = slots[fromIndex];
+        var b = slots[toIndex];
+
+        if (a.item != null && b.item != null && a.item == b.item && a.item.stackable && allowStacking)
+        {
+            int space = a.item.maxStack - b.count;
+            if (space <= 0)
+            {
+                SwapSlots(a, b); // Target full, swap instead
+            }
+            else
+            {
+                int move = Math.Min(space, a.count);
+                b.count += move;
+                a.count -= move;
+                if (a.count <= 0)
+                {
+                    a.item = null;
+                    a.count = 0;
+                }
+            }
+        }
+        else
+        {
+            SwapSlots(a, b);
+        }
+
+        InventoryEvents.InventoryChanged?.Invoke();
+        return true;
+    }
+
+    static void SwapSlots(InventorySlot a, InventorySlot b)
+    {
+        var tempItem = a.item;
+        var tempCount = a.count;
+        a.item = b.item;
+        a.count = b.count;
+        b.item = tempItem;
+        b.count = tempCount;
+    }
+
     void UseSlot(int index)
     {
         if (!Valid(index)) return;
@@ -303,20 +358,10 @@ public class Inventory : MonoBehaviour
             (!string.IsNullOrEmpty(description) && description.IndexOf(currentSearchLower, StringComparison.OrdinalIgnoreCase) >= 0)*/; // TBD
     }
 
-    // An API for UI
-    public List<int> GetFilteredSlotIndices()
-    {
-        var result = new List<int>();
-
-        for (int i = 0; i < slots.Count; i++)
-        {
-            if (PassFilter(slots[i]))
-                result.Add(i);
-        }
-
-        return result;
-    }
-
+    /// <summary>
+    /// Fills the given list with slot indices that pass the current filter.
+    /// Reuses the list to avoid GC allocation.
+    /// </summary>
     public void GetFilteredSlotIndices(List<int> result)
     {
         if (result == null) return;
@@ -366,24 +411,34 @@ public class Inventory : MonoBehaviour
         InventoryEvents.InventoryChanged?.Invoke();
     }
 
+    /// <summary>
+    /// Toggles between ascending and descending, then re-sorts.
+    /// </summary>
+    public void ToggleSortOrder()
+    {
+        currentSortOrder = currentSortOrder == SortOrder.Ascending ? SortOrder.Descending : SortOrder.Ascending;
+        ApplySort();
+        InventoryEvents.InventoryChanged?.Invoke();
+    }
+
     void ApplySort()
     {
-        // Identify which slots are occupied and which are empty
-        var filled = new List<InventorySlot>();
-        var empty = new List<InventorySlot>();
+        _sortFilled.Clear();
+        _sortEmpty.Clear();
 
         foreach (var s in slots)
         {
-            if (s.item == null) empty.Add(s);
-            else filled.Add(s);
+            if (s.item == null)
+                _sortEmpty.Add(s);
+            else
+                _sortFilled.Add(s);
         }
 
-        // Sort slots with items
-        filled.Sort(CompareSlots);
+        _sortFilled.Sort(CompareSlots);
 
         slots.Clear();
-        slots.AddRange(filled);
-        slots.AddRange(empty);
+        slots.AddRange(_sortFilled);
+        slots.AddRange(_sortEmpty);
     }
 
     int CompareSlots(InventorySlot a, InventorySlot b)

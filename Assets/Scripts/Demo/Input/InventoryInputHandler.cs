@@ -1,12 +1,12 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class InventoryInputHandler : MonoBehaviour,
-    InputSystem_Actions.IInventoryActions
+public class InventoryInputHandler : MonoBehaviour, InputSystem_Actions.IInventoryActions
 {
     [SerializeField] private Inventory inventory;
     [SerializeField] private Hotbar hotbar;
     [SerializeField] private ObjectPool pool;
+    [SerializeField] private SlotHoverService slotHoverService;
 
     private InputSystem_Actions actions;
 
@@ -22,6 +22,10 @@ public class InventoryInputHandler : MonoBehaviour,
         actions.Inventory.Enable();
 
         InventoryEvents.ItemDropped += DropItem;
+        InventoryEvents.InventoryToggled += OnInventoryToggled;
+        InventoryEvents.InventoryClosed += OnInventoryClosed;
+
+        UpdateActionMap();
     }
 
     void OnDisable()
@@ -30,7 +34,12 @@ public class InventoryInputHandler : MonoBehaviour,
         actions.Disable();
 
         InventoryEvents.ItemDropped -= DropItem;
+        InventoryEvents.InventoryToggled -= OnInventoryToggled;
+        InventoryEvents.InventoryClosed -= OnInventoryClosed;
     }
+
+    void OnInventoryToggled(bool open) => UpdateActionMap();
+    void OnInventoryClosed() => UpdateActionMap();
 
     private void UpdateActionMap()
     {
@@ -72,7 +81,7 @@ public class InventoryInputHandler : MonoBehaviour,
 
         if (!inventory.IsOpen) return;
 
-        int index = InventorySlotUI.CurrentHoveredIndex;
+        int index = slotHoverService != null ? slotHoverService.CurrentHoveredIndex : -1;
         if (index < 0) return;
 
         InventoryEvents.SplitStackRequested?.Invoke(index);
