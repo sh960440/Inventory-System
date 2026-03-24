@@ -12,16 +12,15 @@ public class GlobalDropArea : MonoBehaviour, IDropHandler
 
         var ctx = dragUI.CurrentContext.Value;
 
-        // Hotbar
+        // Hotbar: clear slot binding only
         if (eventData.pointerDrag.TryGetComponent<HotbarSlotUI>(out var hotbarSlot))
         {
             hotbarSlot.ClearSelf();
         }
-        // Inventory
-        else
+        // Inventory: remove from slot + drop item
+        else if (ctx.inventory != null && ctx.inventorySlotIndex >= 0)
         {
-            //ctx.inventory.DropItem(ctx.inventorySlotIndex, 1);
-            InventoryEvents.ItemRemoved?.Invoke(ctx.inventorySlotIndex, 1);
+            InventoryEvents.RemoveItemRequested?.Invoke(ctx.inventorySlotIndex, 1);
             InventoryEvents.ItemDropped?.Invoke(ctx.item, 1);
         }
 

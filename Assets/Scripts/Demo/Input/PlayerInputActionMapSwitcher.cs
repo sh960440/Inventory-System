@@ -12,15 +12,15 @@ public class PlayerInputActionMapSwitcher : MonoBehaviour
 
     void OnEnable()
     {
-        InventoryEvents.InventoryToggled += OnInventoryToggled;
-        InventoryEvents.InventoryClosed += OnInventoryClosed;
+        InventoryEvents.InventoryToggleRequested += OnInventoryToggled;
+        InventoryEvents.InventoryCloseRequested += OnInventoryClosed;
         UpdateActionMap();
     }
 
     void OnDisable()
     {
-        InventoryEvents.InventoryToggled -= OnInventoryToggled;
-        InventoryEvents.InventoryClosed -= OnInventoryClosed;
+        InventoryEvents.InventoryToggleRequested -= OnInventoryToggled;
+        InventoryEvents.InventoryCloseRequested -= OnInventoryClosed;
     }
 
     void OnInventoryToggled(bool open) => UpdateActionMap();

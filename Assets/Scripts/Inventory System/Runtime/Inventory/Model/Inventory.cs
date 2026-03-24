@@ -32,16 +32,10 @@ public class Inventory : MonoBehaviour
         IsOpen = open;
 
         if (open)
-            InventoryEvents.InventoryToggled?.Invoke(true);
+            InventoryEvents.InventoryToggleRequested?.Invoke(true);
         else
-            InventoryEvents.InventoryClosed?.Invoke();
+            InventoryEvents.InventoryCloseRequested?.Invoke();
     }
-
-    bool IsAllCategory =>
-        currentCategories == null || currentCategories.Length == 0;
-
-    bool HasSearch =>
-        !string.IsNullOrEmpty(currentSearch);
 
     public int SlotCount => slots.Count;
 
@@ -56,7 +50,7 @@ public class Inventory : MonoBehaviour
     void OnEnable()
     {
         InventoryEvents.ItemUsed += UseSlot;
-        InventoryEvents.ItemRemoved += RemoveItem;
+        InventoryEvents.RemoveItemRequested += RemoveItem;
         InventoryEvents.ItemInspected += InspectItem;
         InventoryEvents.AddItemRequested += OnItemAddedHandler;
         InventoryEvents.HotbarUseRequested += UseSlot;
@@ -66,7 +60,7 @@ public class Inventory : MonoBehaviour
     void OnDisable()
     {
         InventoryEvents.ItemUsed -= UseSlot;
-        InventoryEvents.ItemRemoved -= RemoveItem;
+        InventoryEvents.RemoveItemRequested -= RemoveItem;
         InventoryEvents.ItemInspected -= InspectItem;
         InventoryEvents.AddItemRequested -= OnItemAddedHandler;
         InventoryEvents.HotbarUseRequested -= UseSlot;
@@ -324,40 +318,6 @@ public class Inventory : MonoBehaviour
         Debug.Log($"{item.itemName}\n{item.description}");
     }
 
-    bool PassCategory(InventorySlot slot)
-    {
-        // All category = Always pass
-        if (currentCategories == null || currentCategories.Length == 0)
-            return true;
-
-        if (slot.item == null)
-            return false;
-
-        foreach (var c in currentCategories)
-        {
-            if (slot.item.category == c)
-                return true;
-        }
-
-        return false;
-    }
-
-    bool PassSearch(InventorySlot slot)
-    {
-        if (string.IsNullOrEmpty(currentSearchLower))
-            return true;
-
-        if (slot.item == null)
-            return false;
-
-        var itemName = slot.item.itemName;
-        /* var description = slot.item.description; */ // TBD
-
-        return
-            (!string.IsNullOrEmpty(itemName) && itemName.IndexOf(currentSearchLower, StringComparison.OrdinalIgnoreCase) >= 0)/* ||
-            (!string.IsNullOrEmpty(description) && description.IndexOf(currentSearchLower, StringComparison.OrdinalIgnoreCase) >= 0)*/; // TBD
-    }
-
     /// <summary>
     /// Fills the given list with slot indices that pass the current filter.
     /// Reuses the list to avoid GC allocation.
@@ -367,9 +327,10 @@ public class Inventory : MonoBehaviour
         if (result == null) return;
         result.Clear();
 
+        var showEmpty = InventoryFilterUtility.ShouldShowEmptySlot(currentCategories, currentSearch);
         for (int i = 0; i < slots.Count; i++)
         {
-            if (PassFilter(slots[i]))
+            if (InventoryFilterUtility.PassFilter(slots[i], currentCategories, currentSearchLower, showEmpty))
                 result.Add(i);
         }
     }
@@ -389,18 +350,16 @@ public class Inventory : MonoBehaviour
 
     public bool ShouldShowEmptySlot()
     {
-        return IsAllCategory && !HasSearch;
+        return InventoryFilterUtility.ShouldShowEmptySlot(currentCategories, currentSearch);
     }
 
     public bool PassFilter(InventorySlot slot)
     {
-        if (slot.item == null)
-            return ShouldShowEmptySlot();
-
-        if (!PassCategory(slot)) return false;
-        if (!PassSearch(slot)) return false;
-
-        return true;
+        return InventoryFilterUtility.PassFilter(
+            slot,
+            currentCategories,
+            currentSearchLower,
+            ShouldShowEmptySlot());
     }
 
     public void SetSort(InventorySortType type, SortOrder order)
@@ -423,54 +382,7 @@ public class Inventory : MonoBehaviour
 
     void ApplySort()
     {
-        _sortFilled.Clear();
-        _sortEmpty.Clear();
-
-        foreach (var s in slots)
-        {
-            if (s.item == null)
-                _sortEmpty.Add(s);
-            else
-                _sortFilled.Add(s);
-        }
-
-        _sortFilled.Sort(CompareSlots);
-
-        slots.Clear();
-        slots.AddRange(_sortFilled);
-        slots.AddRange(_sortEmpty);
-    }
-
-    int CompareSlots(InventorySlot a, InventorySlot b)
-    {
-        if (a.item == null || b.item == null)
-            return 0;
-
-        int result = 0;
-
-        switch (currentSortType)
-        {
-            case InventorySortType.Name:
-                result = string.Compare(a.item.itemName, b.item.itemName);
-                break;
-
-            case InventorySortType.Rarity:
-                result = a.item.rarity.CompareTo(b.item.rarity);
-                break;
-
-            case InventorySortType.Category:
-                result = a.item.category.CompareTo(b.item.category);
-                break;
-
-            case InventorySortType.Count:
-                result = a.count.CompareTo(b.count);
-                break;
-        }
-
-        if (currentSortOrder == SortOrder.Descending)
-            result = -result;
-
-        return result;
+        InventorySortUtility.SortSlots(slots, currentSortType, currentSortOrder, _sortFilled, _sortEmpty);
     }
 
     void HandleSplitStack(int index)

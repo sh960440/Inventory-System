@@ -18,7 +18,7 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
     public TooltipUI tooltipUI;
     SlotHoverService hoverService;
     bool isDragging = false;
-    private Equipment equipmentManager;
+    private IEquippedItemLookup equippedItemLookup;
     readonly System.Collections.Generic.List<RaycastResult> _raycastResults = new System.Collections.Generic.List<RaycastResult>(8);
 
     void OnEnable()
@@ -38,11 +38,11 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
     //    Refresh();
     //}
 
-    public void Setup(Inventory inv, Equipment em, int idx, SlotHoverService hover = null)
+    public void Setup(Inventory inv, IEquippedItemLookup equippedLookup, int idx, SlotHoverService hover = null)
     {
         inventory = inv;
         slotIndex = idx;
-        equipmentManager = em;
+        equippedItemLookup = equippedLookup;
         hoverService = hover;
     }
 
@@ -99,7 +99,7 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
 
         if (slot.item is EquipmentData eq)
         {
-            isEquipped = equipmentManager != null && equipmentManager.IsEquipped(eq);
+            isEquipped = equippedItemLookup != null && equippedItemLookup.IsEquipped(eq);
         }
 
         backgroundImage.sprite = isEquipped ? equippedBackground : defaultBackground;
@@ -195,7 +195,7 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
         // Open Context Menu
         bool isEquipped = false;
         if (slot.item is EquipmentData eq)
-            isEquipped = equipmentManager.IsEquipped(eq);
+            isEquipped = equippedItemLookup != null && equippedItemLookup.IsEquipped(eq);
 
         InventoryEvents.ContextMenuRequested?.Invoke(new ItemUIContext
         {
@@ -247,7 +247,7 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
 
         bool isEquipped = false;
         if (slot.item is EquipmentData eq)
-            isEquipped = equipmentManager.IsEquipped(eq);
+            isEquipped = equippedItemLookup != null && equippedItemLookup.IsEquipped(eq);
 
         InventoryEvents.TooltipRequested?.Invoke(new ItemUIContext
         {

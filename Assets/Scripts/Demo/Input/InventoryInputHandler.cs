@@ -22,8 +22,8 @@ public class InventoryInputHandler : MonoBehaviour, InputSystem_Actions.IInvento
         actions.Inventory.Enable();
 
         InventoryEvents.ItemDropped += DropItem;
-        InventoryEvents.InventoryToggled += OnInventoryToggled;
-        InventoryEvents.InventoryClosed += OnInventoryClosed;
+        InventoryEvents.InventoryToggleRequested += OnInventoryToggled;
+        InventoryEvents.InventoryCloseRequested += OnInventoryClosed;
 
         UpdateActionMap();
     }
@@ -34,8 +34,8 @@ public class InventoryInputHandler : MonoBehaviour, InputSystem_Actions.IInvento
         actions.Disable();
 
         InventoryEvents.ItemDropped -= DropItem;
-        InventoryEvents.InventoryToggled -= OnInventoryToggled;
-        InventoryEvents.InventoryClosed -= OnInventoryClosed;
+        InventoryEvents.InventoryToggleRequested -= OnInventoryToggled;
+        InventoryEvents.InventoryCloseRequested -= OnInventoryClosed;
     }
 
     void OnInventoryToggled(bool open) => UpdateActionMap();

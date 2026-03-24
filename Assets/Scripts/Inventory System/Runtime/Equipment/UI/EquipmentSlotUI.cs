@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class EquipmentSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
+public class EquipmentSlotUI : UISlotBase, IPointerEnterHandler, IPointerExitHandler
 {
     public EquipmentSlot slotType;   // Head / Weapon / etc.
     public Equipment equipmentManager;
@@ -57,18 +57,9 @@ public class EquipmentSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         InventoryEvents.TooltipHidden?.Invoke();
     }
 
-    public void OnPointerClick(PointerEventData eventData)
+    protected override void OnDoubleClick()
     {
-        if (eventData.button != PointerEventData.InputButton.Right) return;
         if (currentItem == null) return;
-
-        InventoryEvents.ContextMenuRequested?.Invoke(new ItemUIContext
-        {
-            item = currentItem,
-            isFromInventory = false,
-            isEquipped = true,
-            slotIndex = -1,
-            count = -1
-        });
+        InventoryEvents.UnequipRequested?.Invoke(currentItem.equipSlot);
     }
 }

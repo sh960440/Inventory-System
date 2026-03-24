@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.LowLevel;
 
 public class TooltipUI : MonoBehaviour
 {
@@ -18,7 +19,8 @@ public class TooltipUI : MonoBehaviour
     {
         InventoryEvents.TooltipRequested += Show;
         InventoryEvents.TooltipHidden += Hide;
-        InventoryEvents.InventoryClosed += Hide;
+        InventoryEvents.InventoryCloseRequested += Hide;
+        InputSystem.onEvent += OnInputEvent;
         Hide();
     }
 
@@ -26,13 +28,17 @@ public class TooltipUI : MonoBehaviour
     {
         InventoryEvents.TooltipRequested -= Show;
         InventoryEvents.TooltipHidden -= Hide;
-        InventoryEvents.InventoryClosed -= Hide;
+        InventoryEvents.InventoryCloseRequested -= Hide;
+        InputSystem.onEvent -= OnInputEvent;
     }
 
-    void Update()
+    void OnInputEvent(InputEventPtr eventPtr, InputDevice device)
     {
-        if (isFollowingMouse)
-            UpdatePosition(Mouse.current.position.ReadValue());
+        if (!isFollowingMouse) return;
+        if (Mouse.current == null || device != Mouse.current) return;
+        if (!eventPtr.IsA<StateEvent>()) return;
+
+        UpdatePosition(Mouse.current.position.ReadValue());
     }
 
     void Show(ItemUIContext ctx)

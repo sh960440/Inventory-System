@@ -35,7 +35,7 @@ public class ContextMenuUI : MonoBehaviour
         {
             if (context.isFromInventory && !context.isEquipped)
             {
-                InventoryEvents.ItemRemoved?.Invoke(context.slotIndex, 1);
+                InventoryEvents.RemoveItemRequested?.Invoke(context.slotIndex, 1);
                 InventoryEvents.ItemDropped?.Invoke(context.item, 1);
             }      
             Hide();
@@ -59,13 +59,13 @@ public class ContextMenuUI : MonoBehaviour
     void OnEnable()
     {
         InventoryEvents.ContextMenuRequested += Show;
-        InventoryEvents.InventoryClosed += Hide;
+        InventoryEvents.InventoryCloseRequested += Hide;
     }
 
     void OnDisable()
     {
         InventoryEvents.ContextMenuRequested -= Show;
-        InventoryEvents.InventoryClosed -= Hide;
+        InventoryEvents.InventoryCloseRequested -= Hide;
     }
 
     void Show(ItemUIContext ctx)

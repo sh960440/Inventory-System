@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Equipment : MonoBehaviour
+public class Equipment : MonoBehaviour, IEquippedItemLookup
 {
     private Dictionary<EquipmentSlot, EquipmentData> equipped
         = new Dictionary<EquipmentSlot, EquipmentData>();
@@ -125,6 +125,9 @@ public class Equipment : MonoBehaviour
 
     public void LoadFromSaveData(EquipmentSaveData data, Inventory inventory, IItemDatabase itemDatabase)
     {
+        // UnequipAll first clears current state (fires OnUnequipped -> Removes modifiers).
+        // Then we Equip each saved item (fires OnEquipped -> Adds modifiers).
+        // Order ensures no double-application of modifiers.
         UnequipAll();
 
         foreach (var slot in data.slots)

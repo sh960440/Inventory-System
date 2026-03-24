@@ -34,8 +34,8 @@ public class InventoryUIController : MonoBehaviour
         InventoryEvents.InventoryChanged += RefreshAll;
         InventoryEvents.EquipmentChanged += RefreshAll;
 
-        InventoryEvents.InventoryToggled += HandleOpen;
-        InventoryEvents.InventoryClosed += HandleClose;
+        InventoryEvents.InventoryToggleRequested += HandleOpen;
+        InventoryEvents.InventoryCloseRequested += HandleClose;
     }
 
     void OnDisable()
@@ -43,13 +43,13 @@ public class InventoryUIController : MonoBehaviour
         InventoryEvents.InventoryChanged -= RefreshAll;
         InventoryEvents.EquipmentChanged -= RefreshAll;
 
-        InventoryEvents.InventoryToggled -= HandleOpen;
-        InventoryEvents.InventoryClosed -= HandleClose;
+        InventoryEvents.InventoryToggleRequested -= HandleOpen;
+        InventoryEvents.InventoryCloseRequested -= HandleClose;
     }
 
-    public void ApplyConfig(ItemSystemConfiguration config, Equipment equipmentManager, SlotHoverService slotHoverService = null)
+    public void ApplyConfig(ItemSystemConfiguration config, IEquippedItemLookup equippedItemLookup, SlotHoverService slotHoverService = null)
     {
-        BuildInventoryUI(config.inventoryColumns, equipmentManager, slotHoverService);
+        BuildInventoryUI(config.inventoryColumns, equippedItemLookup, slotHoverService);
         BuildCategoryButtons(config.categoryButtons);
 
         useFadeAnimation = config.useFadeAnimation;
@@ -60,7 +60,7 @@ public class InventoryUIController : MonoBehaviour
         panel.gameObject.SetActive(false);
     }
 
-    void BuildInventoryUI(int inventoryColumns, Equipment equipmentManager, SlotHoverService slotHoverService = null)
+    void BuildInventoryUI(int inventoryColumns, IEquippedItemLookup equippedItemLookup, SlotHoverService slotHoverService = null)
     {
         gridLayout.cellSize = new Vector2(slotPrefab.GetComponent<RectTransform>().rect.width, slotPrefab.GetComponent<RectTransform>().rect.height);
         gridLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
@@ -75,7 +75,7 @@ public class InventoryUIController : MonoBehaviour
             ui.dragUI = dragUI;
             ui.tooltipUI = tooltipUI;
             slotsUI[i] = ui;
-            slotsUI[i].Setup(inventory, equipmentManager, i, slotHoverService);
+            slotsUI[i].Setup(inventory, equippedItemLookup, i, slotHoverService);
         }
     }
 
