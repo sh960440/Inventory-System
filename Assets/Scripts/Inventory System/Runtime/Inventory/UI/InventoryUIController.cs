@@ -5,19 +5,35 @@ using UnityEngine.UI;
 
 public class InventoryUIController : MonoBehaviour
 {
-    public RectTransform panel;
-    public CanvasGroup canvasGroup;
-    public Inventory inventory;
-    public InventorySlotUI slotPrefab;
-    public InventorySlotUI[] slotsUI;
-    public Transform container;
-    public GridLayoutGroup gridLayout;
+    public struct InventoryUIWiring
+    {
+        public RectTransform panel;
+        public CanvasGroup canvasGroup;
+        public InventorySlotUI slotPrefab;
+        public Transform container;
+        public GridLayoutGroup gridLayout;
 
-    public Transform categoryButtonContainer;
-    public InventoryCategoryButton categoryButtonPrefab;
-    public ContextMenuUI contextMenuUI;
-    public DraggableItemUI dragUI;
-    public TooltipUI tooltipUI;
+        public Transform categoryButtonContainer;
+        public InventoryCategoryButton categoryButtonPrefab;
+
+        public ContextMenuUI contextMenuUI;
+        public DraggableItemUI dragUI;
+        public TooltipUI tooltipUI;
+    }
+
+    [SerializeField] private RectTransform panel;
+    [SerializeField] private CanvasGroup canvasGroup;
+    public Inventory inventory;
+    [SerializeField] private InventorySlotUI slotPrefab;
+    public InventorySlotUI[] slotsUI;
+    [SerializeField] private Transform container;
+    [SerializeField] private GridLayoutGroup gridLayout;
+
+    [SerializeField] private Transform categoryButtonContainer;
+    [SerializeField] private InventoryCategoryButton categoryButtonPrefab;
+    [SerializeField] private ContextMenuUI contextMenuUI;
+    [SerializeField] private DraggableItemUI dragUI;
+    [SerializeField] private TooltipUI tooltipUI;
 
     private bool useFadeAnimation;
     private float fadeDuration;
@@ -28,6 +44,26 @@ public class InventoryUIController : MonoBehaviour
     // Reuse collections to avoid per-refresh allocations.
     readonly HashSet<int> _visibleSet = new HashSet<int>();
     readonly List<int> _visibleIndices = new List<int>();
+
+    /// <summary>
+    /// Injects UI wiring dependencies in a single place.
+    /// Does not change behavior when you already assigned fields in Inspector.
+    /// </summary>
+    public void ApplyWiring(InventoryUIWiring wiring)
+    {
+        if (wiring.panel != null) panel = wiring.panel;
+        if (wiring.canvasGroup != null) canvasGroup = wiring.canvasGroup;
+        if (wiring.slotPrefab != null) slotPrefab = wiring.slotPrefab;
+        if (wiring.container != null) container = wiring.container;
+        if (wiring.gridLayout != null) gridLayout = wiring.gridLayout;
+
+        if (wiring.categoryButtonContainer != null) categoryButtonContainer = wiring.categoryButtonContainer;
+        if (wiring.categoryButtonPrefab != null) categoryButtonPrefab = wiring.categoryButtonPrefab;
+
+        if (wiring.contextMenuUI != null) contextMenuUI = wiring.contextMenuUI;
+        if (wiring.dragUI != null) dragUI = wiring.dragUI;
+        if (wiring.tooltipUI != null) tooltipUI = wiring.tooltipUI;
+    }
 
     void OnEnable()
     {
@@ -49,6 +85,8 @@ public class InventoryUIController : MonoBehaviour
 
     public void ApplyConfig(ItemSystemConfiguration config, IEquippedItemLookup equippedItemLookup, SlotHoverService slotHoverService = null)
     {
+        if (!ValidateWiring()) return;
+
         BuildInventoryUI(config.inventoryColumns, equippedItemLookup, slotHoverService);
         BuildCategoryButtons(config.categoryButtons);
 
@@ -58,6 +96,37 @@ public class InventoryUIController : MonoBehaviour
         RefreshAll();
         canvasGroup.alpha = 0;
         panel.gameObject.SetActive(false);
+    }
+
+    bool ValidateWiring()
+    {
+        if (panel == null)
+        {
+            Debug.LogWarning("[InventoryUIController] Missing required dependency: panel.", this);
+            return false;
+        }
+        if (canvasGroup == null)
+        {
+            Debug.LogWarning("[InventoryUIController] Missing required dependency: canvasGroup.", this);
+            return false;
+        }
+        if (slotPrefab == null)
+        {
+            Debug.LogWarning("[InventoryUIController] Missing required dependency: slotPrefab.", this);
+            return false;
+        }
+        if (container == null)
+        {
+            Debug.LogWarning("[InventoryUIController] Missing required dependency: container.", this);
+            return false;
+        }
+        if (gridLayout == null)
+        {
+            Debug.LogWarning("[InventoryUIController] Missing required dependency: gridLayout.", this);
+            return false;
+        }
+
+        return true;
     }
 
     void BuildInventoryUI(int inventoryColumns, IEquippedItemLookup equippedItemLookup, SlotHoverService slotHoverService = null)

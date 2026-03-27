@@ -12,7 +12,7 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
     public Sprite equippedBackground;
     public Image iconImage;
     public TMP_Text countText;
-    Inventory inventory;
+    IInventoryReadOnly inventory;
     public ContextMenuUI contextMenuUI;
     public DraggableItemUI dragUI;
     public TooltipUI tooltipUI;
@@ -38,7 +38,7 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
     //    Refresh();
     //}
 
-    public void Setup(Inventory inv, IEquippedItemLookup equippedLookup, int idx, SlotHoverService hover = null)
+    public void Setup(IInventoryReadOnly inv, IEquippedItemLookup equippedLookup, int idx, SlotHoverService hover = null)
     {
         inventory = inv;
         slotIndex = idx;
@@ -70,7 +70,7 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
 
     public void Refresh()
     {
-        var slot = inventory.slots[slotIndex];
+        var slot = inventory.Slots[slotIndex];
 
         bool pass = inventory.PassFilter(slot);
         gameObject.SetActive(pass);
@@ -128,7 +128,7 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
         // Drag only if left button is clicked
         if (eventData.button != PointerEventData.InputButton.Left)
             return;
-        if (inventory.slots[slotIndex].item == null)
+        if (inventory.Slots[slotIndex].item == null)
             return;
 
         isDragging = true;
@@ -174,7 +174,7 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
         if (!inventory.AllowDoubleClickUse) return;
         if (!inventory.Valid(slotIndex)) return;
 
-        var slot = inventory.slots[slotIndex];
+        var slot = inventory.Slots[slotIndex];
         if (slot.item == null) return;
 
         InventoryEvents.ItemUsed?.Invoke(slotIndex);
@@ -182,7 +182,7 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
 
     protected override void OnMiddleClick(PointerEventData eventData)
     {
-        var slot = inventory.slots[slotIndex];
+        var slot = inventory.Slots[slotIndex];
         if (slot.item == null) return;
 
         // Shift + right click -> Split Stack
@@ -242,7 +242,7 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
         backgroundImage.color = new Color(1f, 1f, 1f, 0.9f);
         transform.localScale = Vector3.one * 1.05f;
 
-        var slot = inventory.slots[slotIndex];
+        var slot = inventory.Slots[slotIndex];
         if (slot.item == null) return;
 
         bool isEquipped = false;
@@ -272,12 +272,15 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
 
     public void OnBeginDrag(PointerEventData eventData)
     {
-        var slot = inventory.slots[slotIndex];
+        if (inventory is not Inventory invMono)
+            return;
+
+        var slot = inventory.Slots[slotIndex];
         if (slot.item == null) return;
 
         var ctx = new DragItemContext
         {
-            inventory = inventory,
+            inventory = invMono,
             inventorySlotIndex = slotIndex,
             item = slot.item
         };

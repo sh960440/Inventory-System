@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Inventory : MonoBehaviour
+public class Inventory : MonoBehaviour, IInventoryReadOnly
 {
     public List<InventorySlot> slots = new();
+    public IReadOnlyList<InventorySlot> Slots => slots;
     public int initialCapacity;
-    public ItemCategory[] currentCategories;
-    string currentSearch = "";
-    string currentSearchLower = "";
+    public ItemCategory[] currentCategories => _filterState.CurrentCategories;
+    readonly InventoryFilterState _filterState = new InventoryFilterState();
     private InventorySortType currentSortType = InventorySortType.None;
     private SortOrder currentSortOrder = SortOrder.Ascending;
 
@@ -17,7 +17,7 @@ public class Inventory : MonoBehaviour
     private bool allowStacking = true;
     private bool allowSplitStack = true;
     private Equipment equipmentManager;
-    readonly List<IItemUseHandler> useHandlers = new List<IItemUseHandler>(2);
+    readonly InventoryUseHandlerRegistry useHandlerRegistry = new InventoryUseHandlerRegistry();
     readonly List<InventorySlot> _sortFilled = new List<InventorySlot>();
     readonly List<InventorySlot> _sortEmpty = new List<InventorySlot>();
 
@@ -82,32 +82,22 @@ public class Inventory : MonoBehaviour
         allowSplitStack = config.allowSplitStack;
         AllowDoubleClickUse = config.allowInventoryDoubleClickUse;
 
-        EnsureDefaultUseHandlers();
+        useHandlerRegistry.EnsureDefaults();
     }
 
     public void ClearUseHandlers()
     {
-        useHandlers.Clear();
+        useHandlerRegistry.Clear();
     }
 
     public void RegisterUseHandler(IItemUseHandler handler)
     {
-        if (handler == null) return;
-        useHandlers.Add(handler);
+        useHandlerRegistry.Register(handler);
     }
 
     public void EnsureUseHandlers()
     {
-        EnsureDefaultUseHandlers();
-    }
-
-    void EnsureDefaultUseHandlers()
-    {
-        if (useHandlers.Count > 0)
-            return;
-
-        useHandlers.Add(new ConsumableUseHandler());
-        useHandlers.Add(new EquipmentUseHandler());
+        useHandlerRegistry.EnsureDefaults();
     }
 
     void OnItemAddedHandler(ItemData item, int amount)
@@ -215,7 +205,7 @@ public class Inventory : MonoBehaviour
             int space = a.item.maxStack - b.count;
             if (space <= 0)
             {
-                SwapSlots(a, b); // Target full, swap instead
+                SwapSlots(a, b);
             }
             else
             {
@@ -259,56 +249,13 @@ public class Inventory : MonoBehaviour
         if (slot == null || slot.item == null)
             return;
 
-        EnsureDefaultUseHandlers();
-
         var ctx = new ItemUseContext(this, equipmentManager);
-        var item = slot.item;
 
-        for (int i = 0; i < useHandlers.Count; i++)
-        {
-            var h = useHandlers[i];
-            if (h != null && h.CanUse(item))
-            {
-                h.Use(ctx, slot);
-                return;
-            }
-        }
+        if (useHandlerRegistry.TryUse(ctx, slot))
+            return;
 
         Debug.Log($"Used item (no handler): {slot.item.itemName}");
     }
-
-    //public void DropItem(int index, int amount)
-    //{
-    //    if (!Valid(index)) return;
-
-    //    var slot = slots[index];
-    //    if (slot.item == null) return;
-    //    if (amount <= 0) return;
-
-    //    int dropCount = Mathf.Min(amount, slot.count);
-
-    //    // Get the world prefab of the item and instantiate it in front of the player
-    //    if (slot.item.worldPrefab != null)
-    //    {
-    //        var t = transform;
-    //        for (int i = 0; i < dropCount; i++)
-    //        {
-    //            Instantiate(
-    //                slot.item.worldPrefab,
-    //                t.position + t.forward * 1.2f + Vector3.up * 2.0f,
-    //                Quaternion.identity
-    //            );
-    //        }
-    //    }
-
-    //    RemoveItem(slot, dropCount);
-    //    InventoryEvents.InventoryChanged?.Invoke();
-    //}
-
-    //void DropItem(int index)
-    //{
-    //    DropItem(index, 1);
-    //}
 
     void InspectItem(int index)
     {
@@ -325,41 +272,29 @@ public class Inventory : MonoBehaviour
     public void GetFilteredSlotIndices(List<int> result)
     {
         if (result == null) return;
-        result.Clear();
-
-        var showEmpty = InventoryFilterUtility.ShouldShowEmptySlot(currentCategories, currentSearch);
-        for (int i = 0; i < slots.Count; i++)
-        {
-            if (InventoryFilterUtility.PassFilter(slots[i], currentCategories, currentSearchLower, showEmpty))
-                result.Add(i);
-        }
+        _filterState.GetFilteredSlotIndices(slots, result);
     }
 
     public void SetCategoryFilter(ItemCategory[] categories)
     {
-        currentCategories = categories;
+        _filterState.SetCategoryFilter(categories);
         InventoryEvents.InventoryChanged?.Invoke();
     }
 
     public void SetSearchKeyword(string keyword)
     {
-        currentSearch = keyword ?? "";
-        currentSearchLower = currentSearch.Trim();
+        _filterState.SetSearchKeyword(keyword);
         InventoryEvents.InventoryChanged?.Invoke();
     }
 
     public bool ShouldShowEmptySlot()
     {
-        return InventoryFilterUtility.ShouldShowEmptySlot(currentCategories, currentSearch);
+        return _filterState.ShouldShowEmptySlot();
     }
 
     public bool PassFilter(InventorySlot slot)
     {
-        return InventoryFilterUtility.PassFilter(
-            slot,
-            currentCategories,
-            currentSearchLower,
-            ShouldShowEmptySlot());
+        return _filterState.PassFilter(slot);
     }
 
     public void SetSort(InventorySortType type, SortOrder order)
@@ -414,29 +349,7 @@ public class Inventory : MonoBehaviour
 
     public InventorySaveData ToSaveData()
     {
-        var data = new InventorySaveData();
-
-        foreach (var slot in slots)
-        {
-            if (slot.item == null)
-            {
-                data.slots.Add(new InventorySlotSaveData
-                {
-                    itemId = null,
-                    count = 0
-                });
-            }
-            else
-            {
-                data.slots.Add(new InventorySlotSaveData
-                {
-                    itemId = slot.item.Id,
-                    count = slot.count
-                });
-            }
-        }
-
-        return data;
+        return InventorySaveDataMapper.ToSaveData(slots);
     }
 
     public void LoadFromSaveData(InventorySaveData data)
@@ -445,26 +358,7 @@ public class Inventory : MonoBehaviour
     }
     public void LoadFromSaveData(InventorySaveData data, IItemDatabase itemDatabase)
     {
-        slots.Clear();
-
-        foreach (var s in data.slots)
-        {
-            if (string.IsNullOrEmpty(s.itemId))
-            {
-                slots.Add(new InventorySlot());
-            }
-            else
-            {
-                var item = itemDatabase?.Get(s.itemId);
-
-                slots.Add(
-                    item != null
-                        ? new InventorySlot(item, s.count)
-                        : new InventorySlot()
-                );
-            }
-        }
-
+        InventorySaveDataMapper.LoadFromSaveData(data, slots, itemDatabase);
         InventoryEvents.InventoryChanged?.Invoke();
     }
 }

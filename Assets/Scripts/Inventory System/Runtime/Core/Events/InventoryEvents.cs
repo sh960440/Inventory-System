@@ -1,6 +1,13 @@
 using System;
 using System.Collections.Generic;
 
+/// <summary>
+/// Static event hub for inventory, equipment, hotbar, and UI overlays.
+/// Comment convention: 
+/// *Requested = caller asks another system to act;
+/// *Changed = state was already updated;
+/// On* = lifecycle / stream-style callback.
+/// </summary>
 public static class InventoryEvents
 {
     // =========================
