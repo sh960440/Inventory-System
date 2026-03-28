@@ -43,8 +43,8 @@ public class ContextMenuUI : MonoBehaviour
 
         equipButton.onClick.AddListener(() =>
         {
-            if (context.item is EquipmentData eq)
-                InventoryEvents.EquipRequested?.Invoke(eq);
+            if (context.item is EquipmentData eq && context.isFromInventory)
+                InventoryEvents.EquipRequested?.Invoke(eq, context.slotIndex);
             Hide();
         });
 

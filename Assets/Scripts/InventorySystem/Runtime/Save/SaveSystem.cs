@@ -38,7 +38,7 @@ public class SaveSystem : MonoBehaviour
 
         inventory.LoadFromSaveData(data.inventory, db);
         hotbar.LoadFromSaveData(data.hotbar, inventory, db);
-        equipment.LoadFromSaveData(data.equipment, inventory, db);
+        equipment.LoadFromSaveData(data.equipment, db);
     }
 
     public void Load()

@@ -1,4 +1,4 @@
 public interface IEquippedItemLookup
 {
-    bool IsEquipped(EquipmentData item);
+    bool IsInventorySlotSourceOfEquippedItem(int inventorySlotIndex, EquipmentData item);
 }

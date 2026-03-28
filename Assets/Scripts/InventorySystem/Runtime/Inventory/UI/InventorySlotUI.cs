@@ -102,7 +102,8 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
 
         if (slot.item is EquipmentData eq)
         {
-            isEquipped = equippedItemLookup != null && equippedItemLookup.IsEquipped(eq);
+            isEquipped = equippedItemLookup != null
+                         && equippedItemLookup.IsInventorySlotSourceOfEquippedItem(slotIndex, eq);
         }
 
         backgroundImage.sprite = isEquipped ? equippedBackground : defaultBackground;
@@ -198,7 +199,8 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
         // Open Context Menu
         bool isEquipped = false;
         if (slot.item is EquipmentData eq)
-            isEquipped = equippedItemLookup != null && equippedItemLookup.IsEquipped(eq);
+            isEquipped = equippedItemLookup != null
+                         && equippedItemLookup.IsInventorySlotSourceOfEquippedItem(slotIndex, eq);
 
         InventoryEvents.ContextMenuRequested?.Invoke(new ItemUIContext
         {
@@ -250,7 +252,8 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
 
         bool isEquipped = false;
         if (slot.item is EquipmentData eq)
-            isEquipped = equippedItemLookup != null && equippedItemLookup.IsEquipped(eq);
+            isEquipped = equippedItemLookup != null
+                         && equippedItemLookup.IsInventorySlotSourceOfEquippedItem(slotIndex, eq);
 
         InventoryEvents.TooltipRequested?.Invoke(new ItemUIContext
         {

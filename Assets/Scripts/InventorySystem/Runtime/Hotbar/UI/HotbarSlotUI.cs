@@ -72,7 +72,7 @@ public class HotbarSlotUI : UISlotBase, IBeginDragHandler, IDragHandler, IEndDra
         icon.enabled = true;
 
         RefreshCount(invSlot);
-        RefreshEquippedState(invSlot.item);
+        RefreshEquippedState(invSlot.item, hotbar.ValidHotbarIndex(index) ? hotbar.slots[index].boundInventorySlotIndex : -1);
     }
 
     void RefreshCount(InventorySlot invSlot)
@@ -90,7 +90,7 @@ public class HotbarSlotUI : UISlotBase, IBeginDragHandler, IDragHandler, IEndDra
         countText.gameObject.SetActive(true);
     }
 
-    void RefreshEquippedState(ItemData item)
+    void RefreshEquippedState(ItemData item, int boundInventorySlotIndex)
     {
         if (backgroundImage == null) return;
 
@@ -100,7 +100,10 @@ public class HotbarSlotUI : UISlotBase, IBeginDragHandler, IDragHandler, IEndDra
             return;
         }
 
-        backgroundImage.sprite = (equipmentManager != null && equipmentManager.IsEquipped(eq)) ? equippedBackground : defaultBackground;
+        bool source = equipmentManager != null
+                      && equipmentManager.IsInventorySlotSourceOfEquippedItem(boundInventorySlotIndex, eq);
+
+        backgroundImage.sprite = source ? equippedBackground : defaultBackground;
     }
 
     // =========================

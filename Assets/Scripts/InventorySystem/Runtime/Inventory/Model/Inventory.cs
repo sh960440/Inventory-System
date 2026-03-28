@@ -156,6 +156,44 @@ public class Inventory : MonoBehaviour, IInventoryReadOnly
         return AddItem(item, 1);
     }
 
+    public bool CanAddItem(ItemData item, int amount)
+    {
+        if (item == null || amount <= 0)
+            return true;
+
+        int remaining = amount;
+
+        if (item.stackable && allowStacking)
+        {
+            foreach (var slot in slots)
+            {
+                if (slot.item == item && slot.count < item.maxStack)
+                {
+                    int space = item.maxStack - slot.count;
+                    remaining -= Mathf.Min(space, remaining);
+                    if (remaining <= 0)
+                        return true;
+                }
+            }
+        }
+
+        foreach (var slot in slots)
+        {
+            if (slot.item == null && remaining > 0)
+            {
+                int add = allowStacking && item.stackable
+                    ? Mathf.Min(item.maxStack, remaining)
+                    : 1;
+
+                remaining -= add;
+                if (remaining <= 0)
+                    return true;
+            }
+        }
+
+        return remaining <= 0;
+    }
+
     public void RemoveItem(InventorySlot slot, int amount)
     {
         if (slot.item == null) return;
@@ -200,12 +238,15 @@ public class Inventory : MonoBehaviour, IInventoryReadOnly
         var a = slots[fromIndex];
         var b = slots[toIndex];
 
+        bool exchangedCells = false;
+
         if (a.item != null && b.item != null && a.item == b.item && a.item.stackable && allowStacking)
         {
             int space = a.item.maxStack - b.count;
             if (space <= 0)
             {
                 SwapSlots(a, b);
+                exchangedCells = true;
             }
             else
             {
@@ -222,7 +263,11 @@ public class Inventory : MonoBehaviour, IInventoryReadOnly
         else
         {
             SwapSlots(a, b);
+            exchangedCells = true;
         }
+
+        if (exchangedCells)
+            InventoryEvents.InventorySlotsSwapped?.Invoke(fromIndex, toIndex);
 
         InventoryEvents.InventoryChanged?.Invoke();
         return true;
@@ -241,20 +286,38 @@ public class Inventory : MonoBehaviour, IInventoryReadOnly
     void UseSlot(int index)
     {
         if (!Valid(index)) return;
-        UseSlot(slots[index]);
+        UseSlot(slots[index], index);
     }
 
     void UseSlot(InventorySlot slot)
     {
+        int index = IndexOfSlot(slot);
+        UseSlot(slot, index);
+    }
+
+    void UseSlot(InventorySlot slot, int slotIndex)
+    {
         if (slot == null || slot.item == null)
             return;
 
-        var ctx = new ItemUseContext(this, equipmentManager);
+        var ctx = new ItemUseContext(this, equipmentManager, slotIndex);
 
         if (useHandlerRegistry.TryUse(ctx, slot))
             return;
 
         Debug.Log($"Used item (no handler): {slot.item.itemName}");
+    }
+
+    public int IndexOfSlot(InventorySlot slot)
+    {
+        if (slot == null) return -1;
+        for (int i = 0; i < slots.Count; i++)
+        {
+            if (ReferenceEquals(slots[i], slot))
+                return i;
+        }
+
+        return -1;
     }
 
     void InspectItem(int index)

@@ -44,6 +44,9 @@ public class ItemSystemConfigurator : MonoBehaviour
         if (inventory != null)
             inventory.ApplyConfig(config, equipment);
 
+        if (equipment != null && inventory != null)
+            equipment.BindInventory(inventory);
+
         if (inventory != null)
         {
             inventory.ClearUseHandlers();

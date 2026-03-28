@@ -23,6 +23,8 @@ public static class InventoryEvents
     // =========================
     /// <summary>Fired when slots change (add/remove/swap/sort). Subscribed by UI controllers for refresh.</summary>
     public static Action InventoryChanged;
+    /// <summary>Fired after two inventory cells exchange content (swap or full stack swap).</summary>
+    public static Action<int, int> InventorySlotsSwapped;
     /// <summary>Request to add an item to inventory. Subscribed by Inventory.</summary>
     public static Action<ItemData, int> AddItemRequested;
     /// <summary>Request to remove item from slot. Args: slotIndex, amount. Fired by ContextMenuUI, GlobalDropArea. Subscribed by Inventory.</summary>
@@ -41,8 +43,8 @@ public static class InventoryEvents
     // =========================
     // Equipment
     // =========================
-    /// <summary>Request to equip an item. Fired by ContextMenuUI, EquipmentUseHandler. Subscribed by Equipment.</summary>
-    public static Action<EquipmentData> EquipRequested;
+    /// <summary>Request to equip from inventory.</summary>
+    public static Action<EquipmentData, int> EquipRequested;
     /// <summary>Request to unequip from slot. Fired by ContextMenuUI, EquipmentUseHandler. Subscribed by Equipment.</summary>
     public static Action<EquipmentSlot> UnequipRequested;
     /// <summary>Fired when equipped items change. Subscribed by slot UI for refresh.</summary>

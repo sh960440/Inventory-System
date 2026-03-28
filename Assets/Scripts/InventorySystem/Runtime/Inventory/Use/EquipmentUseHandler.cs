@@ -11,9 +11,9 @@ public sealed class EquipmentUseHandler : IItemUseHandler
         if (equipment == null)
             return;
 
-        if (equipment.IsEquipped(eq))
+        if (equipment.IsInventorySlotSourceOfEquippedItem(context.InventorySlotIndex, eq))
             InventoryEvents.UnequipRequested?.Invoke(eq.equipSlot);
         else
-            InventoryEvents.EquipRequested?.Invoke(eq);
+            InventoryEvents.EquipRequested?.Invoke(eq, context.InventorySlotIndex);
     }
 }
