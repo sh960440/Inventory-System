@@ -6,7 +6,7 @@ public class CharacterStats : MonoBehaviour
 {
     [Header("Base Stats")]
     public int maxHP = 200;
-    public int baseHP = 100;
+    public int currentHP = 100;
     public int baseAttack = 10;
     public int baseDefense = 5;
     public float baseMoveSpeed = 5f;
@@ -16,6 +16,9 @@ public class CharacterStats : MonoBehaviour
     public static event Action OnStatsChanged;
     public static event Action<int> OnHealed;
     public static event Action<int> OnHPChanged;
+
+    public int CurrentHP => currentHP;
+    public int GetMaxHP() => Mathf.Max(1, maxHP);
 
     void OnEnable()
     {
@@ -29,9 +32,14 @@ public class CharacterStats : MonoBehaviour
         InventoryEvents.OnUnequipped -= OnUnequipped;
     }
 
-    private void Awake()
+    void Awake()
     {
-        baseHP = Mathf.Clamp(baseHP, 0, maxHP);
+        ClampCurrentToMaxHPField();
+    }
+
+    void Start()
+    {
+        ClampCurrentToMaxHPField();
     }
 
     void OnEquipped(EquipmentData item, List<StatModifier> mods)
@@ -46,22 +54,35 @@ public class CharacterStats : MonoBehaviour
             RemoveModifier(mod);
     }
 
-    // ---------- Public API ----------
-
     public void AddModifier(StatModifier mod)
     {
         modifiers.Add(mod);
+        int hpBefore = currentHP;
+        ApplyHpModifierToCurrent(mod, +1);
+        ClampCurrentToMaxHPField();
         OnStatsChanged?.Invoke();
+        if (currentHP != hpBefore)
+            OnHPChanged?.Invoke(currentHP);
     }
 
     public void RemoveModifier(StatModifier mod)
     {
-        modifiers.Remove(mod);
+        if (!modifiers.Remove(mod))
+            return;
+
+        int hpBefore = currentHP;
+        ApplyHpModifierToCurrent(mod, -1);
+        ClampCurrentToMaxHPField();
         OnStatsChanged?.Invoke();
+        if (currentHP != hpBefore)
+            OnHPChanged?.Invoke(currentHP);
     }
 
     public float GetFinalValue(StatType type)
     {
+        if (type == StatType.HP)
+            return maxHP;
+
         float baseValue = GetBaseValue(type);
         float flatBonus = 0f;
         float percentBonus = 0f;
@@ -76,32 +97,70 @@ public class CharacterStats : MonoBehaviour
                 percentBonus += mod.value;
         }
 
-        float finalValue = (baseValue + flatBonus) * (1 + percentBonus / 100f);
-        return finalValue;
+        return (baseValue + flatBonus) * (1 + percentBonus / 100f);
     }
 
     public void Heal(int amount)
     {
-        int oldHP = baseHP;
+        if (amount <= 0)
+            return;
 
-        baseHP = Mathf.Min(baseHP + amount, maxHP);
+        int oldHP = currentHP;
+        currentHP = Mathf.Min(currentHP + amount, maxHP);
 
-        int actualHeal = baseHP - oldHP;
+        int actualHeal = currentHP - oldHP;
 
         if (actualHeal > 0)
         {
             OnHealed?.Invoke(actualHeal);
-            OnHPChanged?.Invoke(baseHP);
+            OnHPChanged?.Invoke(currentHP);
         }
     }
 
-    // ---------- Internal ----------
+    public void TakeDamage(int amount)
+    {
+        if (amount <= 0)
+            return;
+
+        int oldHP = currentHP;
+        currentHP = Mathf.Max(1, currentHP - amount);
+
+        if (currentHP != oldHP)
+        {
+            OnHPChanged?.Invoke(currentHP);
+            OnStatsChanged?.Invoke();
+        }
+    }
+
+#if UNITY_EDITOR
+    [ContextMenu("Demo/Take 50 damage")]
+    void EditorDemoTakeDamage() => TakeDamage(50);
+#endif
+
+    void ApplyHpModifierToCurrent(StatModifier mod, int sign)
+    {
+        if (mod.statType != StatType.HP)
+            return;
+
+        int delta;
+        if (mod.modifierType == ModifierType.Flat)
+            delta = Mathf.RoundToInt(mod.value) * sign;
+        else
+            delta = Mathf.RoundToInt(maxHP * (mod.value / 100f)) * sign;
+
+        currentHP += delta;
+    }
+
+    void ClampCurrentToMaxHPField()
+    {
+        currentHP = Mathf.Clamp(currentHP, 0, maxHP);
+    }
 
     float GetBaseValue(StatType type)
     {
         switch (type)
         {
-            case StatType.HP: return baseHP;
+            case StatType.HP: return maxHP;
             case StatType.Attack: return baseAttack;
             case StatType.Defense: return baseDefense;
             case StatType.MoveSpeed: return baseMoveSpeed;
