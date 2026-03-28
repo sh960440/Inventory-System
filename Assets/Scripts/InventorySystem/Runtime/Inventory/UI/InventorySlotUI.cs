@@ -83,6 +83,9 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
 
             backgroundImage.sprite = defaultBackground;
 
+            if (hoverService != null && hoverService.CurrentHoveredIndex == slotIndex)
+                InventoryEvents.TooltipHidden?.Invoke();
+
             return;
         }
 
