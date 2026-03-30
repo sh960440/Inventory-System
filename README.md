@@ -20,8 +20,13 @@ Reusable inventory module with a small 3D demo:
 1. Open `Assets/Scenes/Demo.unity` and Press Play.
 2. Controls:
    - Character movement: W / A / S / D or arrow keys
+   - Jump: Space
+   - Rotate camera: Right-click
+   - Zoom in/out: Mouse wheel
    - Pick up items: E
    - Toggle inventory: I
+   - Split stack: X
+   - Open context menu: Middle-click
 
 ## How to set up a new scene
 
