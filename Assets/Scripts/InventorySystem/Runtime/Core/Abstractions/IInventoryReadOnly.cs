@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 
-/// Narrow surface for inventory UI (list/query/filter + swap/stack from drag-drop).
+/// <summary>
+/// Read-only inventory surface for UI.
+/// </summary>
 public interface IInventoryReadOnly
 {
     IReadOnlyList<InventorySlot> Slots { get; }

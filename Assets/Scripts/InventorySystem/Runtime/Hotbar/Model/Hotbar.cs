@@ -24,10 +24,10 @@ public class Hotbar : MonoBehaviour
     public void ApplyConfig(ItemSystemConfiguration config)
     {
         slots.Clear();
-        for (int i = 0; i < config.hotkeyCount; i++)
+        for (int i = 0; i < config.HotkeyCount; i++)
             slots.Add(new HotbarSlot());
 
-        AllowDoubleClickUse = config.allowHotbarDoubleClickUse;
+        AllowDoubleClickUse = config.AllowHotbarDoubleClickUse;
     }
     void InitSlots()
     {

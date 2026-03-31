@@ -1,5 +1,6 @@
-using UnityEngine;
-
+/// <summary>
+/// Defines the available item categories.
+/// </summary>
 public enum ItemCategory
 {
     All,
@@ -7,5 +8,5 @@ public enum ItemCategory
     Armor,
     Consumable,
     Material,
-    Misc
+    Miscellaneous
 }

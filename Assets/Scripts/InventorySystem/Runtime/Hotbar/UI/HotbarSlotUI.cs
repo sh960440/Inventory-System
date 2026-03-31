@@ -114,13 +114,7 @@ public class HotbarSlotUI : UISlotBase, IBeginDragHandler, IDragHandler, IEndDra
         var invSlot = hotbar.GetInventorySlot(index);
         if (invSlot == null) return;
 
-        var ctx = new DragItemContext
-        {
-            inventory = null,               // Hotbar source doesn't have an inventory reference
-            inventorySlotIndex = -1,
-            hotbarIndex = index,
-            item = invSlot.item
-        };
+        var ctx = new DragItemContext(null, inventorySlotIndex: -1, hotbarIndex: index, item: invSlot.item);
 
         dragUI.BeginDrag(ctx, invSlot.item.icon);
         InventoryEvents.OnItemDragBegin?.Invoke(ctx);
@@ -146,16 +140,16 @@ public class HotbarSlotUI : UISlotBase, IBeginDragHandler, IDragHandler, IEndDra
         var ctx = currentDrag.Value;
 
         // Inventory -> Hotbar
-        if (ctx.inventory != null)
+        if (ctx.Inventory != null)
         {
-            hotbar.Assign(index, ctx.inventory, ctx.inventorySlotIndex);
+            hotbar.Assign(index, ctx.Inventory, ctx.InventorySlotIndex);
             return;
         }
 
         // Hotbar -> Hotbar swap
-        if (ctx.hotbarIndex >= 0 && ctx.hotbarIndex != index)
+        if (ctx.HotbarIndex >= 0 && ctx.HotbarIndex != index)
         {
-            hotbar.Swap(index, ctx.hotbarIndex);
+            hotbar.Swap(index, ctx.HotbarIndex);
         }
     }
 

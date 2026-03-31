@@ -19,38 +19,38 @@ public class ContextMenuUI : MonoBehaviour
     {
         useButton.onClick.AddListener(() =>
         {
-            if (context.isFromInventory)
-                InventoryEvents.ItemUsed?.Invoke(context.slotIndex);
+            if (context.IsFromInventory)
+                InventoryEvents.ItemUsed?.Invoke(context.SlotIndex);
             Hide();
         });
 
         inspectButton.onClick.AddListener(() =>
         {
-            if (context.isFromInventory)
-                InventoryEvents.ItemInspected?.Invoke(context.slotIndex);
+            if (context.IsFromInventory)
+                InventoryEvents.ItemInspected?.Invoke(context.SlotIndex);
             Hide();
         });
 
         dropButton.onClick.AddListener(() =>
         {
-            if (context.isFromInventory && !context.isEquipped)
+            if (context.IsFromInventory && !context.IsEquipped)
             {
-                InventoryEvents.RemoveItemRequested?.Invoke(context.slotIndex, 1);
-                InventoryEvents.ItemDropped?.Invoke(context.item, 1);
+                InventoryEvents.RemoveItemRequested?.Invoke(context.SlotIndex, 1);
+                InventoryEvents.ItemDropped?.Invoke(context.Item, 1);
             }      
             Hide();
         });
 
         equipButton.onClick.AddListener(() =>
         {
-            if (context.item is EquipmentData eq && context.isFromInventory)
-                InventoryEvents.EquipRequested?.Invoke(eq, context.slotIndex);
+            if (context.Item is EquipmentData eq && context.IsFromInventory)
+                InventoryEvents.EquipRequested?.Invoke(eq, context.SlotIndex);
             Hide();
         });
 
         unequipButton.onClick.AddListener(() =>
         {
-            if (context.item is EquipmentData eq)
+            if (context.Item is EquipmentData eq)
                 InventoryEvents.UnequipRequested?.Invoke(eq.equipSlot);
             Hide();
         });
@@ -79,25 +79,25 @@ public class ContextMenuUI : MonoBehaviour
         equipButton.gameObject.SetActive(false);
         unequipButton.gameObject.SetActive(false);
 
-        if (ctx.item == null) return;
+        if (ctx.Item == null) return;
 
         // Inventory only
-        if (ctx.isFromInventory)
+        if (ctx.IsFromInventory)
         {
             inspectButton.gameObject.SetActive(true);
 
-            if (ctx.item.consumable)
+            if (ctx.Item.consumable)
                 useButton.gameObject.SetActive(true);
 
-            if (!ctx.isEquipped)
+            if (!ctx.IsEquipped)
                 dropButton.gameObject.SetActive(true);
         }
 
         // Equipment logic
-        if (ctx.item is EquipmentData)
+        if (ctx.Item is EquipmentData)
         {
-            equipButton.gameObject.SetActive(ctx.isFromInventory && !ctx.isEquipped);
-            unequipButton.gameObject.SetActive(ctx.isEquipped);
+            equipButton.gameObject.SetActive(ctx.IsFromInventory && !ctx.IsEquipped);
+            unequipButton.gameObject.SetActive(ctx.IsEquipped);
         }
 
         rectTransform.position = Mouse.current.position.ReadValue();

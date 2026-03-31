@@ -80,7 +80,7 @@ public class CharacterStats : MonoBehaviour
 
     public float GetFinalValue(StatType type)
     {
-        if (type == StatType.HP)
+        if (type == StatType.Health)
             return maxHP;
 
         float baseValue = GetBaseValue(type);
@@ -89,12 +89,12 @@ public class CharacterStats : MonoBehaviour
 
         foreach (var mod in modifiers)
         {
-            if (mod.statType != type) continue;
+            if (mod.StatType != type) continue;
 
-            if (mod.modifierType == ModifierType.Flat)
-                flatBonus += mod.value;
+            if (mod.ModifierType == ModifierType.Flat)
+                flatBonus += mod.Value;
             else
-                percentBonus += mod.value;
+                percentBonus += mod.Value;
         }
 
         return (baseValue + flatBonus) * (1 + percentBonus / 100f);
@@ -139,14 +139,14 @@ public class CharacterStats : MonoBehaviour
 
     void ApplyHpModifierToCurrent(StatModifier mod, int sign)
     {
-        if (mod.statType != StatType.HP)
+        if (mod.StatType != StatType.Health)
             return;
 
         int delta;
-        if (mod.modifierType == ModifierType.Flat)
-            delta = Mathf.RoundToInt(mod.value) * sign;
+        if (mod.ModifierType == ModifierType.Flat)
+            delta = Mathf.RoundToInt(mod.Value) * sign;
         else
-            delta = Mathf.RoundToInt(maxHP * (mod.value / 100f)) * sign;
+            delta = Mathf.RoundToInt(maxHP * (mod.Value / 100f)) * sign;
 
         currentHP += delta;
     }
@@ -160,7 +160,7 @@ public class CharacterStats : MonoBehaviour
     {
         switch (type)
         {
-            case StatType.HP: return maxHP;
+            case StatType.Health: return maxHP;
             case StatType.Attack: return baseAttack;
             case StatType.Defense: return baseDefense;
             case StatType.MoveSpeed: return baseMoveSpeed;

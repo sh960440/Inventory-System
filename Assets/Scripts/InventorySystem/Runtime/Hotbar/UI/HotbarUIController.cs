@@ -28,9 +28,9 @@ public class HotbarUIController : MonoBehaviour
 
     public void ApplyConfig(ItemSystemConfiguration config, Equipment equipmentManager)
     {
-        slotUIs = new HotbarSlotUI[config.hotkeyCount];
+        slotUIs = new HotbarSlotUI[config.HotkeyCount];
 
-        for (int i = 0; i < config.hotkeyCount; i++)
+        for (int i = 0; i < config.HotkeyCount; i++)
         {
             var ui = Instantiate(slotPrefab, container);
             ui.Setup(hotbar, equipmentManager, i);

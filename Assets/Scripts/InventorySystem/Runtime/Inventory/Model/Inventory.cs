@@ -69,7 +69,7 @@ public class Inventory : MonoBehaviour, IInventoryReadOnly
 
     public void ApplyConfig(ItemSystemConfiguration config, Equipment em)
     {
-        initialCapacity = config.inventoryRows * config.inventoryColumns;
+        initialCapacity = config.InventoryRows * config.InventoryColumns;
 
         if (slots.Count == 0)
         {
@@ -78,9 +78,9 @@ public class Inventory : MonoBehaviour, IInventoryReadOnly
         }
 
         equipmentManager = em;
-        allowStacking = config.allowStacking;
-        allowSplitStack = config.allowSplitStack;
-        AllowDoubleClickUse = config.allowInventoryDoubleClickUse;
+        allowStacking = config.AllowStacking;
+        allowSplitStack = config.AllowSplitStack;
+        AllowDoubleClickUse = config.AllowInventoryDoubleClickUse;
 
         useHandlerRegistry.EnsureDefaults();
     }

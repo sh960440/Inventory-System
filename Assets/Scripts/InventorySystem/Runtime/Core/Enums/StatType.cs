@@ -1,8 +1,9 @@
-using UnityEngine;
-
+/// <summary>
+/// Defines the types of stats available.
+/// </summary>
 public enum StatType
 {
-    HP,
+    Health,
     Attack,
     Defense,
     MoveSpeed

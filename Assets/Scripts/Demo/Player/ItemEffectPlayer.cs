@@ -22,7 +22,7 @@ public class ItemEffectPlayer : MonoBehaviour
 
     void PlayEffect(ConsumableData item)
     {
-        if (item.instantModifiers.Exists(m => m.statType == StatType.HP))
+        if (item.instantModifiers.Exists(m => m.StatType == StatType.Health))
         {
             var effect = healEffectPool.Get();
             effect.transform.position = effectSpawnPoint.position;

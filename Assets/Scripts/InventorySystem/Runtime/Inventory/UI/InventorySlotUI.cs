@@ -202,14 +202,12 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
             isEquipped = equippedItemLookup != null
                          && equippedItemLookup.IsInventorySlotSourceOfEquippedItem(slotIndex, eq);
 
-        InventoryEvents.ContextMenuRequested?.Invoke(new ItemUIContext
-        {
-            item = slot.item,
-            isFromInventory = true,
-            isEquipped = isEquipped,
-            slotIndex = slotIndex,
-            count = slot.item.stackable && slot.count >= 1 ? slot.count : -1
-        });
+        InventoryEvents.ContextMenuRequested?.Invoke(new ItemUIContext(
+            slot.item,
+            isFromInventory: true,
+            isEquipped: isEquipped,
+            slotIndex: slotIndex,
+            stackCount: slot.item.stackable && slot.count >= 1 ? slot.count : -1));
     }
 
     //void SplitStack()
@@ -255,14 +253,12 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
             isEquipped = equippedItemLookup != null
                          && equippedItemLookup.IsInventorySlotSourceOfEquippedItem(slotIndex, eq);
 
-        InventoryEvents.TooltipRequested?.Invoke(new ItemUIContext
-        {
-            item = slot.item,
-            slotIndex = slotIndex,
-            isFromInventory = true,
-            isEquipped = isEquipped,
-            count = slot.item.stackable && slot.count >= 1 ? slot.count : -1
-        });
+        InventoryEvents.TooltipRequested?.Invoke(new ItemUIContext(
+            slot.item,
+            isFromInventory: true,
+            isEquipped: isEquipped,
+            slotIndex: slotIndex,
+            stackCount: slot.item.stackable && slot.count >= 1 ? slot.count : -1));
     }
 
     public void OnPointerExit(PointerEventData eventData)
@@ -284,12 +280,7 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
         var slot = inventory.Slots[slotIndex];
         if (slot.item == null) return;
 
-        var ctx = new DragItemContext
-        {
-            inventory = invMono,
-            inventorySlotIndex = slotIndex,
-            item = slot.item
-        };
+        var ctx = new DragItemContext(invMono, slotIndex, hotbarIndex: -1, item: slot.item);
 
         dragUI.BeginDrag(ctx, slot.item.icon);
         InventoryEvents.OnItemDragBegin?.Invoke(ctx);

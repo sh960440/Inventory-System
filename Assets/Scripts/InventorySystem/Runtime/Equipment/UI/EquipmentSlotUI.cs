@@ -42,14 +42,12 @@ public class EquipmentSlotUI : UISlotBase, IPointerEnterHandler, IPointerExitHan
     public void OnPointerEnter(PointerEventData eventData)
     {
         if (currentItem == null) return;
-        InventoryEvents.TooltipRequested?.Invoke(new ItemUIContext
-        {
-            item = currentItem,
-            slotIndex = -1,
-            isFromInventory = false,
-            isEquipped = true,
-            count = -1
-        });
+        InventoryEvents.TooltipRequested?.Invoke(new ItemUIContext(
+            currentItem,
+            isFromInventory: false,
+            isEquipped: true,
+            slotIndex: -1,
+            stackCount: -1));
     }
 
     public void OnPointerExit(PointerEventData eventData)

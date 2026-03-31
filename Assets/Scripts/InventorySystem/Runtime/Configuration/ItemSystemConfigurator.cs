@@ -2,8 +2,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// Applies ItemSystemConfiguration to inventory, equipment, hotbar, and UI controllers at startup.
+/// </summary>
 public class ItemSystemConfigurator : MonoBehaviour
 {
+    [Header("Configuration")]
     [SerializeField] private ItemSystemConfiguration config;
 
     [Header("References")]

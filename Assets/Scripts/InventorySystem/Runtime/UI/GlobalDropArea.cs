@@ -18,10 +18,10 @@ public class GlobalDropArea : MonoBehaviour, IDropHandler
             hotbarSlot.ClearSelf();
         }
         // Inventory: remove from slot + drop item
-        else if (ctx.inventory != null && ctx.inventorySlotIndex >= 0)
+        else if (ctx.Inventory != null && ctx.InventorySlotIndex >= 0)
         {
-            InventoryEvents.RemoveItemRequested?.Invoke(ctx.inventorySlotIndex, 1);
-            InventoryEvents.ItemDropped?.Invoke(ctx.item, 1);
+            InventoryEvents.RemoveItemRequested?.Invoke(ctx.InventorySlotIndex, 1);
+            InventoryEvents.ItemDropped?.Invoke(ctx.Item, 1);
         }
 
         dragUI.EndDrag();

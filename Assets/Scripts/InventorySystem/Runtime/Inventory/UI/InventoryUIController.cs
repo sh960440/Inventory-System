@@ -87,11 +87,11 @@ public class InventoryUIController : MonoBehaviour
     {
         if (!ValidateWiring()) return;
 
-        BuildInventoryUI(config.inventoryColumns, equippedItemLookup, slotHoverService);
-        BuildCategoryButtons(config.categoryButtons);
+        BuildInventoryUI(config.InventoryColumns, equippedItemLookup, slotHoverService);
+        BuildCategoryButtons(config.CategoryButtons);
 
-        useFadeAnimation = config.useFadeAnimation;
-        fadeDuration = config.fadeDuration;
+        useFadeAnimation = config.UseFadeAnimation;
+        fadeDuration = config.FadeDuration;
 
         RefreshAll();
         canvasGroup.alpha = 0;
@@ -149,13 +149,13 @@ public class InventoryUIController : MonoBehaviour
         }
     }
 
-    void BuildCategoryButtons(List<CategoryButtonConfig> configs)
+    void BuildCategoryButtons(IReadOnlyList<CategoryButtonConfig> configs)
     {
-        if (categoryButtonContainer == null || categoryButtonPrefab == null || configs.Count <= 0) return;
+        if (categoryButtonContainer == null || categoryButtonPrefab == null || configs == null || configs.Count <= 0) return;
         foreach (var config in configs)
         {
             var button = Instantiate(categoryButtonPrefab, categoryButtonContainer);
-            button.Initialize(inventory, config.categories, config.label);
+            button.Initialize(inventory, config.Categories, config.Label);
         }
     }
 

@@ -43,18 +43,18 @@ public class TooltipUI : MonoBehaviour
 
     void Show(ItemUIContext ctx)
     {
-        if (ctx.item == null) return;
+        if (ctx.Item == null) return;
 
-        nameText.text = ctx.item.itemName;
-        nameText.color = ItemRarityColor.Get(ctx.item.rarity);
+        nameText.text = ctx.Item.itemName;
+        nameText.color = ItemRarityColor.Get(ctx.Item.rarity);
 
-        countText.text = ctx.count > 1 ? $"x{ctx.count}" : "";
-        descriptionText.text = ctx.item.description;
+        countText.text = ctx.StackCount > 1 ? $"x{ctx.StackCount}" : "";
+        descriptionText.text = ctx.Item.description;
 
         statsText.text = "";
         statsText.gameObject.SetActive(false);
 
-        if (ctx.item is EquipmentData eq)
+        if (ctx.Item is EquipmentData eq)
         {
             statsText.gameObject.SetActive(true);
             statsText.text += $"{eq.equipSlot}\n";
@@ -62,9 +62,9 @@ public class TooltipUI : MonoBehaviour
             foreach (var mod in eq.modifiers)
             {
                 statsText.text +=
-                    mod.modifierType == ModifierType.Percent
-                    ? $"+{mod.value}% {mod.statType}\n"
-                    : $"+{mod.value} {mod.statType}\n";
+                    mod.ModifierType == ModifierType.Percent
+                    ? $"+{mod.Value}% {mod.StatType}\n"
+                    : $"+{mod.Value} {mod.StatType}\n";
             }
         }
 

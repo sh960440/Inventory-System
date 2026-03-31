@@ -1,27 +1,28 @@
 using UnityEngine;
 
+/// <summary>
+/// A stat modifier used to adjust attributes.
+/// </summary>
 [System.Serializable]
-public class StatModifier
+public sealed class StatModifier
 {
-    public StatType statType;
-    public int value;
-    public ModifierType modifierType;
+    [SerializeField] private StatType statType;
+    [SerializeField] private int value;
+    [SerializeField] private ModifierType modifierType;
 
-    public StatModifier(StatType type, int value, ModifierType modType)
+    public StatType StatType => statType;
+    public int Value => value;
+    public ModifierType ModifierType => modifierType;
+
+    public StatModifier(StatType type, int value, ModifierType modifierType)
     {
-        statType = type;
+        this.statType = type;
         this.value = value;
-        modifierType = modType;
+        this.modifierType = modifierType;
     }
 
     public StatModifier Clone()
     {
         return new StatModifier(statType, value, modifierType);
     }
-}
-
-public enum ModifierType
-{
-    Flat,       // +10
-    Percent     // +10%
 }
