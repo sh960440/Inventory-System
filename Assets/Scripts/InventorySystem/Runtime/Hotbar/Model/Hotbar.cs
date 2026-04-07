@@ -1,93 +1,113 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Runtime hotbar bindings: each slot points at an inventory cell for quick use.
+/// </summary>
 public class Hotbar : MonoBehaviour
 {
-    public List<HotbarSlot> slots = new();
+    private readonly List<HotbarSlot> _slots = new List<HotbarSlot>();
+
     public bool AllowDoubleClickUse { get; private set; }
 
-    void Awake()
-    {
-        
-    }
-
-    void OnEnable()
+    private void OnEnable()
     {
         InventoryEvents.InventoryChanged += ValidateSlots;
     }
 
-    void OnDisable()
+    private void OnDisable()
     {
         InventoryEvents.InventoryChanged -= ValidateSlots;
     }
 
+    /// <summary>
+    /// Sets the hotbar size and applies interaction flags from config.
+    /// </summary>
     public void ApplyConfig(ItemSystemConfiguration config)
     {
-        slots.Clear();
+        _slots.Clear();
         for (int i = 0; i < config.HotkeyCount; i++)
-            slots.Add(new HotbarSlot());
+            _slots.Add(new HotbarSlot());
 
         AllowDoubleClickUse = config.AllowHotbarDoubleClickUse;
     }
-    void InitSlots()
-    {
-        
-    }
 
+    /// <summary>
+    /// Binds a hotbar cell to an inventory slot.
+    /// </summary>
     public void Assign(int hotbarIndex, Inventory inventory, int inventorySlotIndex)
     {
-        if (!ValidHotbarIndex(hotbarIndex)) return;
-        if (!ValidInventoryIndex(inventory, inventorySlotIndex)) return;
+        if (!ValidHotbarIndex(hotbarIndex))
+            return;
+        if (!ValidInventoryIndex(inventory, inventorySlotIndex))
+            return;
 
         var invSlot = inventory.GetSlot(inventorySlotIndex);
-        if (invSlot == null || invSlot.item == null) return;
+        if (invSlot == null || invSlot.Item == null)
+            return;
 
-        var hb = slots[hotbarIndex];
-        hb.inventory = inventory;
-        hb.item = invSlot.item;
-        hb.boundInventorySlotIndex = inventorySlotIndex;
+        var hb = _slots[hotbarIndex];
+        hb.Inventory = inventory;
+        hb.Item = invSlot.Item;
+        hb.BoundInventorySlotIndex = inventorySlotIndex;
 
         InventoryEvents.HotbarChanged?.Invoke();
     }
 
+    /// <summary>
+    /// Clears a hotbar binding.
+    /// </summary>
     public void Clear(int hotbarIndex)
     {
-        if (!ValidHotbarIndex(hotbarIndex)) return;
+        if (!ValidHotbarIndex(hotbarIndex))
+            return;
 
-        slots[hotbarIndex].Clear();
+        _slots[hotbarIndex].Clear();
         InventoryEvents.HotbarChanged?.Invoke();
     }
 
+    /// <summary>
+    /// Swaps two hotbar bindings.
+    /// </summary>
     public void Swap(int a, int b)
     {
-        if (!ValidHotbarIndex(a) || !ValidHotbarIndex(b)) return;
+        if (!ValidHotbarIndex(a) || !ValidHotbarIndex(b))
+            return;
 
-        (slots[a], slots[b]) = (slots[b], slots[a]);
+        var temp = _slots[a];
+        _slots[a] = _slots[b];
+        _slots[b] = temp;
+
         InventoryEvents.HotbarChanged?.Invoke();
     }
 
+    /// <summary>
+    /// Gets the InventorySlot linked to the hotbar index, clearing the binding if the item is no longer valid.
+    /// </summary>
     public InventorySlot GetInventorySlot(int hotbarIndex)
     {
-        if (!ValidHotbarIndex(hotbarIndex)) return null;
+        if (!ValidHotbarIndex(hotbarIndex))
+            return null;
 
-        var hb = slots[hotbarIndex];
-        if (hb.inventory == null || hb.item == null) return null;
+        var hb = _slots[hotbarIndex];
+        if (hb.Inventory == null || hb.Item == null)
+            return null;
 
         // Try using the original binding index
-        if (hb.boundInventorySlotIndex >= 0)
+        if (hb.BoundInventorySlotIndex >= 0)
         {
-            var s = hb.inventory.GetSlot(hb.boundInventorySlotIndex);
-            if (s != null && s.item == hb.item)
+            var s = hb.Inventory.GetSlot(hb.BoundInventorySlotIndex);
+            if (s != null && s.Item == hb.Item)
                 return s;
         }
 
-        // fallback: search inventory
-        for (int i = 0; i < hb.inventory.SlotCount; i++)
+        // fallback = search inventory
+        for (int i = 0; i < hb.Inventory.SlotCount; i++)
         {
-            var s = hb.inventory.GetSlot(i);
-            if (s.item == hb.item)
+            var s = hb.Inventory.GetSlot(i);
+            if (s.Item == hb.Item)
             {
-                hb.boundInventorySlotIndex = i;
+                hb.BoundInventorySlotIndex = i;
                 return s;
             }
         }
@@ -97,74 +117,98 @@ public class Hotbar : MonoBehaviour
         return null;
     }
 
-    // Validation
-    void ValidateSlots()
+    /// <summary>
+    /// Get inventory slot index for this hotbar cell, or -1 when invalid or empty.
+    /// </summary>
+    public int GetBoundInventorySlotIndex(int hotbarIndex)
     {
-        for (int i = 0; i < slots.Count; i++)
-        {
-            var hb = slots[i];
-            if (hb.IsEmpty) continue;
-            if (hb.inventory == null) { hb.Clear(); continue; }
+        if (!ValidHotbarIndex(hotbarIndex))
+            return -1;
 
-            if (GetInventorySlot(i) == null)
-                hb.Clear();
-        }
-
-        InventoryEvents.HotbarChanged?.Invoke();
+        return _slots[hotbarIndex].BoundInventorySlotIndex;
     }
 
-    // Helpers
-    public bool ValidHotbarIndex(int i) =>
-        i >= 0 && i < slots.Count;
+    /// <summary>Returns true if i is a valid hotbar index.</summary>
+    public bool ValidHotbarIndex(int i) => i >= 0 && i < _slots.Count;
 
+    /// <summary>Returns true if i is a valid index into inv.</summary>
     public bool ValidInventoryIndex(Inventory inv, int i) =>
-        inv != null && i >= 0 && i < inv.slots.Count;
+        inv != null && i >= 0 && i < inv.SlotCount;
 
+    /// <summary>
+    /// Creates serializable hotbar save data.
+    /// </summary>
     public HotbarSaveData ToSaveData()
     {
         var data = new HotbarSaveData();
 
-        foreach (var slot in slots)
+        foreach (var slot in _slots)
         {
             data.itemIds.Add(new HotbarSlotSaveData
             {
-                itemId = slot.item != null
-                    ? slot.item.Id
-                    : null
+                itemId = slot.Item != null ? slot.Item.Id : null
             });
         }
 
         return data;
     }
 
+    /// <summary>
+    /// Loads hotbar save data.
+    /// </summary>
     public void LoadFromSaveData(HotbarSaveData data, Inventory inventory)
     {
         LoadFromSaveData(data, inventory, ItemDatabase.Instance);
     }
 
+    /// <summary>
+    /// Loads hotbar save data.
+    /// </summary>
     public void LoadFromSaveData(HotbarSaveData data, Inventory inventory, IItemDatabase itemDatabase)
     {
-        for (int i = 0; i < slots.Count; i++)
-            slots[i].Clear();
+        for (int i = 0; i < _slots.Count; i++)
+            _slots[i].Clear();
 
-        for (int i = 0; i < data.itemIds.Count && i < slots.Count; i++)
+        for (int i = 0; i < data.itemIds.Count && i < _slots.Count; i++)
         {
             var itemId = data.itemIds[i].itemId;
-            if (string.IsNullOrEmpty(itemId)) continue;
+            if (string.IsNullOrEmpty(itemId))
+                continue;
 
             var targetItem = itemDatabase?.Get(itemId);
-            if (targetItem == null) continue;
+            if (targetItem == null)
+                continue;
 
             for (int invIndex = 0; invIndex < inventory.SlotCount; invIndex++)
             {
                 var invSlot = inventory.GetSlot(invIndex);
 
-                if (invSlot.item == targetItem)
+                if (invSlot.Item == targetItem)
                 {
                     Assign(i, inventory, invIndex);
                     break;
                 }
             }
+        }
+
+        InventoryEvents.HotbarChanged?.Invoke();
+    }
+
+    private void ValidateSlots()
+    {
+        for (int i = 0; i < _slots.Count; i++)
+        {
+            var hb = _slots[i];
+            if (hb.IsEmpty)
+                continue;
+            if (hb.Inventory == null)
+            {
+                hb.Clear();
+                continue;
+            }
+
+            if (GetInventorySlot(i) == null)
+                hb.Clear();
         }
 
         InventoryEvents.HotbarChanged?.Invoke();

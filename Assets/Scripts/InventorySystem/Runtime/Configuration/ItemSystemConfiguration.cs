@@ -30,6 +30,7 @@ public class ItemSystemConfiguration : ScriptableObject
     //[SerializeField] private public bool pauseGameWhenOpen = true; // TBD
     [SerializeField] private bool useFadeAnimation = true;
     [SerializeField] private float fadeDuration = 0.25f;
+    [SerializeField] private Vector2 dragIconOffset = new Vector2(18f, -18f);
 
     public int InventoryRows => inventoryRows;
     public int InventoryColumns => inventoryColumns;
@@ -41,4 +42,5 @@ public class ItemSystemConfiguration : ScriptableObject
     public bool AllowHotbarDoubleClickUse => allowHotbarDoubleClickUse;
     public bool UseFadeAnimation => useFadeAnimation;
     public float FadeDuration => fadeDuration;
+    public Vector2 DragIconOffset => dragIconOffset;
 }

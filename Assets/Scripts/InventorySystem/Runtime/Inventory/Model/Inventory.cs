@@ -1,29 +1,105 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
+/// <summary>
+/// Grid-based inventory: stacking, swap/stack moves, category/search filters, sorting, save/load, and item-use routing.
+/// </summary>
 public class Inventory : MonoBehaviour, IInventoryReadOnly
 {
-    public List<InventorySlot> slots = new();
-    public IReadOnlyList<InventorySlot> Slots => slots;
-    public int initialCapacity;
-    public ItemCategory[] currentCategories => _filterState.CurrentCategories;
-    readonly InventoryFilterState _filterState = new InventoryFilterState();
-    private InventorySortType currentSortType = InventorySortType.None;
-    private SortOrder currentSortOrder = SortOrder.Ascending;
+    [Header("Slots")]
+    [SerializeField] private List<InventorySlot> _slots = new List<InventorySlot>();
 
-    public InventorySortType CurrentSortType => currentSortType;
-    public SortOrder CurrentSortOrder => currentSortOrder;
-    private bool allowStacking = true;
-    private bool allowSplitStack = true;
-    private Equipment equipmentManager;
-    readonly InventoryUseHandlerRegistry useHandlerRegistry = new InventoryUseHandlerRegistry();
+    private int _initialCapacity;
+
+    readonly InventoryFilterState _filterState = new InventoryFilterState();
+    private InventorySortType _currentSortType = InventorySortType.None;
+    private SortOrder _currentSortOrder = SortOrder.Ascending;
+    private bool _allowStacking = true;
+    private bool _allowSplitStack = true;
+    private Equipment _equipmentManager;
+
+    readonly InventoryUseHandlerRegistry _useHandlerRegistry = new InventoryUseHandlerRegistry();
     readonly List<InventorySlot> _sortFilled = new List<InventorySlot>();
     readonly List<InventorySlot> _sortEmpty = new List<InventorySlot>();
 
+    public IReadOnlyList<InventorySlot> Slots => _slots;
+    public ItemCategory[] CurrentCategories => _filterState.CurrentCategories;
+    public InventorySortType CurrentSortType => _currentSortType;
+    public SortOrder CurrentSortOrder => _currentSortOrder;
     public bool IsOpen { get; private set; }
     public bool AllowDoubleClickUse { get; private set; }
+    public int SlotCount => _slots.Count;
 
+    private void OnEnable()
+    {
+        InventoryEvents.ItemUsed += UseSlot;
+        InventoryEvents.RemoveItemRequested += RemoveItem;
+        InventoryEvents.ItemInspected += InspectItem;
+        InventoryEvents.AddItemRequested += OnItemAddedHandler;
+        InventoryEvents.HotbarUseRequested += UseSlot;
+        InventoryEvents.SplitStackRequested += HandleSplitStack;
+    }
+
+    private void OnDisable()
+    {
+        InventoryEvents.ItemUsed -= UseSlot;
+        InventoryEvents.RemoveItemRequested -= RemoveItem;
+        InventoryEvents.ItemInspected -= InspectItem;
+        InventoryEvents.AddItemRequested -= OnItemAddedHandler;
+        InventoryEvents.HotbarUseRequested -= UseSlot;
+        InventoryEvents.SplitStackRequested -= HandleSplitStack;
+    }
+
+    /// <summary>
+    /// Applies layout and rules from config and binds equipment for use handlers.
+    /// </summary>
+    public void ApplyConfig(ItemSystemConfiguration config, Equipment equipment)
+    {
+        _initialCapacity = config.InventoryRows * config.InventoryColumns;
+
+        if (_slots.Count == 0)
+        {
+            for (int i = 0; i < _initialCapacity; i++)
+                _slots.Add(new InventorySlot());
+        }
+
+        _equipmentManager = equipment;
+        _allowStacking = config.AllowStacking;
+        _allowSplitStack = config.AllowSplitStack;
+        AllowDoubleClickUse = config.AllowInventoryDoubleClickUse;
+
+        _useHandlerRegistry.EnsureDefaults();
+    }
+
+    /// <summary>
+    /// Clears all registered IItemUseHandler instances.
+    /// </summary>
+    public void ClearUseHandlers()
+    {
+        _useHandlerRegistry.Clear();
+    }
+
+    /// <summary>
+    /// Appends a handler; earlier registrations are tried first when an item is used.
+    /// </summary>
+    public void RegisterUseHandler(IItemUseHandler handler)
+    {
+        _useHandlerRegistry.Register(handler);
+    }
+
+    /// <summary>
+    /// If the registry is empty, registers built-in handlers (consumable, equipment).
+    /// </summary>
+    public void EnsureUseHandlers()
+    {
+        _useHandlerRegistry.EnsureDefaults();
+    }
+
+    /// <summary>
+    /// Opens or closes the inventory UI.
+    /// </summary>
     public void SetOpen(bool open)
     {
         if (IsOpen == open)
@@ -37,87 +113,40 @@ public class Inventory : MonoBehaviour, IInventoryReadOnly
             InventoryEvents.InventoryCloseRequested?.Invoke();
     }
 
-    public int SlotCount => slots.Count;
-
-    public bool Valid(int i) => i >= 0 && i < slots.Count;
+    public bool Valid(int i) => i >= 0 && i < _slots.Count;
     
     public InventorySlot GetSlot(int index)
     {
-        if (!Valid(index)) return null;
-        return slots[index];
+        if (!Valid(index))
+            return null;
+        return _slots[index];
     }
 
-    void OnEnable()
+    public int IndexOfSlot(InventorySlot slot)
     {
-        InventoryEvents.ItemUsed += UseSlot;
-        InventoryEvents.RemoveItemRequested += RemoveItem;
-        InventoryEvents.ItemInspected += InspectItem;
-        InventoryEvents.AddItemRequested += OnItemAddedHandler;
-        InventoryEvents.HotbarUseRequested += UseSlot;
-        InventoryEvents.SplitStackRequested += HandleSplitStack;
-    }
+        if (slot == null)
+            return -1;
 
-    void OnDisable()
-    {
-        InventoryEvents.ItemUsed -= UseSlot;
-        InventoryEvents.RemoveItemRequested -= RemoveItem;
-        InventoryEvents.ItemInspected -= InspectItem;
-        InventoryEvents.AddItemRequested -= OnItemAddedHandler;
-        InventoryEvents.HotbarUseRequested -= UseSlot;
-        InventoryEvents.SplitStackRequested -= HandleSplitStack;
-    }
-
-    public void ApplyConfig(ItemSystemConfiguration config, Equipment em)
-    {
-        initialCapacity = config.InventoryRows * config.InventoryColumns;
-
-        if (slots.Count == 0)
+        for (int i = 0; i < _slots.Count; i++)
         {
-            for (int i = 0; i < initialCapacity; i++)
-                slots.Add(new InventorySlot());
+            if (ReferenceEquals(_slots[i], slot))
+                return i;
         }
 
-        equipmentManager = em;
-        allowStacking = config.AllowStacking;
-        allowSplitStack = config.AllowSplitStack;
-        AllowDoubleClickUse = config.AllowInventoryDoubleClickUse;
-
-        useHandlerRegistry.EnsureDefaults();
-    }
-
-    public void ClearUseHandlers()
-    {
-        useHandlerRegistry.Clear();
-    }
-
-    public void RegisterUseHandler(IItemUseHandler handler)
-    {
-        useHandlerRegistry.Register(handler);
-    }
-
-    public void EnsureUseHandlers()
-    {
-        useHandlerRegistry.EnsureDefaults();
-    }
-
-    void OnItemAddedHandler(ItemData item, int amount)
-    {
-        if (!AddItem(item, amount))
-            Debug.Log("Inventory full");
+        return -1;
     }
 
     public bool AddItem(ItemData item, int amount)
     {
-        // Try stacking into existing slots
-        if (item.stackable && allowStacking)
+        if (item.stackable && _allowStacking)
         {
-            foreach (var slot in slots)
+            foreach (var slot in _slots)
             {
-                if (slot.item == item && slot.count < item.maxStack)
+                if (slot.Item == item && slot.Count < item.maxStack)
                 {
-                    int space = item.maxStack - slot.count;
+                    int space = item.maxStack - slot.Count;
                     int add = Mathf.Min(space, amount);
-                    slot.count += add;
+                    slot.Count += add;
                     amount -= add;
                     if (amount <= 0)
                     {
@@ -128,27 +157,23 @@ public class Inventory : MonoBehaviour, IInventoryReadOnly
             }
         }
 
-        // Find an empty slot
-        foreach (var slot in slots)
+        foreach (var slot in _slots)
         {
-            if (slot.item == null && amount > 0)
+            if (slot.Item == null && amount > 0)
             {
-                int add;
+                int add = _allowStacking && item.stackable
+                    ? Mathf.Min(item.maxStack, amount)
+                    : 1;
 
-                if (allowStacking && item.stackable)
-                    add = Mathf.Min(item.maxStack, amount);
-                else
-                    add = 1;
-
-                slot.item = item;
-                slot.count = add;
+                slot.Item = item;
+                slot.Count = add;
                 amount -= add;
             }
         }
 
         InventoryEvents.InventoryChanged?.Invoke();
 
-        return amount <= 0; // True: Item(s) added successfully. False: Inventory is full.
+        return amount <= 0;
     }
 
     public bool AddItem(ItemData item)
@@ -156,6 +181,9 @@ public class Inventory : MonoBehaviour, IInventoryReadOnly
         return AddItem(item, 1);
     }
 
+    /// <summary>
+    /// Checks whether AddItem would succeed for this amount without changing state.
+    /// </summary>
     public bool CanAddItem(ItemData item, int amount)
     {
         if (item == null || amount <= 0)
@@ -163,13 +191,13 @@ public class Inventory : MonoBehaviour, IInventoryReadOnly
 
         int remaining = amount;
 
-        if (item.stackable && allowStacking)
+        if (item.stackable && _allowStacking)
         {
-            foreach (var slot in slots)
+            foreach (var slot in _slots)
             {
-                if (slot.item == item && slot.count < item.maxStack)
+                if (slot.Item == item && slot.Count < item.maxStack)
                 {
-                    int space = item.maxStack - slot.count;
+                    int space = item.maxStack - slot.Count;
                     remaining -= Mathf.Min(space, remaining);
                     if (remaining <= 0)
                         return true;
@@ -177,11 +205,11 @@ public class Inventory : MonoBehaviour, IInventoryReadOnly
             }
         }
 
-        foreach (var slot in slots)
+        foreach (var slot in _slots)
         {
-            if (slot.item == null && remaining > 0)
+            if (slot.Item == null && remaining > 0)
             {
-                int add = allowStacking && item.stackable
+                int add = _allowStacking && item.stackable
                     ? Mathf.Min(item.maxStack, remaining)
                     : 1;
 
@@ -196,15 +224,17 @@ public class Inventory : MonoBehaviour, IInventoryReadOnly
 
     public void RemoveItem(InventorySlot slot, int amount)
     {
-        if (slot.item == null) return;
-        if (amount <= 0) return;
+        if (slot.Item == null)
+            return;
+        if (amount <= 0)
+            return;
 
-        slot.count -= amount;
+        slot.Count -= amount;
 
-        if (slot.count <= 0)
+        if (slot.Count <= 0)
         {
-            slot.item = null;
-            slot.count = 0;
+            slot.Item = null;
+            slot.Count = 0;
         }
 
         InventoryEvents.InventoryChanged?.Invoke();
@@ -217,8 +247,9 @@ public class Inventory : MonoBehaviour, IInventoryReadOnly
 
     public void RemoveItem(int index, int amount)
     {
-        if (!Valid(index)) return;
-        RemoveItem(slots[index], amount);
+        if (!Valid(index))
+            return;
+        RemoveItem(_slots[index], amount);
     }
 
     public void RemoveItem(int index)
@@ -227,22 +258,21 @@ public class Inventory : MonoBehaviour, IInventoryReadOnly
     }
 
     /// <summary>
-    /// Tries to swap or stack two slots. Respects maxStack when stacking.
+    /// Tries to swap or stack two _slots. Respects maxStack when stacking. Return true if the operation succeeded.
     /// </summary>
-    /// <returns>True if the operation succeeded.</returns>
     public bool TrySwapOrStack(int fromIndex, int toIndex)
     {
         if (!Valid(fromIndex) || !Valid(toIndex) || fromIndex == toIndex)
             return false;
 
-        var a = slots[fromIndex];
-        var b = slots[toIndex];
+        var a = _slots[fromIndex];
+        var b = _slots[toIndex];
 
         bool exchangedCells = false;
 
-        if (a.item != null && b.item != null && a.item == b.item && a.item.stackable && allowStacking)
+        if (a.Item != null && b.Item != null && a.Item == b.Item && a.Item.stackable && _allowStacking)
         {
-            int space = a.item.maxStack - b.count;
+            int space = a.Item.maxStack - b.Count;
             if (space <= 0)
             {
                 SwapSlots(a, b);
@@ -250,13 +280,13 @@ public class Inventory : MonoBehaviour, IInventoryReadOnly
             }
             else
             {
-                int move = Math.Min(space, a.count);
-                b.count += move;
-                a.count -= move;
-                if (a.count <= 0)
+                int move = Math.Min(space, a.Count);
+                b.Count += move;
+                a.Count -= move;
+                if (a.Count <= 0)
                 {
-                    a.item = null;
-                    a.count = 0;
+                    a.Item = null;
+                    a.Count = 0;
                 }
             }
         }
@@ -273,69 +303,15 @@ public class Inventory : MonoBehaviour, IInventoryReadOnly
         return true;
     }
 
-    static void SwapSlots(InventorySlot a, InventorySlot b)
-    {
-        var tempItem = a.item;
-        var tempCount = a.count;
-        a.item = b.item;
-        a.count = b.count;
-        b.item = tempItem;
-        b.count = tempCount;
-    }
-
-    void UseSlot(int index)
-    {
-        if (!Valid(index)) return;
-        UseSlot(slots[index], index);
-    }
-
-    void UseSlot(InventorySlot slot)
-    {
-        int index = IndexOfSlot(slot);
-        UseSlot(slot, index);
-    }
-
-    void UseSlot(InventorySlot slot, int slotIndex)
-    {
-        if (slot == null || slot.item == null)
-            return;
-
-        var ctx = new ItemUseContext(this, equipmentManager, slotIndex);
-
-        if (useHandlerRegistry.TryUse(ctx, slot))
-            return;
-
-        Debug.Log($"Used item (no handler): {slot.item.itemName}");
-    }
-
-    public int IndexOfSlot(InventorySlot slot)
-    {
-        if (slot == null) return -1;
-        for (int i = 0; i < slots.Count; i++)
-        {
-            if (ReferenceEquals(slots[i], slot))
-                return i;
-        }
-
-        return -1;
-    }
-
-    void InspectItem(int index)
-    {
-        if (!Valid(index)) return;
-        var item = slots[index].item;
-        if (item == null) return;
-        Debug.Log($"{item.itemName}\n{item.description}");
-    }
-
     /// <summary>
     /// Fills the given list with slot indices that pass the current filter.
     /// Reuses the list to avoid GC allocation.
     /// </summary>
     public void GetFilteredSlotIndices(List<int> result)
     {
-        if (result == null) return;
-        _filterState.GetFilteredSlotIndices(slots, result);
+        if (result == null)
+            return;
+        _filterState.GetFilteredSlotIndices(_slots, result);
     }
 
     public void SetCategoryFilter(ItemCategory[] categories)
@@ -350,20 +326,29 @@ public class Inventory : MonoBehaviour, IInventoryReadOnly
         InventoryEvents.InventoryChanged?.Invoke();
     }
 
+    /// <summary>
+    /// True when empty grid cells should stay visible: no category filter and no active search text.
+    /// </summary>
     public bool ShouldShowEmptySlot()
     {
         return _filterState.ShouldShowEmptySlot();
     }
 
+    /// <summary>
+    /// True if passes the current category and search filters.
+    /// </summary>
     public bool PassFilter(InventorySlot slot)
     {
         return _filterState.PassFilter(slot);
     }
 
+    /// <summary>
+    /// Sets the active sort key and order, reorders filled slots.
+    /// </summary>
     public void SetSort(InventorySortType type, SortOrder order)
     {
-        currentSortType = type;
-        currentSortOrder = order;
+        _currentSortType = type;
+        _currentSortOrder = order;
         ApplySort();
         InventoryEvents.InventoryChanged?.Invoke();
     }
@@ -373,36 +358,110 @@ public class Inventory : MonoBehaviour, IInventoryReadOnly
     /// </summary>
     public void ToggleSortOrder()
     {
-        currentSortOrder = currentSortOrder == SortOrder.Ascending ? SortOrder.Descending : SortOrder.Ascending;
+        _currentSortOrder = _currentSortOrder == SortOrder.Ascending ? SortOrder.Descending : SortOrder.Ascending;
         ApplySort();
         InventoryEvents.InventoryChanged?.Invoke();
     }
 
-    void ApplySort()
+    /// <summary>
+    /// Creates serializable inventory save data.
+    /// </summary>
+    public InventorySaveData ToSaveData()
     {
-        InventorySortUtility.SortSlots(slots, currentSortType, currentSortOrder, _sortFilled, _sortEmpty);
+        return InventorySaveDataMapper.ToSaveData(_slots);
     }
 
-    void HandleSplitStack(int index)
+    /// <summary>
+    /// Loads inventory save data.
+    /// </summary>
+    public void LoadFromSaveData(InventorySaveData data)
     {
-        if (!Valid(index)) return;
-        if (!allowSplitStack) return;
+        LoadFromSaveData(data, ItemDatabase.Instance);
+    }
 
-        var slot = slots[index];
-        if (slot.item == null) return;
-        if (!slot.item.stackable) return;
-        if (slot.count < 2) return;
+    /// <summary>
+    /// Loads inventory save data.
+    /// </summary>
+    public void LoadFromSaveData(InventorySaveData data, IItemDatabase itemDatabase)
+    {
+        InventorySaveDataMapper.LoadFromSaveData(data, _slots, itemDatabase);
+        InventoryEvents.InventoryChanged?.Invoke();
+    }
 
-        int half = slot.count / 2;
+    private void OnItemAddedHandler(ItemData item, int amount)
+    {
+        if (!AddItem(item, amount))
+            Debug.Log("Could not add item — inventory full.");
+    }
 
-        for (int i = 0; i < slots.Count; i++)
+    private void UseSlot(int index)
+    {
+        if (!Valid(index))
+            return;
+        UseSlot(_slots[index], index);
+    }
+
+    private void UseSlot(InventorySlot slot)
+    {
+        int index = IndexOfSlot(slot);
+        UseSlot(slot, index);
+    }
+
+    private void UseSlot(InventorySlot slot, int slotIndex)
+    {
+        if (slot == null || slot.Item == null)
+            return;
+
+        var ctx = new ItemUseContext(this, _equipmentManager, slotIndex);
+
+        if (_useHandlerRegistry.TryUse(ctx, slot))
+            return;
+
+        Debug.Log($"Used item (no handler): {slot.Item.itemName}");
+    }
+
+    private void InspectItem(int index)
+    {
+        if (!Valid(index))
+            return;
+
+        var item = _slots[index].Item;
+        if (item == null)
+            return;
+
+        Debug.Log($"{item.itemName}\n{item.description}");
+    }
+
+    private void ApplySort()
+    {
+        InventorySortUtility.SortSlots(_slots, _currentSortType, _currentSortOrder, _sortFilled, _sortEmpty);
+    }
+
+    private void HandleSplitStack(int index)
+    {
+        if (!Valid(index))
+            return;
+        if (!_allowSplitStack)
+            return;
+
+        var slot = _slots[index];
+        if (slot.Item == null)
+            return;
+        if (!slot.Item.stackable)
+            return;
+        if (slot.Count < 2)
+            return;
+
+        int half = slot.Count / 2;
+
+        for (int i = 0; i < _slots.Count; i++)
         {
-            if (slots[i].item == null)
+            if (_slots[i].Item == null)
             {
-                slots[i].item = slot.item;
-                slots[i].count = half;
+                _slots[i].Item = slot.Item;
+                _slots[i].Count = half;
 
-                slot.count -= half;
+                slot.Count -= half;
 
                 InventoryEvents.InventoryChanged?.Invoke();
                 return;
@@ -410,18 +469,13 @@ public class Inventory : MonoBehaviour, IInventoryReadOnly
         }
     }
 
-    public InventorySaveData ToSaveData()
+    private static void SwapSlots(InventorySlot a, InventorySlot b)
     {
-        return InventorySaveDataMapper.ToSaveData(slots);
-    }
-
-    public void LoadFromSaveData(InventorySaveData data)
-    {
-        LoadFromSaveData(data, ItemDatabase.Instance);
-    }
-    public void LoadFromSaveData(InventorySaveData data, IItemDatabase itemDatabase)
-    {
-        InventorySaveDataMapper.LoadFromSaveData(data, slots, itemDatabase);
-        InventoryEvents.InventoryChanged?.Invoke();
+        var tempItem = a.Item;
+        var tempCount = a.Count;
+        a.Item = b.Item;
+        a.Count = b.Count;
+        b.Item = tempItem;
+        b.Count = tempCount;
     }
 }

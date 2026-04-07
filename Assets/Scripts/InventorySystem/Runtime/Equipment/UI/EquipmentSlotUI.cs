@@ -2,30 +2,47 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
+/// /// <summary>
+/// An equipment slot UI that displays the equipped item and supports basic interactions.
+/// </summary>
 public class EquipmentSlotUI : UISlotBase, IPointerEnterHandler, IPointerExitHandler
 {
-    public EquipmentSlot slotType;   // Head / Weapon / etc.
-    public Equipment equipmentManager;
-    public Image iconImage;
-    EquipmentData currentItem;
+    [Header("Equipment")]
+    [SerializeField] private EquipmentSlot slotType;
+    [SerializeField] private Equipment equipmentManager;
 
-    void OnEnable()
+    [Header("UI")]
+    [SerializeField] private Image iconImage;
+
+    private EquipmentData _currentItem;
+
+    /// <summary>
+    /// Wired by EquipmentUIController when _slots are built.
+    /// </summary>
+    public void Configure(EquipmentSlot slot, Equipment equipment)
+    {
+        slotType = slot;
+        equipmentManager = equipment;
+    }
+
+    private void OnEnable()
     {
         InventoryEvents.EquipmentChanged += Refresh;
         Refresh();
     }
 
-    void OnDisable()
+    private void OnDisable()
     {
         InventoryEvents.EquipmentChanged -= Refresh;
     }
 
-    void Refresh()
+    private void Refresh()
     {
-        if (equipmentManager == null) return;   
+        if (equipmentManager == null)
+            return;   
 
         var item = equipmentManager.GetEquipped(slotType);
-        currentItem = item;
+        _currentItem = item;
 
         if (item == null)
         {
@@ -41,9 +58,11 @@ public class EquipmentSlotUI : UISlotBase, IPointerEnterHandler, IPointerExitHan
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if (currentItem == null) return;
+        if (_currentItem == null) 
+            return;
+
         InventoryEvents.TooltipRequested?.Invoke(new ItemUIContext(
-            currentItem,
+            _currentItem,
             isFromInventory: false,
             isEquipped: true,
             slotIndex: -1,
@@ -57,7 +76,9 @@ public class EquipmentSlotUI : UISlotBase, IPointerEnterHandler, IPointerExitHan
 
     protected override void OnDoubleClick()
     {
-        if (currentItem == null) return;
-        InventoryEvents.UnequipRequested?.Invoke(currentItem.equipSlot);
+        if (_currentItem == null)
+            return;
+
+        InventoryEvents.UnequipRequested?.Invoke(_currentItem.equipSlot);
     }
 }

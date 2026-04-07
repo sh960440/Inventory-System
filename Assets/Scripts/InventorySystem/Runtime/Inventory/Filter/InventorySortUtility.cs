@@ -6,6 +6,9 @@ using System.Collections.Generic;
 /// </summary>
 public static class InventorySortUtility
 {
+    /// <summary>
+    /// Splits _slots into filled vs empty buffers, sorts filled cells, then rebuilds the list.
+    /// </summary>
     public static void SortSlots(
         List<InventorySlot> slots,
         InventorySortType sortType,
@@ -21,7 +24,7 @@ public static class InventorySortUtility
 
         foreach (var s in slots)
         {
-            if (s.item == null)
+            if (s.Item == null)
                 emptyBuffer.Add(s);
             else
                 filledBuffer.Add(s);
@@ -34,9 +37,9 @@ public static class InventorySortUtility
         slots.AddRange(emptyBuffer);
     }
 
-    static int CompareSlots(InventorySlot a, InventorySlot b, InventorySortType sortType, SortOrder sortOrder)
+    private static int CompareSlots(InventorySlot a, InventorySlot b, InventorySortType sortType, SortOrder sortOrder)
     {
-        if (a.item == null || b.item == null)
+        if (a.Item == null || b.Item == null)
             return 0;
 
         int result = 0;
@@ -44,19 +47,19 @@ public static class InventorySortUtility
         switch (sortType)
         {
             case InventorySortType.Name:
-                result = string.Compare(a.item.itemName, b.item.itemName);
+                result = string.Compare(a.Item.itemName, b.Item.itemName);
                 break;
 
             case InventorySortType.Rarity:
-                result = a.item.rarity.CompareTo(b.item.rarity);
+                result = a.Item.rarity.CompareTo(b.Item.rarity);
                 break;
 
             case InventorySortType.Category:
-                result = a.item.category.CompareTo(b.item.category);
+                result = a.Item.category.CompareTo(b.Item.category);
                 break;
 
             case InventorySortType.Count:
-                result = a.count.CompareTo(b.count);
+                result = a.Count.CompareTo(b.Count);
                 break;
         }
 

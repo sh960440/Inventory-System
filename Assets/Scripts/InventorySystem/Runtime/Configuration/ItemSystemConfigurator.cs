@@ -27,9 +27,7 @@ public class ItemSystemConfigurator : MonoBehaviour
     [SerializeField] private GridLayoutGroup inventoryGridLayout;
     [SerializeField] private Transform inventoryCategoryButtonContainer;
     [SerializeField] private InventoryCategoryButton inventoryCategoryButtonPrefab;
-    [SerializeField] private ContextMenuUI inventoryContextMenuUI;
     [SerializeField] private DraggableItemUI inventoryDragUI;
-    [SerializeField] private TooltipUI inventoryTooltipUI;
 
     [Header("Extension Points")]
     [Tooltip("Optional item use handlers. Any component here that implements IItemUseHandler will be registered in order.")]
@@ -77,9 +75,7 @@ public class ItemSystemConfigurator : MonoBehaviour
                 categoryButtonContainer = inventoryCategoryButtonContainer,
                 categoryButtonPrefab = inventoryCategoryButtonPrefab,
 
-                contextMenuUI = inventoryContextMenuUI,
                 dragUI = inventoryDragUI,
-                tooltipUI = inventoryTooltipUI
             });
 
             inventoryUI.ApplyConfig(config, equipment, slotHoverService);

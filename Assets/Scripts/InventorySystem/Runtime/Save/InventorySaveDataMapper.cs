@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-/// SRP helper: maps Inventory runtime slots <-> Save DTO without touching Unity/Events.
+/// SRP helper: maps Inventory runtime _slots <-> Save DTO without touching Unity/Events.
 public static class InventorySaveDataMapper
 {
     public static InventorySaveData ToSaveData(List<InventorySlot> slots)
@@ -11,7 +11,7 @@ public static class InventorySaveDataMapper
 
         foreach (var slot in slots)
         {
-            if (slot == null || slot.item == null)
+            if (slot == null || slot.Item == null)
             {
                 data.slots.Add(new InventorySlotSaveData
                 {
@@ -23,8 +23,8 @@ public static class InventorySaveDataMapper
 
             data.slots.Add(new InventorySlotSaveData
             {
-                itemId = slot.item.Id,
-                count = slot.count
+                itemId = slot.Item.Id,
+                count = slot.Count
             });
         }
 

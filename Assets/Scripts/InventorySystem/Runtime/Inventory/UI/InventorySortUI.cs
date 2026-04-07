@@ -1,19 +1,25 @@
-using UnityEngine;
 using TMPro;
+using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// Controls the inventory sorting UI, including the sort dropdown and order toggle.
+/// </summary>
 public class InventorySortUI : MonoBehaviour
 {
-    public TMP_Dropdown sortTypeDropdown;
-    public Button sortOrderButton;
-    public Image sortOrderImage;
+    [Header("UI")]
+    [SerializeField] private TMP_Dropdown sortTypeDropdown;
+    [SerializeField] private Button sortOrderButton;
+    [SerializeField] private Image sortOrderImage;
 
-    public Sprite ascendingSprite;
-    public Sprite descendingSprite;
+    [Header("Icons")]
+    [SerializeField] private Sprite ascendingSprite;
+    [SerializeField] private Sprite descendingSprite;
 
-    public Inventory inventory;
+    [Header("References")]
+    [SerializeField] private Inventory inventory;
 
-    InventorySortType[] map =
+    private static readonly InventorySortType[] SortTypeMap =
     {
         InventorySortType.Name,
         InventorySortType.Rarity,
@@ -21,43 +27,57 @@ public class InventorySortUI : MonoBehaviour
         InventorySortType.Count
     };
 
-    void Awake()
+    private void OnEnable()
     {
-        sortTypeDropdown.onValueChanged.AddListener(OnSortTypeChanged);
-        sortOrderButton.onClick.AddListener(ToggleSortOrder);
+        if (sortTypeDropdown != null)
+            sortTypeDropdown.onValueChanged.AddListener(OnSortTypeChanged);
+        if (sortOrderButton != null)
+            sortOrderButton.onClick.AddListener(ToggleSortOrder);
 
-        Initialize();
+        SyncFromInventory();
     }
 
-    void Initialize()
+    private void OnDisable()
     {
-        if (inventory == null) return;
-        var currentType = map[sortTypeDropdown.value];
+        if (sortTypeDropdown != null)
+            sortTypeDropdown.onValueChanged.RemoveListener(OnSortTypeChanged);
+        if (sortOrderButton != null)
+            sortOrderButton.onClick.RemoveListener(ToggleSortOrder);
+    }
+
+    private void SyncFromInventory()
+    {
+        if (inventory == null || sortTypeDropdown == null)
+            return;
+
+        var currentType = SortTypeMap[sortTypeDropdown.value];
         inventory.SetSort(currentType, inventory.CurrentSortOrder);
         RefreshSortOrderIcon();
     }
 
-    void OnSortTypeChanged(int index)
+    private void OnSortTypeChanged(int index)
     {
-        if (inventory == null) return;
+        if (inventory == null)
+            return;
 
-        var selectedType = map[index];
-
+        var selectedType = SortTypeMap[index];
         inventory.SetSort(selectedType, inventory.CurrentSortOrder);
         RefreshSortOrderIcon();
     }
 
-    void ToggleSortOrder()
+    private void ToggleSortOrder()
     {
-        if (inventory == null) return;
+        if (inventory == null)
+            return;
 
         inventory.ToggleSortOrder();
         RefreshSortOrderIcon();
     }
 
-    void RefreshSortOrderIcon()
+    private void RefreshSortOrderIcon()
     {
-        if (sortOrderImage == null || inventory == null) return;
+        if (sortOrderImage == null || inventory == null)
+            return;
 
         sortOrderImage.sprite =
             inventory.CurrentSortOrder == SortOrder.Ascending

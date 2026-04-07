@@ -1,42 +1,32 @@
+using UnityEngine;
+
+/// <summary>
+/// A hotbar slot that remembers which item instance it is linked to.
+/// </summary>
 [System.Serializable]
 public class HotbarSlot
 {
-    //public Inventory inventory;
-    //public int inventorySlotIndex = -1;
+    [SerializeField] private Inventory inventory;
+    [SerializeField] private ItemData item;
+    [SerializeField] private int boundInventorySlotIndex = -1;
 
-    //public bool IsEmpty => inventorySlotIndex < 0;
+    public Inventory Inventory
+    {
+        get => inventory;
+        set => inventory = value;
+    }
 
-    //public ItemData Item =>
-    //    inventory != null && inventorySlotIndex >= 0
-    //        ? inventory.slots[inventorySlotIndex].item
-    //        : null;
+    public ItemData Item
+    {
+        get => item;
+        set => item = value;
+    }
 
-    //public int Count =>
-    //    inventory != null && inventorySlotIndex >= 0
-    //        ? inventory.slots[inventorySlotIndex].count
-    //        : 0;
-
-    //public bool IsValid(Inventory inventory)
-    //{
-    //    if (inventory == null) return false;
-    //    if (inventorySlotIndex < 0) return false;
-    //    if (inventorySlotIndex >= inventory.SlotCount) return false;
-
-    //    var slot = inventory.GetSlot(inventorySlotIndex);
-    //    return slot != null && slot.item != null;
-    //}
-
-    //public void Clear()
-    //{
-    //    inventorySlotIndex = -1;
-    //}
-
-    public Inventory inventory;
-
-    // Main reference to the item in the inventory
-    public ItemData item;
-
-    public int boundInventorySlotIndex = -1;
+    public int BoundInventorySlotIndex
+    {
+        get => boundInventorySlotIndex;
+        set => boundInventorySlotIndex = value;
+    }
 
     public bool IsEmpty => item == null;
 

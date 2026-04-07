@@ -3,64 +3,58 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
+/// <summary>
+/// A hotbar slot UI that displays the assigned item and supports basic interactions.
+/// </summary>
 public class HotbarSlotUI : UISlotBase, IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler
 {
-    public Image backgroundImage;
-    public Image icon;
-    public TMP_Text keyText;
-    public TMP_Text countText;
-    public Sprite defaultBackground;
-    public Sprite equippedBackground;
-    public DraggableItemUI dragUI;
+    [Header("Visual")]
+    [SerializeField] private Image backgroundImage;
+    [SerializeField] private Image icon;
+    [SerializeField] private TMP_Text keyText;
+    [SerializeField] private TMP_Text countText;
+    [SerializeField] private Sprite defaultBackground;
+    [SerializeField] private Sprite equippedBackground;
 
-    Hotbar hotbar;
-    Equipment equipmentManager;
-    int index;
+    [Header("Drag")]
+    [SerializeField] private DraggableItemUI dragUI;
 
-    DragItemContext? currentDrag;
+    private Hotbar _hotbar;
+    private Equipment _equipmentManager;
+    private int _index;
+    private DragItemContext? _currentDrag;
 
-    void OnEnable()
+    private void OnEnable()
     {
         InventoryEvents.OnItemDragBegin += OnExternalDragBegin;
         InventoryEvents.OnItemDragEnd += OnExternalDragEnd;
         InventoryEvents.EquipmentChanged += Refresh;
     }
 
-    void OnDisable()
+    private void OnDisable()
     {
         InventoryEvents.OnItemDragBegin -= OnExternalDragBegin;
         InventoryEvents.OnItemDragEnd -= OnExternalDragEnd;
         InventoryEvents.EquipmentChanged -= Refresh;
     }
 
-    public void SetDragUI(DraggableItemUI ui)
+    /// <summary>
+    /// Wired by HotbarUIController after instantiation.
+    /// </summary>
+    public void Setup(Hotbar hotbar, Equipment equipmentManager, int slotIndex, DraggableItemUI ui)
     {
+        _hotbar = hotbar;
+        _equipmentManager = equipmentManager;
+        _index = slotIndex;
+        keyText.text = (slotIndex + 1).ToString();
         dragUI = ui;
-    }
-
-    void OnExternalDragBegin(DragItemContext ctx)
-    {
-        currentDrag = ctx;
-    }
-
-    void OnExternalDragEnd()
-    {
-        currentDrag = null;
-    }
-
-    public void Setup(Hotbar hb, Equipment em, int slotIndex)
-    {
-        hotbar = hb;
-        equipmentManager = em;
-        index = slotIndex;
-        keyText.text = (slotIndex + 1).ToString(); // Display key number
     }
 
     public void Refresh()
     {
-        var invSlot = hotbar.GetInventorySlot(index);
+        var invSlot = _hotbar.GetInventorySlot(_index);
 
-        if (invSlot == null || invSlot.item == null)
+        if (invSlot == null || invSlot.Item == null)
         {
             icon.enabled = false;
             countText?.gameObject.SetActive(false);
@@ -68,31 +62,113 @@ public class HotbarSlotUI : UISlotBase, IBeginDragHandler, IDragHandler, IEndDra
             return;
         }
 
-        icon.sprite = invSlot.item.icon;
+        icon.sprite = invSlot.Item.icon;
         icon.enabled = true;
 
         RefreshCount(invSlot);
-        RefreshEquippedState(invSlot.item, hotbar.ValidHotbarIndex(index) ? hotbar.slots[index].boundInventorySlotIndex : -1);
+        RefreshEquippedState(invSlot.Item, _hotbar.GetBoundInventorySlotIndex(_index));
     }
 
-    void RefreshCount(InventorySlot invSlot)
+    public void OnBeginDrag(PointerEventData eventData)
     {
-        if (countText == null) return;
+        if (dragUI == null)
+            return;
 
-        // Don't show count for equipment
-        if (invSlot.item is EquipmentData || invSlot.count <= 1)
+        var invSlot = _hotbar.GetInventorySlot(_index);
+        if (invSlot == null)
+            return;
+
+        var ctx = new DragItemContext(null, inventorySlotIndex: -1, hotbarIndex: _index, item: invSlot.Item);
+
+        dragUI.BeginDrag(ctx, invSlot.Item.icon);
+        InventoryEvents.OnItemDragBegin?.Invoke(ctx);
+    }
+
+    public void OnDrag(PointerEventData eventData)
+    {
+        dragUI?.FollowMouse();
+    }
+
+    public void OnEndDrag(PointerEventData eventData)
+    {
+        if (dragUI == null)
+            return;
+
+        dragUI.EndDrag();
+        InventoryEvents.OnItemDragEnd?.Invoke();
+    }
+
+    public void OnDrop(PointerEventData eventData)
+    {
+        if (_currentDrag == null)
+            return;
+
+        var ctx = _currentDrag.Value;
+
+        // From Inventory to Hotbar
+        if (ctx.Inventory != null)
+        {
+            _hotbar.Assign(_index, ctx.Inventory, ctx.InventorySlotIndex);
+            return;
+        }
+
+        // From Hotbar to Hotbar
+        if (ctx.HotbarIndex >= 0 && ctx.HotbarIndex != _index)
+        {
+            _hotbar.Swap(_index, ctx.HotbarIndex);
+        }
+    }
+
+    public void ClearSelf()
+    {
+        _hotbar.Clear(_index);
+    }
+
+    protected override void OnDoubleClick()
+    {
+        if (_hotbar == null)
+            return;
+        if (!_hotbar.AllowDoubleClickUse)
+            return;
+        if (!_hotbar.ValidHotbarIndex(_index))
+            return;
+
+        var invSlot = _hotbar.GetInventorySlot(_index);
+        if (invSlot == null || invSlot.Item == null)
+            return;
+
+        InventoryEvents.HotbarUseRequested?.Invoke(invSlot);
+    }
+
+    private void OnExternalDragBegin(DragItemContext ctx)
+    {
+        _currentDrag = ctx;
+    }
+
+    private void OnExternalDragEnd()
+    {
+        _currentDrag = null;
+    }
+
+    private void RefreshCount(InventorySlot invSlot)
+    {
+        if (countText == null)
+            return;
+
+        if (invSlot.Item is EquipmentData || invSlot.Count <= 1)
         {
             countText.gameObject.SetActive(false);
             return;
         }
 
-        countText.text = invSlot.count.ToString();
+        countText.text = invSlot.Count.ToString();
         countText.gameObject.SetActive(true);
     }
 
-    void RefreshEquippedState(ItemData item, int boundInventorySlotIndex)
+    private void RefreshEquippedState(ItemData item, int boundInventorySlotIndex)
     {
-        if (backgroundImage == null) return;
+        if (backgroundImage == null)
+            return;
 
         if (item is not EquipmentData eq)
         {
@@ -100,79 +176,9 @@ public class HotbarSlotUI : UISlotBase, IBeginDragHandler, IDragHandler, IEndDra
             return;
         }
 
-        bool source = equipmentManager != null
-                      && equipmentManager.IsInventorySlotSourceOfEquippedItem(boundInventorySlotIndex, eq);
+        bool source = _equipmentManager != null
+                      && _equipmentManager.IsInventorySlotSourceOfEquippedItem(boundInventorySlotIndex, eq);
 
         backgroundImage.sprite = source ? equippedBackground : defaultBackground;
-    }
-
-    // =========================
-    // Drag FROM Hotbar
-    // =========================
-    public void OnBeginDrag(PointerEventData eventData)
-    {
-        var invSlot = hotbar.GetInventorySlot(index);
-        if (invSlot == null) return;
-
-        var ctx = new DragItemContext(null, inventorySlotIndex: -1, hotbarIndex: index, item: invSlot.item);
-
-        dragUI.BeginDrag(ctx, invSlot.item.icon);
-        InventoryEvents.OnItemDragBegin?.Invoke(ctx);
-    }
-
-    public void OnDrag(PointerEventData eventData)
-    {
-        dragUI.FollowMouse();
-    }
-
-    public void OnEndDrag(PointerEventData eventData)
-    {
-        dragUI.EndDrag();
-        InventoryEvents.OnItemDragEnd?.Invoke();
-    }
-
-    // =========================
-    // Drop ON Hotbar
-    // =========================
-    public void OnDrop(PointerEventData eventData)
-    {
-        if (currentDrag == null) return;
-        var ctx = currentDrag.Value;
-
-        // Inventory -> Hotbar
-        if (ctx.Inventory != null)
-        {
-            hotbar.Assign(index, ctx.Inventory, ctx.InventorySlotIndex);
-            return;
-        }
-
-        // Hotbar -> Hotbar swap
-        if (ctx.HotbarIndex >= 0 && ctx.HotbarIndex != index)
-        {
-            hotbar.Swap(index, ctx.HotbarIndex);
-        }
-    }
-
-
-    protected override void OnRightClick(PointerEventData eventData)
-    {
-        Debug.Log($"Hotbar slot {index} right clicked");
-    }
-
-    protected override void OnDoubleClick()
-    {
-        if (hotbar == null) return;
-        if (!hotbar.AllowDoubleClickUse) return;
-        if (!hotbar.ValidHotbarIndex(index)) return;
-
-        var invSlot = hotbar.GetInventorySlot(index);
-        if (invSlot == null || invSlot.item == null) return;
-
-        InventoryEvents.HotbarUseRequested?.Invoke(invSlot);
-    }
-
-    public void ClearSelf()
-    {
-        hotbar.Clear(index);
     }
 }

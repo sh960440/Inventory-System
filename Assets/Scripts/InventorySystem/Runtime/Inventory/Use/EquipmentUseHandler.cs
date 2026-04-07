@@ -1,10 +1,15 @@
+/// <summary>
+/// Handles using equipment items by equipping them or requesting an unequip action.
+/// </summary>
 public sealed class EquipmentUseHandler : IItemUseHandler
 {
+    /// <inheritdoc />
     public bool CanUse(ItemData item) => item is EquipmentData;
 
+    /// <inheritdoc />
     public void Use(ItemUseContext context, InventorySlot slot)
     {
-        if (slot?.item is not EquipmentData eq)
+        if (slot?.Item is not EquipmentData eq)
             return;
 
         var equipment = context.Equipment;

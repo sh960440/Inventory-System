@@ -1,114 +1,99 @@
-using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.EventSystems;
+using System.Collections.Generic;
 using TMPro;
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
+/// <summary>
+/// An inventory slot UI that displays the item stack and supports basic interactions.
+/// </summary>
 public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandler, IPointerEnterHandler, IPointerExitHandler, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerClickHandler
 {
-    public int slotIndex;
-    public Image backgroundImage;
-    [Header("Equipped Visual")]
-    public Sprite defaultBackground;
-    public Sprite equippedBackground;
-    public Image iconImage;
-    public TMP_Text countText;
-    IInventoryReadOnly inventory;
-    public ContextMenuUI contextMenuUI;
-    public DraggableItemUI dragUI;
-    public TooltipUI tooltipUI;
-    SlotHoverService hoverService;
-    bool isDragging = false;
-    private IEquippedItemLookup equippedItemLookup;
-    readonly System.Collections.Generic.List<RaycastResult> _raycastResults = new System.Collections.Generic.List<RaycastResult>(8);
+    [Header("Visual")]
+    [SerializeField] private Image backgroundImage;
+    [SerializeField] private Image iconImage;
+    [SerializeField] private TMP_Text countText;
 
-    void OnEnable()
+    [Header("Equipped")]
+    [SerializeField] private Sprite defaultBackground;
+    [SerializeField] private Sprite equippedBackground;
+
+    [Header("Drag")]
+    [SerializeField] private DraggableItemUI dragUI;
+
+    private IInventoryReadOnly _inventory;
+    private IEquippedItemLookup _equippedItemLookup;
+    private SlotHoverService _hoverService;
+    public int _slotIndex;
+    private bool _isDragging = false;
+    private readonly List<RaycastResult> _raycastResults = new List<RaycastResult>(8);
+
+    /// <summary>
+    /// Index of this slot in the inventory.
+    /// </summary>
+    public int SlotIndex => _slotIndex;
+
+    private void OnEnable()
     {
-        // Refresh when an item is equipped / unequipped
         InventoryEvents.EquipmentChanged += Refresh;
     }
 
-    void OnDisable()
+    private void OnDisable()
     {
         InventoryEvents.EquipmentChanged -= Refresh;
     }
 
-    //void EquipmentChanged(EquipmentData item, System.Collections.Generic.List<StatModifier> mods)
-    //{
-    //    // Refresh when an item is equipped / unequipped
-    //    Refresh();
-    //}
-
-    public void Setup(IInventoryReadOnly inv, IEquippedItemLookup equippedLookup, int idx, SlotHoverService hover = null)
+    /// <summary>
+    /// Initializes the slot UI with its data sources and shared drag icon.
+    /// </summary>
+    public void Setup(IInventoryReadOnly inv, IEquippedItemLookup equippedLookup, int index, SlotHoverService hover, DraggableItemUI drag)
     {
-        inventory = inv;
-        slotIndex = idx;
-        equippedItemLookup = equippedLookup;
-        hoverService = hover;
+        _inventory = inv;
+        _equippedItemLookup = equippedLookup;
+        _slotIndex = index;
+        _hoverService = hover;
+        if (drag != null)
+            dragUI = drag;
     }
 
-    //public void Refresh()
-    //{
-    //    var slot = inventory.slots[slotIndex];
-
-    //    if (slot.item == null)
-    //    {
-    //        iconImage.sprite = null;
-    //        iconImage.enabled = false;
-    //        countText.text = "";
-    //    }
-    //    else
-    //    {
-    //        iconImage.sprite = slot.item.icon;
-    //        iconImage.enabled = true;
-    //        iconImage.preserveAspect = true;
-
-    //        countText.text = slot.item.stackable && slot.count > 1 
-    //            ? slot.count.ToString() 
-    //            : "";
-    //    }
-    //}
-
+    /// <summary>
+    /// Updates icon, count, visibility and equipped state.
+    /// </summary>
     public void Refresh()
     {
-        var slot = inventory.Slots[slotIndex];
+        var slot = _inventory.Slots[_slotIndex];
 
-        bool pass = inventory.PassFilter(slot);
+        bool pass = _inventory.PassFilter(slot);
         gameObject.SetActive(pass);
 
-        if (slot.item == null)
+        if (slot.Item == null)
         {
             iconImage.sprite = null;
             iconImage.enabled = false;
             countText.text = "";
-
             backgroundImage.sprite = defaultBackground;
 
-            if (hoverService != null && hoverService.CurrentHoveredIndex == slotIndex)
+            if (_hoverService != null && _hoverService.CurrentHoveredIndex == _slotIndex)
                 InventoryEvents.TooltipHidden?.Invoke();
 
             return;
         }
 
-        iconImage.sprite = slot.item.icon;
+        iconImage.sprite = slot.Item.icon;
         iconImage.enabled = true;
         iconImage.preserveAspect = true;
 
-        countText.text = slot.item.stackable && slot.count > 1
-            ? slot.count.ToString()
+        countText.text = slot.Item.stackable && slot.Count > 1
+            ? slot.Count.ToString()
             : "";
 
-        // ---------- NEW: Equipped State ----------
-        bool isEquipped = false;
-
-        if (slot.item is EquipmentData eq)
-        {
-            isEquipped = equippedItemLookup != null
-                         && equippedItemLookup.IsInventorySlotSourceOfEquippedItem(slotIndex, eq);
-        }
-
+        bool isEquipped = IsEquippedEquipment(slot);
         backgroundImage.sprite = isEquipped ? equippedBackground : defaultBackground;
     }
 
+    /// <summary>
+    /// Sets the slot icon directly.
+    /// </summary>
     public void SetItem(Sprite sprite)
     {
         iconImage.sprite = sprite;
@@ -116,36 +101,39 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
         iconImage.preserveAspect = true;
     }
 
+    /// <summary>
+    /// Clears the icon image.
+    /// </summary>
     public void Clear()
     {
         iconImage.sprite = null;
         iconImage.enabled = false;
     }
 
-    public void SetVisible(bool visiable)
+    /// <summary>
+    /// Shows or hides this cell.
+    /// </summary>
+    public void SetVisible(bool visible)
     {
-        gameObject.SetActive(visiable);
+        gameObject.SetActive(visible);
     }
 
     public void OnPointerDown(PointerEventData eventData)
     {
-        // Drag only if left button is clicked
         if (eventData.button != PointerEventData.InputButton.Left)
             return;
-        if (inventory.Slots[slotIndex].item == null)
+        if (_inventory.Slots[_slotIndex].Item == null)
             return;
 
-        isDragging = true;
-        //dragUI.SetSprite(inventory.slots[slotIndex].item.icon);
+        _isDragging = true;
     }
 
     public void OnPointerUp(PointerEventData eventData)
     {
-        if (!isDragging) return;
-        isDragging = false;
-        //dragUI.Hide();
+        if (!_isDragging)
+            return;
+        _isDragging = false;
 
-        // Raycast UI to find which slot to drop
         _raycastResults.Clear();
         EventSystem.current.RaycastAll(eventData, _raycastResults);
 
@@ -154,117 +142,77 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
             var other = r.gameObject.GetComponent<InventorySlotUI>();
             if (other != null)
             {
-                DropOnto(other.slotIndex);
+                DropOnto(other.SlotIndex);
                 return;
             }
         }
     }
 
-    void Update()
-    {
-        //if (isDragging)
-            //dragUI.FollowMouse();
-    }
-
     void DropOnto(int targetIndex)
     {
-        if (targetIndex == slotIndex) return;
-        inventory.TrySwapOrStack(slotIndex, targetIndex);
+        if (targetIndex == _slotIndex)
+            return;
+        _inventory.TrySwapOrStack(_slotIndex, targetIndex);
     }
 
     protected override void OnDoubleClick()
     {
-        if (inventory == null) return;
-        if (!inventory.AllowDoubleClickUse) return;
-        if (!inventory.Valid(slotIndex)) return;
+        if (_inventory == null)
+            return;
+        if (!_inventory.AllowDoubleClickUse)
+            return;
+        if (!_inventory.Valid(_slotIndex))
+            return;
 
-        var slot = inventory.Slots[slotIndex];
-        if (slot.item == null) return;
+        var slot = _inventory.Slots[_slotIndex];
+        if (slot.Item == null)
+            return;
 
-        InventoryEvents.ItemUsed?.Invoke(slotIndex);
+        InventoryEvents.ItemUsed?.Invoke(_slotIndex);
     }
 
     protected override void OnMiddleClick(PointerEventData eventData)
     {
-        var slot = inventory.Slots[slotIndex];
-        if (slot.item == null) return;
+        var slot = _inventory.Slots[_slotIndex];
+        if (slot.Item == null)
+            return;
 
-        // Shift + right click -> Split Stack
-        //if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
-        //{
-        //    SplitStack();
-        //    return;
-        //}
-
-        // Open Context Menu
-        bool isEquipped = false;
-        if (slot.item is EquipmentData eq)
-            isEquipped = equippedItemLookup != null
-                         && equippedItemLookup.IsInventorySlotSourceOfEquippedItem(slotIndex, eq);
+        bool isEquipped = IsEquippedEquipment(slot);
 
         InventoryEvents.ContextMenuRequested?.Invoke(new ItemUIContext(
-            slot.item,
+            slot.Item,
             isFromInventory: true,
             isEquipped: isEquipped,
-            slotIndex: slotIndex,
-            stackCount: slot.item.stackable && slot.count >= 1 ? slot.count : -1));
+            slotIndex: _slotIndex,
+            stackCount: slot.Item.stackable && slot.Count >= 1 ? slot.Count : -1));
     }
-
-    //void SplitStack()
-    //{
-    //    var slot = inventory.slots[slotIndex];
-    //    if (slot.item == null) return;
-    //    if (slot.count < 2) return;
-
-    //    int half = slot.count / 2;
-
-    //    // Find an empty slot
-    //    for (int i = 0; i < inventory.slots.Count; i++)
-    //    {
-    //        if (inventory.slots[i].item == null)
-    //        {
-    //            // fill in the slot
-    //            inventory.slots[i].item = slot.item;
-    //            inventory.slots[i].count = half;
-
-    //            // original slot
-    //            slot.count -= half;
-
-    //            //inventory.UpdateUI();
-    //            InventoryEvents.InventoryChanged?.Invoke();
-    //            return;
-    //        }
-    //    }
-    //}
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if (hoverService != null)
-            hoverService.SetHovered(slotIndex);
+        if (_hoverService != null)
+            _hoverService.SetHovered(_slotIndex);
 
         backgroundImage.color = new Color(1f, 1f, 1f, 0.9f);
         transform.localScale = Vector3.one * 1.05f;
 
-        var slot = inventory.Slots[slotIndex];
-        if (slot.item == null) return;
+        var slot = _inventory.Slots[_slotIndex];
+        if (slot.Item == null)
+            return;
 
-        bool isEquipped = false;
-        if (slot.item is EquipmentData eq)
-            isEquipped = equippedItemLookup != null
-                         && equippedItemLookup.IsInventorySlotSourceOfEquippedItem(slotIndex, eq);
+        bool isEquipped = IsEquippedEquipment(slot);
 
         InventoryEvents.TooltipRequested?.Invoke(new ItemUIContext(
-            slot.item,
+            slot.Item,
             isFromInventory: true,
             isEquipped: isEquipped,
-            slotIndex: slotIndex,
-            stackCount: slot.item.stackable && slot.count >= 1 ? slot.count : -1));
+            slotIndex: _slotIndex,
+            stackCount: slot.Item.stackable && slot.Count >= 1 ? slot.Count : -1));
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        if (hoverService != null && hoverService.CurrentHoveredIndex == slotIndex)
-            hoverService.ClearHovered();
+        if (_hoverService != null && _hoverService.CurrentHoveredIndex == _slotIndex)
+            _hoverService.ClearHovered();
 
         backgroundImage.color = Color.white;
         transform.localScale = Vector3.one;
@@ -274,32 +222,41 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
 
     public void OnBeginDrag(PointerEventData eventData)
     {
-        if (inventory is not Inventory invMono)
+        if (dragUI == null)
+            return;
+        if (_inventory is not Inventory invMono)
             return;
 
-        var slot = inventory.Slots[slotIndex];
-        if (slot.item == null) return;
+        var slot = _inventory.Slots[_slotIndex];
+        if (slot.Item == null)
+            return;
 
-        var ctx = new DragItemContext(invMono, slotIndex, hotbarIndex: -1, item: slot.item);
+        var ctx = new DragItemContext(invMono, _slotIndex, hotbarIndex: -1, item: slot.Item);
 
-        dragUI.BeginDrag(ctx, slot.item.icon);
+        dragUI.BeginDrag(ctx, slot.Item.icon);
         InventoryEvents.OnItemDragBegin?.Invoke(ctx);
     }
 
     public void OnDrag(PointerEventData eventData)
     {
+        if (dragUI == null)
+            return;
         dragUI.FollowMouse();
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
+        if (dragUI == null)
+            return;
         dragUI.EndDrag();
         InventoryEvents.OnItemDragEnd?.Invoke();
     }
 
-    //public void DropItem()
-    //{
-    //    inventory.DropItem(slotIndex, 1);
-    //}
-
+    private bool IsEquippedEquipment(InventorySlot slot)
+    {
+        if (slot.Item is not EquipmentData eq)
+            return false;
+        return _equippedItemLookup != null
+               && _equippedItemLookup.IsInventorySlotSourceOfEquippedItem(_slotIndex, eq);
+    }
 }

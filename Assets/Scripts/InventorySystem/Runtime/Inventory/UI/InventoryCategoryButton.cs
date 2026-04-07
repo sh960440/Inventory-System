@@ -1,51 +1,65 @@
-using UnityEngine;
-using UnityEngine.UI;
 using System.Linq;
 using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
 
+/// <summary>
+/// A category button for the inventory filter that toggles the selected category and shows its active state.
+/// </summary>
 public class InventoryCategoryButton : MonoBehaviour
 {
-    public ItemCategory[] categories;
+    [Header("Filter")]
+    [SerializeField] private ItemCategory[] categories;
 
-    public Image highlightImage;
-    public Button button;
-    public TMP_Text buttonText;
-    Inventory inventory;
+    [Header("UI")]
+    [SerializeField] private Image highlightImage;
+    [SerializeField] private Button button;
+    [SerializeField] private TMP_Text buttonText;
 
-    void Awake()
+    private Inventory _inventory;
+
+    private void OnEnable()
     {
-        button.onClick.AddListener(OnClick);
+        if (button != null)
+            button.onClick.AddListener(OnClick);
         InventoryEvents.InventoryChanged += RefreshState;
     }
 
-    void OnDestroy()
+    private void OnDisable()
     {
+        if (button != null)
+            button.onClick.RemoveListener(OnClick);
         InventoryEvents.InventoryChanged -= RefreshState;
     }
 
-    public void Initialize(Inventory inventory, ItemCategory[] categories, string label)
+    /// /// <summary>
+    /// Initializes the category button with its label and the categories it represents.
+    /// </summary>
+    public void Initialize(Inventory inventory, ItemCategory[] categoryFilter, string label)
     {
-        this.inventory = inventory;
-        this.categories = categories;
+        _inventory = inventory;
+        categories = categoryFilter;
         if (buttonText != null)
             buttonText.text = label;
         RefreshState();
     }
 
-    void OnClick()
+    private void OnClick()
     {
-        if (inventory == null) return;
-        inventory.SetCategoryFilter(categories);
+        if (_inventory == null)
+            return;
+        _inventory.SetCategoryFilter(categories);
     }
 
-    void RefreshState()
+    private void RefreshState()
     {
-        if (highlightImage == null || inventory == null) return;
+        if (highlightImage == null || _inventory == null)
+            return;
 
         bool isActive =
-            inventory.currentCategories != null &&
-            inventory.currentCategories.Length == categories.Length &&
-            inventory.currentCategories.All(c => categories.Contains(c));
+            _inventory.CurrentCategories != null &&
+            _inventory.CurrentCategories.Length == categories.Length &&
+            _inventory.CurrentCategories.All(c => categories.Contains(c));
 
         highlightImage.gameObject.SetActive(isActive);
     }

@@ -110,7 +110,7 @@ public class InventoryInputHandler : MonoBehaviour, InputSystem_Actions.IInvento
 
         var slot = hotbar.GetInventorySlot(index);
 
-        if (slot == null || slot.item == null)
+        if (slot == null || slot.Item == null)
         {
             hotbar.Clear(index);
             return;

@@ -1,23 +1,44 @@
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
+/// <summary>
+/// Floating item icon that follows the pointer during drag operations.
+/// </summary>
 public class DraggableItemUI : MonoBehaviour
 {
-    public Image icon;
-    public RectTransform rect;
+    [Header("UI")]
+    [SerializeField] private Image icon;
+    [SerializeField] private RectTransform rect;
+    [SerializeField] private Vector2 _pointerOffset = new Vector2(18f, -18f);
 
-    Vector2 offset = new Vector2(18, -18);
-
+    /// <summary>
+    /// Active drag payload, or null when not dragging.
+    /// </summary>
     public DragItemContext? CurrentContext { get; private set; }
 
-    void Awake()
+    private void Awake()
     {
-        rect = GetComponent<RectTransform>();
+        if (rect == null)
+            rect = GetComponent<RectTransform>();
     }
 
+    /// <summary>
+    /// Sets the pointer offset used when dragging items.
+    /// </summary>
+    public void SetPointerOffset(Vector2 screenSpaceOffset)
+    {
+        _pointerOffset = screenSpaceOffset;
+    }
+
+    /// <summary>
+    /// Shows the drag icon and stores drag item context for drop handling.
+    /// </summary>
     public void BeginDrag(DragItemContext ctx, Sprite sprite)
     {
+        if (icon == null || rect == null)
+            return;
+
         CurrentContext = ctx;
 
         icon.sprite = sprite;
@@ -28,20 +49,32 @@ public class DraggableItemUI : MonoBehaviour
         gameObject.SetActive(true);
     }
 
+    /// <summary>
+    /// Moves the drag icon to the mouse position with a small offset.
+    /// </summary>
     public void FollowMouse()
     {
-        if (!gameObject.activeSelf || Mouse.current == null) return;
+        if (!gameObject.activeSelf || Mouse.current == null || rect == null)
+            return;
 
-        rect.position = Mouse.current.position.ReadValue() + offset;
+        rect.position = Mouse.current.position.ReadValue() + _pointerOffset;
     }
 
+    /// <summary>
+    /// Hides the drag icon and clears context.
+    /// </summary>
     public void EndDrag()
     {
         CurrentContext = null;
 
-        icon.sprite = null;
-        icon.color = Color.white;
-        rect.localScale = Vector3.one;
+        if (icon != null)
+        {
+            icon.sprite = null;
+            icon.color = Color.white;
+        }
+
+        if (rect != null)
+            rect.localScale = Vector3.one;
 
         gameObject.SetActive(false);
     }

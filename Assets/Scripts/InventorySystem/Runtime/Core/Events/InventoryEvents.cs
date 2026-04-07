@@ -21,7 +21,7 @@ public static class InventoryEvents
     // =========================
     // Inventory Slots
     // =========================
-    /// <summary>Fired when slots change (add/remove/swap/sort). Subscribed by UI controllers for refresh.</summary>
+    /// <summary>Fired when _slots change (add/remove/swap/sort). Subscribed by UI controllers for refresh.</summary>
     public static Action InventoryChanged;
     /// <summary>Fired after two inventory cells exchange content (swap or full stack swap).</summary>
     public static Action<int, int> InventorySlotsSwapped;
@@ -59,7 +59,7 @@ public static class InventoryEvents
     // =========================
     /// <summary>Request to use item from hotbar. Fired by HotbarSlotUI double-click. Subscribed by Inventory.</summary>
     public static Action<InventorySlot> HotbarUseRequested;
-    /// <summary>Fired when hotbar slots change. Subscribed by HotbarUIController.</summary>
+    /// <summary>Fired when hotbar _slots change. Subscribed by HotbarUIController.</summary>
     public static Action HotbarChanged;
 
     // =========================

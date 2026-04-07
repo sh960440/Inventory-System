@@ -1,19 +1,31 @@
-using UnityEngine;
 using TMPro;
+using UnityEngine;
 
+/// <summary>
+/// Sends the search text to the inventory so it can update its filter.
+/// </summary>
 public class InventorySearchInput : MonoBehaviour
 {
-    public TMP_InputField input;
-    public Inventory inventory;
+    [Header("References")]
+    [SerializeField] private TMP_InputField input;
+    [SerializeField] private Inventory inventory;
 
-    void Awake()
+    private void OnEnable()
     {
-        input.onValueChanged.AddListener(OnValueChanged);
+        if (input != null)
+            input.onValueChanged.AddListener(OnValueChanged);
     }
 
-    void OnValueChanged(string text)
+    private void OnDisable()
     {
-        if (inventory == null) return;
+        if (input != null)
+            input.onValueChanged.RemoveListener(OnValueChanged);
+    }
+
+    private void OnValueChanged(string text)
+    {
+        if (inventory == null)
+            return;
         inventory.SetSearchKeyword(text);
     }
 }
