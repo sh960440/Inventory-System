@@ -1,8 +1,13 @@
 using System.Collections.Generic;
 
-/// SRP helper: maps Inventory runtime _slots <-> Save DTO without touching Unity/Events.
+/// <summary>
+/// Converts between runtime inventory slots and their serialized save-data representation.
+/// </summary>
 public static class InventorySaveDataMapper
 {
+    /// <summary>
+    /// Converts the current inventory slots into their serialized save-data representation, including explicit entries for empty slots.
+    /// </summary>
     public static InventorySaveData ToSaveData(List<InventorySlot> slots)
     {
         var data = new InventorySaveData();
@@ -31,6 +36,9 @@ public static class InventorySaveDataMapper
         return data;
     }
 
+    /// <summary>
+    /// Restores inventory slots from serialized save data using the provided item database.
+    /// </summary>
     public static void LoadFromSaveData(
         InventorySaveData data,
         List<InventorySlot> targetSlots,
@@ -53,8 +61,7 @@ public static class InventorySaveDataMapper
             targetSlots.Add(
                 item != null
                     ? new InventorySlot(item, s.count)
-                    : new InventorySlot()
-            );
+                    : new InventorySlot());
         }
     }
 }

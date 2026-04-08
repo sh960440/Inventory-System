@@ -1344,7 +1344,9 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 299433fbf941d5a44bae5051780fb019, type: 2}
   - {fileID: 11400000, guid: 94fc43b435c27b641a550f01382a96e0, type: 2}
   - {fileID: 11400000, guid: 4a08813d86cf9524bb1db9e4ea19ff1d, type: 2}
+  - {fileID: 11400000, guid: de513e26df85c1448857d8c431b24ca4, type: 2}
   - {fileID: 11400000, guid: 1e61b7f1cd584cc438f3b3e674e593e2, type: 2}
+  - {fileID: 11400000, guid: 702fc89c9d746f74fb212da59026f128, type: 2}
   - {fileID: 11400000, guid: c173575e6b5cd63408734733541f201a, type: 2}
 --- !u!4 &216886062
 Transform:
@@ -2186,7 +2188,6 @@ MonoBehaviour:
   equipmentManager: {fileID: 1344638775}
   slotPrefab: {fileID: 2517756230566925849, guid: d2f8c923a03af4f4184c02636a73e38a, type: 3}
   container: {fileID: 588556729}
-  slots: []
 --- !u!114 &353356865
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2199,18 +2200,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f830707605d1c684788d705e386128d1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InventoryUIController
+  inventory: {fileID: 676156576}
   panel: {fileID: 2129883507}
   canvasGroup: {fileID: 2129883510}
-  inventory: {fileID: 676156576}
   slotPrefab: {fileID: 5079069107590893257, guid: 82d5fb873e016e64b8a4fba8b82bdfba, type: 3}
-  slotsUI: []
   container: {fileID: 865586744}
   gridLayout: {fileID: 865586745}
   categoryButtonContainer: {fileID: 1052654430}
   categoryButtonPrefab: {fileID: 2328580869192902305, guid: 10d598f3bebb91449aac864bf9a60dce, type: 3}
-  contextMenuUI: {fileID: 856122988}
   dragUI: {fileID: 1299265530}
-  tooltipUI: {fileID: 1046006122}
 --- !u!1 &357187909 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1069567032315564, guid: bdf8e7438a7816543998181bd3067573, type: 3}
@@ -4429,8 +4427,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4605a4ef2ced87b458a48dd0d284479a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Inventory
-  slots: []
-  initialCapacity: 12
+  _slots: []
 --- !u!1 &676424574
 GameObject:
   m_ObjectHideFlags: 0
@@ -5778,17 +5775,6 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 3856507716882567596, guid: ddb12ee465978834bae3807f4cd29dce, type: 3}
   m_PrefabInstance: {fileID: 48934088174604867}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &856122988 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 5395000849757952154, guid: ddb12ee465978834bae3807f4cd29dce, type: 3}
-  m_PrefabInstance: {fileID: 48934088174604867}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d0118edf62ff81a47a14e60f4fe0ed32, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ContextMenuUI
 --- !u!1 &857138606 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1069567032315564, guid: bdf8e7438a7816543998181bd3067573, type: 3}
@@ -8981,9 +8967,7 @@ MonoBehaviour:
   inventoryGridLayout: {fileID: 0}
   inventoryCategoryButtonContainer: {fileID: 0}
   inventoryCategoryButtonPrefab: {fileID: 0}
-  inventoryContextMenuUI: {fileID: 0}
   inventoryDragUI: {fileID: 0}
-  inventoryTooltipUI: {fileID: 0}
   itemUseHandlers: []
 --- !u!114 &1178357977
 MonoBehaviour:
@@ -9538,6 +9522,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DraggableItemUI
   icon: {fileID: 1299265531}
   rect: {fileID: 1299265529}
+  _pointerOffset: {x: 18, y: -18}
 --- !u!114 &1299265531
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12915,7 +12900,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 505978a22642db946b614dbcdbeefea2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Hotbar
-  slots: []
 --- !u!4 &1720750664
 Transform:
   m_ObjectHideFlags: 0

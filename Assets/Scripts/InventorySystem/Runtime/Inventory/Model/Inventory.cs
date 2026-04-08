@@ -13,16 +13,16 @@ public class Inventory : MonoBehaviour, IInventoryReadOnly
 
     private int _initialCapacity;
 
-    readonly InventoryFilterState _filterState = new InventoryFilterState();
+    private readonly InventoryFilterState _filterState = new InventoryFilterState();
     private InventorySortType _currentSortType = InventorySortType.None;
     private SortOrder _currentSortOrder = SortOrder.Ascending;
     private bool _allowStacking = true;
     private bool _allowSplitStack = true;
     private Equipment _equipmentManager;
 
-    readonly InventoryUseHandlerRegistry _useHandlerRegistry = new InventoryUseHandlerRegistry();
-    readonly List<InventorySlot> _sortFilled = new List<InventorySlot>();
-    readonly List<InventorySlot> _sortEmpty = new List<InventorySlot>();
+    private readonly InventoryUseHandlerRegistry _useHandlerRegistry = new InventoryUseHandlerRegistry();
+    private readonly List<InventorySlot> _sortFilled = new List<InventorySlot>();
+    private readonly List<InventorySlot> _sortEmpty = new List<InventorySlot>();
 
     public IReadOnlyList<InventorySlot> Slots => _slots;
     public ItemCategory[] CurrentCategories => _filterState.CurrentCategories;
@@ -138,13 +138,13 @@ public class Inventory : MonoBehaviour, IInventoryReadOnly
 
     public bool AddItem(ItemData item, int amount)
     {
-        if (item.stackable && _allowStacking)
+        if (item.Stackable && _allowStacking)
         {
             foreach (var slot in _slots)
             {
-                if (slot.Item == item && slot.Count < item.maxStack)
+                if (slot.Item == item && slot.Count < item.MaxStack)
                 {
-                    int space = item.maxStack - slot.Count;
+                    int space = item.MaxStack - slot.Count;
                     int add = Mathf.Min(space, amount);
                     slot.Count += add;
                     amount -= add;
@@ -161,8 +161,8 @@ public class Inventory : MonoBehaviour, IInventoryReadOnly
         {
             if (slot.Item == null && amount > 0)
             {
-                int add = _allowStacking && item.stackable
-                    ? Mathf.Min(item.maxStack, amount)
+                int add = _allowStacking && item.Stackable
+                    ? Mathf.Min(item.MaxStack, amount)
                     : 1;
 
                 slot.Item = item;
@@ -191,13 +191,13 @@ public class Inventory : MonoBehaviour, IInventoryReadOnly
 
         int remaining = amount;
 
-        if (item.stackable && _allowStacking)
+        if (item.Stackable && _allowStacking)
         {
             foreach (var slot in _slots)
             {
-                if (slot.Item == item && slot.Count < item.maxStack)
+                if (slot.Item == item && slot.Count < item.MaxStack)
                 {
-                    int space = item.maxStack - slot.Count;
+                    int space = item.MaxStack - slot.Count;
                     remaining -= Mathf.Min(space, remaining);
                     if (remaining <= 0)
                         return true;
@@ -209,8 +209,8 @@ public class Inventory : MonoBehaviour, IInventoryReadOnly
         {
             if (slot.Item == null && remaining > 0)
             {
-                int add = _allowStacking && item.stackable
-                    ? Mathf.Min(item.maxStack, remaining)
+                int add = _allowStacking && item.Stackable
+                    ? Mathf.Min(item.MaxStack, remaining)
                     : 1;
 
                 remaining -= add;
@@ -270,9 +270,9 @@ public class Inventory : MonoBehaviour, IInventoryReadOnly
 
         bool exchangedCells = false;
 
-        if (a.Item != null && b.Item != null && a.Item == b.Item && a.Item.stackable && _allowStacking)
+        if (a.Item != null && b.Item != null && a.Item == b.Item && a.Item.Stackable && _allowStacking)
         {
-            int space = a.Item.maxStack - b.Count;
+            int space = a.Item.MaxStack - b.Count;
             if (space <= 0)
             {
                 SwapSlots(a, b);
@@ -417,7 +417,7 @@ public class Inventory : MonoBehaviour, IInventoryReadOnly
         if (_useHandlerRegistry.TryUse(ctx, slot))
             return;
 
-        Debug.Log($"Used item (no handler): {slot.Item.itemName}");
+        Debug.Log($"Used item (no handler): {slot.Item.ItemName}");
     }
 
     private void InspectItem(int index)
@@ -429,7 +429,7 @@ public class Inventory : MonoBehaviour, IInventoryReadOnly
         if (item == null)
             return;
 
-        Debug.Log($"{item.itemName}\n{item.description}");
+        Debug.Log($"{item.ItemName}\n{item.Description}");
     }
 
     private void ApplySort()
@@ -447,7 +447,7 @@ public class Inventory : MonoBehaviour, IInventoryReadOnly
         var slot = _slots[index];
         if (slot.Item == null)
             return;
-        if (!slot.Item.stackable)
+        if (!slot.Item.Stackable)
             return;
         if (slot.Count < 2)
             return;

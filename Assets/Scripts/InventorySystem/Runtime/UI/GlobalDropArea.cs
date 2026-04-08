@@ -1,13 +1,17 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 
+/// <summary>
+/// Handles item drops outside valid slots.
+/// </summary>
 public class GlobalDropArea : MonoBehaviour, IDropHandler
 {
-    [SerializeField] DraggableItemUI dragUI;
+    [Header("Drag")]
+    [SerializeField] private DraggableItemUI dragUI;
 
     public void OnDrop(PointerEventData eventData)
     {
-        if (dragUI.CurrentContext == null)
+        if (dragUI == null || dragUI.CurrentContext == null)
             return;
 
         var ctx = dragUI.CurrentContext.Value;

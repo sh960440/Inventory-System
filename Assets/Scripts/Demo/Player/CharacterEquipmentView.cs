@@ -23,7 +23,7 @@ public class CharacterEquipmentView : MonoBehaviour
     void OnEquipped(EquipmentData item, List<StatModifier> _)
     {
         if (item == null) return;
-        if (item.equipSlot != EquipmentSlot.Weapon) return;
+        if (item.EquipSlot != EquipmentSlot.Weapon) return;
 
         var prefab = visualDatabase.GetPrefab(item.Id);
         if (prefab == null) return;
@@ -38,7 +38,7 @@ public class CharacterEquipmentView : MonoBehaviour
     void OnUnequipped(EquipmentData item, List<StatModifier> _)
     {
         if (item == null) return;
-        if (item.equipSlot != EquipmentSlot.Weapon) return;
+        if (item.EquipSlot != EquipmentSlot.Weapon) return;
 
         ClearWeapon();
     }

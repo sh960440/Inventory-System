@@ -1,13 +1,18 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
+/// <summary>
+/// Provides a lookup database for item definitions, resolving items by their unique IDs.
+/// </summary>
 public class ItemDatabase : MonoBehaviour, IItemDatabase
 {
     public static ItemDatabase Instance { get; private set; }
 
-    [SerializeField] private List<ItemData> items = new();
+    [Header("Definitions")]
+    [SerializeField] private List<ItemData> items = new List<ItemData>();
 
-    private Dictionary<string, ItemData> lookup = new();
+    private readonly Dictionary<string, ItemData> _lookup = new Dictionary<string, ItemData>();
 
     private void Awake()
     {
@@ -18,29 +23,13 @@ public class ItemDatabase : MonoBehaviour, IItemDatabase
         }
 
         Instance = this;
-
         BuildLookup();
     }
 
-    private void BuildLookup()
+    private void OnDestroy()
     {
-        lookup.Clear();
-
-        foreach (var item in items)
-        {
-            if (item == null)
-                continue;
-
-            if (lookup.ContainsKey(item.Id))
-            {
-                Debug.LogError($"Duplicate Item ID detected: {item.Id}");
-                continue;
-            }
-
-            lookup.Add(item.Id, item);
-        }
-
-        Debug.Log($"ItemDatabase initialized with {lookup.Count} items.");
+        if (Instance == this)
+            Instance = null;
     }
 
     public ItemData Get(string id)
@@ -48,10 +37,29 @@ public class ItemDatabase : MonoBehaviour, IItemDatabase
         if (string.IsNullOrEmpty(id))
             return null;
 
-        if (lookup.TryGetValue(id, out var item))
+        if (_lookup.TryGetValue(id, out var item))
             return item;
 
         Debug.LogWarning($"Item ID not found: {id}");
         return null;
+    }
+
+    private void BuildLookup()
+    {
+        _lookup.Clear();
+
+        foreach (var item in items)
+        {
+            if (item == null)
+                continue;
+
+            if (_lookup.ContainsKey(item.Id))
+            {
+                Debug.LogError($"Duplicate Item ID detected: {item.Id}");
+                continue;
+            }
+
+            _lookup.Add(item.Id, item);
+        }
     }
 }

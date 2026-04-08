@@ -1,12 +1,15 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 
+/// <summary>
+/// Provides shared click-handling behavior for UI slots, including left double-click and optional right or middle clicks.
+/// </summary>
 public abstract class UISlotBase : MonoBehaviour, IPointerClickHandler
 {
-    [Header("Double Click")]
-    [SerializeField] float doubleClickThreshold = 0.25f;
+    [Header("Click")]
+    [SerializeField] private float doubleClickThreshold = 0.25f;
 
-    float lastClickTime;
+    private float _lastClickTime;
 
     public void OnPointerClick(PointerEventData eventData)
     {
@@ -15,42 +18,40 @@ public abstract class UISlotBase : MonoBehaviour, IPointerClickHandler
             case PointerEventData.InputButton.Left:
                 HandleLeftClick();
                 break;
-
             case PointerEventData.InputButton.Right:
                 OnRightClick(eventData);
                 break;
-
             case PointerEventData.InputButton.Middle:
                 OnMiddleClick(eventData);
                 break;
         }
     }
 
-    void HandleLeftClick()
+    private void HandleLeftClick()
     {
-        if (Time.unscaledTime - lastClickTime <= doubleClickThreshold)
+        if (Time.unscaledTime - _lastClickTime <= doubleClickThreshold)
         {
-            lastClickTime = 0;
+            _lastClickTime = 0;
             OnDoubleClick();
         }
         else
         {
-            lastClickTime = Time.unscaledTime;
+            _lastClickTime = Time.unscaledTime;
         }
     }
 
     /// <summary>
-    /// Double left click behavior (must implement)
+    /// Double left click behavior
     /// </summary>
     protected abstract void OnDoubleClick();
 
     /// <summary>
-    /// Right click behavior (optional)
+    /// Right click behavior (optional - override when needed)
     /// </summary>
     protected virtual void OnRightClick(PointerEventData eventData) { }
 
     /// <summary>
-    /// Middle click behavior (optional)
+    /// Middle click behavior (optional - override when needed)
     /// </summary>
     protected virtual void OnMiddleClick(PointerEventData eventData) { }
 }

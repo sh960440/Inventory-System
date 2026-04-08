@@ -79,11 +79,11 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
             return;
         }
 
-        iconImage.sprite = slot.Item.icon;
+        iconImage.sprite = slot.Item.Icon;
         iconImage.enabled = true;
         iconImage.preserveAspect = true;
 
-        countText.text = slot.Item.stackable && slot.Count > 1
+        countText.text = slot.Item.Stackable && slot.Count > 1
             ? slot.Count.ToString()
             : "";
 
@@ -184,7 +184,7 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
             isFromInventory: true,
             isEquipped: isEquipped,
             slotIndex: _slotIndex,
-            stackCount: slot.Item.stackable && slot.Count >= 1 ? slot.Count : -1));
+            stackCount: slot.Item.Stackable && slot.Count >= 1 ? slot.Count : -1));
     }
 
     public void OnPointerEnter(PointerEventData eventData)
@@ -206,7 +206,7 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
             isFromInventory: true,
             isEquipped: isEquipped,
             slotIndex: _slotIndex,
-            stackCount: slot.Item.stackable && slot.Count >= 1 ? slot.Count : -1));
+            stackCount: slot.Item.Stackable && slot.Count >= 1 ? slot.Count : -1));
     }
 
     public void OnPointerExit(PointerEventData eventData)
@@ -233,7 +233,7 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
 
         var ctx = new DragItemContext(invMono, _slotIndex, hotbarIndex: -1, item: slot.Item);
 
-        dragUI.BeginDrag(ctx, slot.Item.icon);
+        dragUI.BeginDrag(ctx, slot.Item.Icon);
         InventoryEvents.OnItemDragBegin?.Invoke(ctx);
     }
 

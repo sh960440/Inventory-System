@@ -20,7 +20,7 @@ public class PlayerPickup : MonoBehaviour
         if (ip != null)
         {
             currentPickup = ip;
-            Debug.Log("Enter pickup range: " + ip.itemData.itemName);
+            Debug.Log("Enter pickup range: " + ip.itemData.ItemName);
         }
     }
 
@@ -41,7 +41,7 @@ public class PlayerPickup : MonoBehaviour
         //playerInventory.AddItem(currentPickup.itemData, currentPickup.amount);
         InventoryEvents.AddItemRequested?.Invoke(currentPickup.itemData, currentPickup.amount);
 
-        var prefab = currentPickup.itemData.worldPrefab;
+        var prefab = currentPickup.itemData.WorldPrefab;
         pool.Return(prefab, currentPickup.gameObject);
 
         currentPickup = null;

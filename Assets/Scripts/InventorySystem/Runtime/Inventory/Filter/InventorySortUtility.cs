@@ -47,15 +47,15 @@ public static class InventorySortUtility
         switch (sortType)
         {
             case InventorySortType.Name:
-                result = string.Compare(a.Item.itemName, b.Item.itemName);
+                result = string.Compare(a.Item.ItemName, b.Item.ItemName);
                 break;
 
             case InventorySortType.Rarity:
-                result = a.Item.rarity.CompareTo(b.Item.rarity);
+                result = a.Item.Rarity.CompareTo(b.Item.Rarity);
                 break;
 
             case InventorySortType.Category:
-                result = a.Item.category.CompareTo(b.Item.category);
+                result = a.Item.Category.CompareTo(b.Item.Category);
                 break;
 
             case InventorySortType.Count:

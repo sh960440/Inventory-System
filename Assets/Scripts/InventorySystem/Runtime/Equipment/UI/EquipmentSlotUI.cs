@@ -51,7 +51,7 @@ public class EquipmentSlotUI : UISlotBase, IPointerEnterHandler, IPointerExitHan
             return;
         }
 
-        iconImage.sprite = item.icon;
+        iconImage.sprite = item.Icon;
         iconImage.enabled = true;
         iconImage.preserveAspect = true;
     }
@@ -79,6 +79,6 @@ public class EquipmentSlotUI : UISlotBase, IPointerEnterHandler, IPointerExitHan
         if (_currentItem == null)
             return;
 
-        InventoryEvents.UnequipRequested?.Invoke(_currentItem.equipSlot);
+        InventoryEvents.UnequipRequested?.Invoke(_currentItem.EquipSlot);
     }
 }

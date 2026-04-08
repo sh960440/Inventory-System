@@ -38,7 +38,7 @@ public static class InventoryFilterUtility
 
         foreach (var c in categories)
         {
-            if (slot.Item.category == c)
+            if (slot.Item.Category == c)
                 return true;
         }
 
@@ -56,7 +56,7 @@ public static class InventoryFilterUtility
         if (slot.Item == null)
             return false;
 
-        var itemName = slot.Item.itemName;
+        var itemName = slot.Item.ItemName;
         /* var description = slot.item.description; */ // TBD
 
         return !string.IsNullOrEmpty(itemName) &&

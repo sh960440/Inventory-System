@@ -92,7 +92,7 @@ public class DemoItemSpawner : MonoBehaviour
 
         foreach (var p in pickups)
         {
-            pool.Return(p.itemData.worldPrefab, p.gameObject);
+            pool.Return(p.itemData.WorldPrefab, p.gameObject);
         }
     }
 

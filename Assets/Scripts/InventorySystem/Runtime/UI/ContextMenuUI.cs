@@ -1,114 +1,147 @@
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
+/// <summary>
+/// Displays the item action context menu and handles user interactions.
+/// </summary>
 public class ContextMenuUI : MonoBehaviour
 {
-    public CanvasGroup canvasGroup;
-    public RectTransform rectTransform;
+    [Header("Panel")]
+    [SerializeField] private CanvasGroup canvasGroup;
+    [SerializeField] private RectTransform rectTransform;
 
-    public Button useButton;
-    public Button dropButton;
-    public Button inspectButton;
-    public Button equipButton;
-    public Button unequipButton;
+    [Header("Actions")]
+    [SerializeField] private Button useButton;
+    [SerializeField] private Button dropButton;
+    [SerializeField] private Button inspectButton;
+    [SerializeField] private Button equipButton;
+    [SerializeField] private Button unequipButton;
 
-    ItemUIContext context;
+    private ItemUIContext _context;
 
-    void Awake()
+    private void OnEnable()
     {
-        useButton.onClick.AddListener(() =>
-        {
-            if (context.IsFromInventory)
-                InventoryEvents.ItemUsed?.Invoke(context.SlotIndex);
-            Hide();
-        });
+        if (useButton != null)
+            useButton.onClick.AddListener(OnUseClicked);
+        if (inspectButton != null)
+            inspectButton.onClick.AddListener(OnInspectClicked);
+        if (dropButton != null)
+            dropButton.onClick.AddListener(OnDropClicked);
+        if (equipButton != null)
+            equipButton.onClick.AddListener(OnEquipClicked);
+        if (unequipButton != null)
+            unequipButton.onClick.AddListener(OnUnequipClicked);
 
-        inspectButton.onClick.AddListener(() =>
-        {
-            if (context.IsFromInventory)
-                InventoryEvents.ItemInspected?.Invoke(context.SlotIndex);
-            Hide();
-        });
-
-        dropButton.onClick.AddListener(() =>
-        {
-            if (context.IsFromInventory && !context.IsEquipped)
-            {
-                InventoryEvents.RemoveItemRequested?.Invoke(context.SlotIndex, 1);
-                InventoryEvents.ItemDropped?.Invoke(context.Item, 1);
-            }      
-            Hide();
-        });
-
-        equipButton.onClick.AddListener(() =>
-        {
-            if (context.Item is EquipmentData eq && context.IsFromInventory)
-                InventoryEvents.EquipRequested?.Invoke(eq, context.SlotIndex);
-            Hide();
-        });
-
-        unequipButton.onClick.AddListener(() =>
-        {
-            if (context.Item is EquipmentData eq)
-                InventoryEvents.UnequipRequested?.Invoke(eq.equipSlot);
-            Hide();
-        });
-    }
-
-    void OnEnable()
-    {
         InventoryEvents.ContextMenuRequested += Show;
         InventoryEvents.InventoryCloseRequested += Hide;
     }
 
-    void OnDisable()
+    private void OnDisable()
     {
+        if (useButton != null)
+            useButton.onClick.RemoveListener(OnUseClicked);
+        if (inspectButton != null)
+            inspectButton.onClick.RemoveListener(OnInspectClicked);
+        if (dropButton != null)
+            dropButton.onClick.RemoveListener(OnDropClicked);
+        if (equipButton != null)
+            equipButton.onClick.RemoveListener(OnEquipClicked);
+        if (unequipButton != null)
+            unequipButton.onClick.RemoveListener(OnUnequipClicked);
+
         InventoryEvents.ContextMenuRequested -= Show;
         InventoryEvents.InventoryCloseRequested -= Hide;
     }
 
-    void Show(ItemUIContext ctx)
+    /// <summary>
+    /// Hides the menu and stops blocking raycasts.
+    /// </summary>
+    public void Hide()
     {
-        context = ctx;
+        if (canvasGroup == null)
+            return;
+        canvasGroup.alpha = 0f;
+        canvasGroup.blocksRaycasts = false;
+    }
 
-        // Reset
-        useButton.gameObject.SetActive(false);
-        dropButton.gameObject.SetActive(false);
-        inspectButton.gameObject.SetActive(false);
-        equipButton.gameObject.SetActive(false);
-        unequipButton.gameObject.SetActive(false);
+    private void Show(ItemUIContext ctx)
+    {
+        _context = ctx;
 
-        if (ctx.Item == null) return;
+        if (useButton != null)
+            useButton.gameObject.SetActive(false);
+        if (dropButton != null)
+            dropButton.gameObject.SetActive(false);
+        if (inspectButton != null)
+            inspectButton.gameObject.SetActive(false);
+        if (equipButton != null)
+            equipButton.gameObject.SetActive(false);
+        if (unequipButton != null)
+            unequipButton.gameObject.SetActive(false);
 
-        // Inventory only
-        if (ctx.IsFromInventory)
-        {
+        if (ctx.Item == null || canvasGroup == null)
+            return;
+
+        if (ctx.IsFromInventory && inspectButton != null)
             inspectButton.gameObject.SetActive(true);
 
-            if (ctx.Item.consumable)
-                useButton.gameObject.SetActive(true);
+        if (ctx.IsFromInventory && ctx.Item.Consumable && useButton != null)
+            useButton.gameObject.SetActive(true);
 
-            if (!ctx.IsEquipped)
-                dropButton.gameObject.SetActive(true);
-        }
+        if (ctx.IsFromInventory && !ctx.IsEquipped && dropButton != null)
+            dropButton.gameObject.SetActive(true);
 
-        // Equipment logic
         if (ctx.Item is EquipmentData)
         {
-            equipButton.gameObject.SetActive(ctx.IsFromInventory && !ctx.IsEquipped);
-            unequipButton.gameObject.SetActive(ctx.IsEquipped);
+            if (equipButton != null)
+                equipButton.gameObject.SetActive(ctx.IsFromInventory && !ctx.IsEquipped);
+            if (unequipButton != null)
+                unequipButton.gameObject.SetActive(ctx.IsEquipped);
         }
 
-        rectTransform.position = Mouse.current.position.ReadValue();
+        if (rectTransform != null && Mouse.current != null)
+            rectTransform.position = Mouse.current.position.ReadValue();
 
-        canvasGroup.alpha = 1;
+        canvasGroup.alpha = 1f;
         canvasGroup.blocksRaycasts = true;
     }
 
-    public void Hide()
+    private void OnUseClicked()
     {
-        canvasGroup.alpha = 0;
-        canvasGroup.blocksRaycasts = false;
+        if (_context.IsFromInventory)
+            InventoryEvents.ItemUsed?.Invoke(_context.SlotIndex);
+        Hide();
+    }
+
+    private void OnInspectClicked()
+    {
+        if (_context.IsFromInventory)
+            InventoryEvents.ItemInspected?.Invoke(_context.SlotIndex);
+        Hide();
+    }
+
+    private void OnDropClicked()
+    {
+        if (_context.IsFromInventory && !_context.IsEquipped)
+        {
+            InventoryEvents.RemoveItemRequested?.Invoke(_context.SlotIndex, 1);
+            InventoryEvents.ItemDropped?.Invoke(_context.Item, 1);
+        }
+        Hide();
+    }
+
+    private void OnEquipClicked()
+    {
+        if (_context.Item is EquipmentData eq && _context.IsFromInventory)
+            InventoryEvents.EquipRequested?.Invoke(eq, _context.SlotIndex);
+        Hide();
+    }
+
+    private void OnUnequipClicked()
+    {
+        if (_context.Item is EquipmentData eq)
+            InventoryEvents.UnequipRequested?.Invoke(eq.EquipSlot);
+        Hide();
     }
 }

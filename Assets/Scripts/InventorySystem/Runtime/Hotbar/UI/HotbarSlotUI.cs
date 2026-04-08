@@ -62,7 +62,7 @@ public class HotbarSlotUI : UISlotBase, IBeginDragHandler, IDragHandler, IEndDra
             return;
         }
 
-        icon.sprite = invSlot.Item.icon;
+        icon.sprite = invSlot.Item.Icon;
         icon.enabled = true;
 
         RefreshCount(invSlot);
@@ -80,7 +80,7 @@ public class HotbarSlotUI : UISlotBase, IBeginDragHandler, IDragHandler, IEndDra
 
         var ctx = new DragItemContext(null, inventorySlotIndex: -1, hotbarIndex: _index, item: invSlot.Item);
 
-        dragUI.BeginDrag(ctx, invSlot.Item.icon);
+        dragUI.BeginDrag(ctx, invSlot.Item.Icon);
         InventoryEvents.OnItemDragBegin?.Invoke(ctx);
     }
 

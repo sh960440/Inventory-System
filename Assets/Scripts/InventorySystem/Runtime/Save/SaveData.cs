@@ -1,3 +1,6 @@
+/// <summary>
+/// Represents the root save-data container, including versioning and all serialized game state.
+/// </summary>
 [System.Serializable]
 public class SaveData
 {

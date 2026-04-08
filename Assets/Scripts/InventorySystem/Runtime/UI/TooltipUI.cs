@@ -1,21 +1,23 @@
 using UnityEngine;
-using UnityEngine.UI;
-using TMPro;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.LowLevel;
+using TMPro;
 
 public class TooltipUI : MonoBehaviour
 {
-    public TMP_Text nameText;
-    public TMP_Text countText;
-    public TMP_Text descriptionText;
-    public TMP_Text statsText;
-    public Image background;
-    public CanvasGroup canvasGroup;
+    [Header("Text")]
+    [SerializeField] private TMP_Text nameText;
+    [SerializeField] private TMP_Text countText;
+    [SerializeField] private TMP_Text descriptionText;
+    [SerializeField] private TMP_Text statsText;
 
-    bool isFollowingMouse;
+    [Header("Panel")]
+    [SerializeField] private CanvasGroup canvasGroup;
 
-    void OnEnable()
+    private bool _followMouse;
+    private readonly Vector2 _screenOffset = new Vector2(16f, -16f);
+
+    private void OnEnable()
     {
         InventoryEvents.TooltipRequested += Show;
         InventoryEvents.TooltipHidden += Hide;
@@ -24,7 +26,7 @@ public class TooltipUI : MonoBehaviour
         Hide();
     }
 
-    void OnDisable()
+    private void OnDisable()
     {
         InventoryEvents.TooltipRequested -= Show;
         InventoryEvents.TooltipHidden -= Hide;
@@ -32,34 +34,57 @@ public class TooltipUI : MonoBehaviour
         InputSystem.onEvent -= OnInputEvent;
     }
 
-    void OnInputEvent(InputEventPtr eventPtr, InputDevice device)
+    /// <summary>
+    /// Hides the tooltip and stops following the pointer.
+    /// </summary>
+    public void Hide()
     {
-        if (!isFollowingMouse) return;
-        if (Mouse.current == null || device != Mouse.current) return;
-        if (!eventPtr.IsA<StateEvent>()) return;
+        _followMouse = false;
+        if (canvasGroup != null)
+            canvasGroup.alpha = 0f;
+    }
+
+    private void OnInputEvent(InputEventPtr eventPtr, InputDevice device)
+    {
+        if (!_followMouse)
+            return;
+        if (Mouse.current == null || device != Mouse.current)
+            return;
+        if (!eventPtr.IsA<StateEvent>())
+            return;
 
         UpdatePosition(Mouse.current.position.ReadValue());
     }
 
-    void Show(ItemUIContext ctx)
+    private void Show(ItemUIContext ctx)
     {
-        if (ctx.Item == null) return;
+        if (ctx.Item == null || canvasGroup == null)
+            return;
 
-        nameText.text = ctx.Item.itemName;
-        nameText.color = ItemRarityColor.Get(ctx.Item.rarity);
+        if (nameText != null)
+        {
+            nameText.text = ctx.Item.ItemName;
+            nameText.color = ItemRarityColor.Get(ctx.Item.Rarity);
+        }
 
-        countText.text = ctx.StackCount > 1 ? $"x{ctx.StackCount}" : "";
-        descriptionText.text = ctx.Item.description;
+        if (countText != null)
+            countText.text = ctx.StackCount > 1 ? $"x{ctx.StackCount}" : "";
 
-        statsText.text = "";
-        statsText.gameObject.SetActive(false);
+        if (descriptionText != null)
+            descriptionText.text = ctx.Item.Description;
 
-        if (ctx.Item is EquipmentData eq)
+        if (statsText != null)
+        {
+            statsText.text = "";
+            statsText.gameObject.SetActive(false);
+        }
+
+        if (ctx.Item is EquipmentData eq && statsText != null)
         {
             statsText.gameObject.SetActive(true);
-            statsText.text += $"{eq.equipSlot}\n";
+            statsText.text += $"{eq.EquipSlot}\n";
 
-            foreach (var mod in eq.modifiers)
+            foreach (var mod in eq.Modifiers)
             {
                 statsText.text +=
                     mod.ModifierType == ModifierType.Percent
@@ -68,35 +93,27 @@ public class TooltipUI : MonoBehaviour
             }
         }
 
-        // TODO: Change the look of the tooltip based on the rarity
-        // backgroundImage.color = ItemRarityColor.Get(item.rarity) * new Color(1, 1, 1, 0.15f);
+        canvasGroup.alpha = 1f;
+        _followMouse = true;
 
-        canvasGroup.alpha = 1;
-        isFollowingMouse = true;
-        UpdatePosition(Mouse.current.position.ReadValue());
+        if (Mouse.current != null)
+            UpdatePosition(Mouse.current.position.ReadValue());
     }
 
-    public void Hide()
+    private void UpdatePosition(Vector2 mousePos)
     {
-        isFollowingMouse = false;
-        canvasGroup.alpha = 0;
-    }
+        var rt = transform as RectTransform;
+        if (rt == null)
+            return;
 
-    void UpdatePosition(Vector2 mousePos)
-    {
-        Vector2 offset = new Vector2(16, -16);
-        Vector2 pos = mousePos + offset;
-
-        RectTransform rt = transform as RectTransform;
+        Vector2 pos = mousePos + _screenOffset;
         Vector2 size = rt.sizeDelta;
 
-        // Right overflow
         if (pos.x + size.x > Screen.width)
-            pos.x = mousePos.x - size.x - offset.x;
+            pos.x = mousePos.x - size.x - _screenOffset.x;
 
-        // Bottom overflow
-        if (pos.y - size.y < 0)
-            pos.y = mousePos.y + size.y + offset.y;
+        if (pos.y - size.y < 0f)
+            pos.y = mousePos.y + size.y + _screenOffset.y;
 
         rt.position = pos;
     }

@@ -137,13 +137,13 @@ public class InventoryInputHandler : MonoBehaviour, InputSystem_Actions.IInvento
 
     public void DropItem(ItemData item, int amount)
     {
-        if (item.worldPrefab == null) return;
+        if (item.WorldPrefab == null) return;
 
         var t = transform;
 
         for (int i = 0; i < amount; i++)
         {
-            var obj = pool.Get(item.worldPrefab);
+            var obj = pool.Get(item.WorldPrefab);
 
             obj.transform.position =
                 t.position + t.forward * 1.2f + Vector3.up * 2.0f;

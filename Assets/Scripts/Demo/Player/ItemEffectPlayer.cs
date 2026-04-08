@@ -1,5 +1,6 @@
-using UnityEngine;
 using System.Collections;
+using System.Linq;
+using UnityEngine;
 
 public class ItemEffectPlayer : MonoBehaviour
 {
@@ -22,7 +23,7 @@ public class ItemEffectPlayer : MonoBehaviour
 
     void PlayEffect(ConsumableData item)
     {
-        if (item.instantModifiers.Exists(m => m.StatType == StatType.Health))
+        if (item.InstantModifiers.Any(m => m.StatType == StatType.Health))
         {
             var effect = healEffectPool.Get();
             effect.transform.position = effectSpawnPoint.position;
@@ -35,7 +36,7 @@ public class ItemEffectPlayer : MonoBehaviour
             floatingTextSpawner.Spawn("+HP", effectSpawnPoint.position);
         }
 
-        if (item.durationModifiers.Count > 0)
+        if (item.DurationModifiers.Count > 0)
         {
             var effect = buffEffectPool.Get();
             effect.transform.position = effectSpawnPoint.position;

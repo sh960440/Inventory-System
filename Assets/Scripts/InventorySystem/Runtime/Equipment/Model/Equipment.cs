@@ -53,10 +53,10 @@ public class Equipment : MonoBehaviour, IEquippedItemLookup
         if (item == null || inventory == null || inventorySlotIndex < 0 || !inventory.Valid(inventorySlotIndex))
             return false;
 
-        if (!equipped.TryGetValue(item.equipSlot, out var equippedItem) || equippedItem != item)
+        if (!equipped.TryGetValue(item.EquipSlot, out var equippedItem) || equippedItem != item)
             return false;
 
-        if (!equippedSourceInventorySlot.TryGetValue(item.equipSlot, out var srcCell) || srcCell == null)
+        if (!equippedSourceInventorySlot.TryGetValue(item.EquipSlot, out var srcCell) || srcCell == null)
             return false;
 
         return ReferenceEquals(inventory.GetSlot(inventorySlotIndex), srcCell);
@@ -184,7 +184,7 @@ public class Equipment : MonoBehaviour, IEquippedItemLookup
             return;
         }
 
-        var equipSlot = item.equipSlot;
+        var equipSlot = item.EquipSlot;
 
         if (equipped.TryGetValue(equipSlot, out var oldItem) && oldItem != null && oldItem != item)
             RemoveEquippedSilent(equipSlot);
@@ -199,7 +199,7 @@ public class Equipment : MonoBehaviour, IEquippedItemLookup
 
         RemoveEquippedSilent(slot);
 
-        Debug.Log($"Unequipped {item.itemName}");
+        Debug.Log($"Unequipped {item.ItemName}");
     }
 
     private void ApplyEquippedState(EquipmentData item, int sourceInventorySlotIndex)
@@ -207,7 +207,7 @@ public class Equipment : MonoBehaviour, IEquippedItemLookup
         if (item == null)
             return;
 
-        var equipSlot = item.equipSlot;
+        var equipSlot = item.EquipSlot;
 
         if (equipped.TryGetValue(equipSlot, out var existing) && existing == item)
         {
@@ -220,7 +220,7 @@ public class Equipment : MonoBehaviour, IEquippedItemLookup
         SetEquippedSourceCell(equipSlot, sourceInventorySlotIndex);
 
         var copies = new List<StatModifier>();
-        foreach (var mod in item.modifiers)
+        foreach (var mod in item.Modifiers)
             copies.Add(mod.Clone());
 
         runtimeModifiers[item] = copies;
@@ -228,7 +228,7 @@ public class Equipment : MonoBehaviour, IEquippedItemLookup
         InventoryEvents.OnEquipped?.Invoke(item, runtimeModifiers[item]);
         InventoryEvents.EquipmentChanged?.Invoke();
 
-        Debug.Log($"Equipped {item.itemName}");
+        Debug.Log($"Equipped {item.ItemName}");
     }
 
     private void SetEquippedSourceCell(EquipmentSlot equipSlot, int sourceInventorySlotIndex)

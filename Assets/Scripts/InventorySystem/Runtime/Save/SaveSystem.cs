@@ -1,20 +1,27 @@
+using System;
 using System.IO;
 using UnityEngine;
 
+/// <summary>
+/// Saves and loads game data as JSON using the persistent data path.
+/// </summary>
 public class SaveSystem : MonoBehaviour
 {
-    public Inventory inventory;
-    public Hotbar hotbar;
-    public Equipment equipment;
+    [Header("Systems")]
+    [SerializeField] private Inventory inventory;
+    [SerializeField] private Hotbar hotbar;
+    [SerializeField] private Equipment equipment;
+
+    [Header("Database")]
     [SerializeField] private MonoBehaviour itemDatabaseProvider;
 
-    string SavePath =>
-        Path.Combine(Application.persistentDataPath, "save.json");
+    private string SavePath => Path.Combine(Application.persistentDataPath, "save.json");
 
+    /// <summary>
+    /// Writes inventory, hotbar, and equipment snapshots to the save file.
+    /// </summary>
     public void Save()
     {
-        Debug.Log("Save started");
-
         var data = new SaveData
         {
             inventory = inventory.ToSaveData(),
@@ -22,42 +29,30 @@ public class SaveSystem : MonoBehaviour
             equipment = equipment.ToSaveData()
         };
 
-        File.WriteAllText(
-            SavePath,
-                JsonUtility.ToJson(data, true)
-        );
-
-        Debug.Log($"Saving to {SavePath}");
+        File.WriteAllText(SavePath, JsonUtility.ToJson(data, true));
+        Debug.Log($"Saved to {SavePath}");
     }
 
-    public void LoadV1(SaveData data)
-    {
-        var db = itemDatabaseProvider as IItemDatabase;
-        if (db == null)
-            db = ItemDatabase.Instance;
-
-        inventory.LoadFromSaveData(data.inventory, db);
-        hotbar.LoadFromSaveData(data.hotbar, inventory, db);
-        equipment.LoadFromSaveData(data.equipment, db);
-    }
-
+    /// <summary>
+    /// Reads the save file if it exists and applies it.
+    /// </summary>
     public void Load()
     {
         if (!File.Exists(SavePath))
         {
-            Debug.LogWarning("Save file not found");
+            Debug.LogWarning("Save file not found.");
             return;
         }
 
-        var json = File.ReadAllText(SavePath);
+        string json = File.ReadAllText(SavePath);
 
-        SaveData data = null;
+        SaveData data;
 
         try
         {
             data = JsonUtility.FromJson<SaveData>(json);
         }
-        catch (System.Exception e)
+        catch (Exception e)
         {
             Debug.LogError($"Failed to parse save file: {e}");
             return;
@@ -84,5 +79,16 @@ public class SaveSystem : MonoBehaviour
                 Debug.LogWarning($"Unsupported save version: {data.version}");
                 break;
         }
+    }
+
+    private void LoadV1(SaveData data)
+    {
+        var db = itemDatabaseProvider as IItemDatabase;
+        if (db == null)
+            db = ItemDatabase.Instance;
+
+        inventory.LoadFromSaveData(data.inventory, db);
+        hotbar.LoadFromSaveData(data.hotbar, inventory, db);
+        equipment.LoadFromSaveData(data.equipment, db);
     }
 }

@@ -24,11 +24,11 @@ public class ConsumableSystem : MonoBehaviour
     void Apply(ConsumableData item)
     {
         // Instant effects
-        foreach (var mod in item.instantModifiers)
+        foreach (var mod in item.InstantModifiers)
             stats.AddModifier(mod.Clone());
 
         // Duration effects
-        if (item.durationModifiers.Count > 0)
+        if (item.DurationModifiers.Count > 0)
             StartCoroutine(ApplyDuration(item));
     }
 
@@ -36,14 +36,14 @@ public class ConsumableSystem : MonoBehaviour
     {
         var runtimeMods = new List<StatModifier>();
 
-        foreach (var mod in item.durationModifiers)
+        foreach (var mod in item.DurationModifiers)
         {
             var clone = mod.Clone();
             runtimeMods.Add(clone);
             stats.AddModifier(clone);
         }
 
-        yield return new WaitForSeconds(item.duration);
+        yield return new WaitForSeconds(item.Duration);
 
         foreach (var mod in runtimeMods)
             stats.RemoveModifier(mod);
