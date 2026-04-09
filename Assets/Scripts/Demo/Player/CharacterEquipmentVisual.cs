@@ -2,16 +2,21 @@ using UnityEngine;
 
 public class CharacterEquipmentVisual : MonoBehaviour
 {
-    public Transform rightHand;
-    public GameObject currentWeapon;
+    [Header("Socket")]
+    [SerializeField] private Transform rightHand;
+
+    private GameObject _currentWeapon;
 
     public void EquipWeapon(GameObject weaponPrefab)
     {
-        if (currentWeapon != null)
-            Destroy(currentWeapon);
+        if (weaponPrefab == null || rightHand == null)
+            return;
 
-        currentWeapon = Instantiate(weaponPrefab, rightHand);
-        currentWeapon.transform.localPosition = Vector3.zero;
-        currentWeapon.transform.localRotation = Quaternion.identity;
+        if (_currentWeapon != null)
+            Destroy(_currentWeapon);
+
+        _currentWeapon = Instantiate(weaponPrefab, rightHand);
+        _currentWeapon.transform.localPosition = Vector3.zero;
+        _currentWeapon.transform.localRotation = Quaternion.identity;
     }
 }

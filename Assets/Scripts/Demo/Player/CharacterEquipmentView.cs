@@ -3,51 +3,54 @@ using UnityEngine;
 
 public class CharacterEquipmentView : MonoBehaviour
 {
+    [Header("References")]
     [SerializeField] private EquipmentVisualDatabase visualDatabase;
     [SerializeField] private Transform weaponSocket;
 
-    private GameObject currentWeapon;
+    private GameObject _currentWeapon;
 
-    void OnEnable()
+    private void OnEnable()
     {
         InventoryEvents.OnEquipped += OnEquipped;
         InventoryEvents.OnUnequipped += OnUnequipped;
     }
 
-    void OnDisable()
+    private void OnDisable()
     {
         InventoryEvents.OnEquipped -= OnEquipped;
         InventoryEvents.OnUnequipped -= OnUnequipped;
     }
 
-    void OnEquipped(EquipmentData item, List<StatModifier> _)
+    private void OnEquipped(EquipmentData item, List<StatModifier> _)
     {
-        if (item == null) return;
-        if (item.EquipSlot != EquipmentSlot.Weapon) return;
+        if (item == null || item.EquipSlot != EquipmentSlot.Weapon)
+            return;
 
-        var prefab = visualDatabase.GetPrefab(item.Id);
-        if (prefab == null) return;
+        var prefab = visualDatabase != null ? visualDatabase.GetPrefab(item.Id) : null;
+        if (prefab == null)
+            return;
 
         ClearWeapon();
 
-        currentWeapon = Instantiate(prefab, weaponSocket);
-        currentWeapon.transform.localPosition = Vector3.zero;
-        currentWeapon.transform.localRotation = Quaternion.identity;
+        _currentWeapon = Instantiate(prefab, weaponSocket);
+        _currentWeapon.transform.localPosition = Vector3.zero;
+        _currentWeapon.transform.localRotation = Quaternion.identity;
     }
 
-    void OnUnequipped(EquipmentData item, List<StatModifier> _)
+    private void OnUnequipped(EquipmentData item, List<StatModifier> _)
     {
-        if (item == null) return;
-        if (item.EquipSlot != EquipmentSlot.Weapon) return;
+        if (item == null || item.EquipSlot != EquipmentSlot.Weapon)
+            return;
 
         ClearWeapon();
     }
 
-    void ClearWeapon()
+    private void ClearWeapon()
     {
-        if (currentWeapon == null) return;
+        if (_currentWeapon == null)
+            return;
 
-        Destroy(currentWeapon);
-        currentWeapon = null;
+        Destroy(_currentWeapon);
+        _currentWeapon = null;
     }
 }

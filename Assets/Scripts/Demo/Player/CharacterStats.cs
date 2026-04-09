@@ -5,13 +5,13 @@ using UnityEngine;
 public class CharacterStats : MonoBehaviour
 {
     [Header("Base Stats")]
-    public int maxHP = 200;
-    public int currentHP = 100;
-    public int baseAttack = 10;
-    public int baseDefense = 5;
-    public float baseMoveSpeed = 5f;
+    [SerializeField] private int maxHP = 200;
+    [SerializeField] private int currentHP = 100;
+    [SerializeField] private int baseAttack = 10;
+    [SerializeField] private int baseDefense = 5;
+    [SerializeField] private float baseMoveSpeed = 5f;
 
-    private List<StatModifier> modifiers = new List<StatModifier>();
+    private readonly List<StatModifier> _modifiers = new List<StatModifier>();
 
     public static event Action OnStatsChanged;
     public static event Action<int> OnHealed;
@@ -20,43 +20,26 @@ public class CharacterStats : MonoBehaviour
     public int CurrentHP => currentHP;
     public int GetMaxHP() => Mathf.Max(1, maxHP);
 
-    void OnEnable()
+    private void Awake()
+    {
+        ClampCurrentToMaxHPField();
+    }
+
+    private void OnEnable()
     {
         InventoryEvents.OnEquipped += OnEquipped;
         InventoryEvents.OnUnequipped += OnUnequipped;
     }
 
-    void OnDisable()
+    private void OnDisable()
     {
         InventoryEvents.OnEquipped -= OnEquipped;
         InventoryEvents.OnUnequipped -= OnUnequipped;
     }
 
-    void Awake()
-    {
-        ClampCurrentToMaxHPField();
-    }
-
-    void Start()
-    {
-        ClampCurrentToMaxHPField();
-    }
-
-    void OnEquipped(EquipmentData item, List<StatModifier> mods)
-    {
-        foreach (var mod in mods)
-            AddModifier(mod);
-    }
-
-    void OnUnequipped(EquipmentData item, List<StatModifier> mods)
-    {
-        foreach (var mod in mods)
-            RemoveModifier(mod);
-    }
-
     public void AddModifier(StatModifier mod)
     {
-        modifiers.Add(mod);
+        _modifiers.Add(mod);
         int hpBefore = currentHP;
         ApplyHpModifierToCurrent(mod, +1);
         ClampCurrentToMaxHPField();
@@ -67,7 +50,7 @@ public class CharacterStats : MonoBehaviour
 
     public void RemoveModifier(StatModifier mod)
     {
-        if (!modifiers.Remove(mod))
+        if (!_modifiers.Remove(mod))
             return;
 
         int hpBefore = currentHP;
@@ -87,9 +70,10 @@ public class CharacterStats : MonoBehaviour
         float flatBonus = 0f;
         float percentBonus = 0f;
 
-        foreach (var mod in modifiers)
+        foreach (var mod in _modifiers)
         {
-            if (mod.StatType != type) continue;
+            if (mod.StatType != type)
+                continue;
 
             if (mod.ModifierType == ModifierType.Flat)
                 flatBonus += mod.Value;
@@ -134,10 +118,22 @@ public class CharacterStats : MonoBehaviour
 
 #if UNITY_EDITOR
     [ContextMenu("Demo/Take 50 damage")]
-    void EditorDemoTakeDamage() => TakeDamage(50);
+    private void EditorDemoTakeDamage() => TakeDamage(50);
 #endif
 
-    void ApplyHpModifierToCurrent(StatModifier mod, int sign)
+    private void OnEquipped(EquipmentData item, List<StatModifier> mods)
+    {
+        foreach (var mod in mods)
+            AddModifier(mod);
+    }
+
+    private void OnUnequipped(EquipmentData item, List<StatModifier> mods)
+    {
+        foreach (var mod in mods)
+            RemoveModifier(mod);
+    }
+
+    private void ApplyHpModifierToCurrent(StatModifier mod, int sign)
     {
         if (mod.StatType != StatType.Health)
             return;
@@ -151,12 +147,12 @@ public class CharacterStats : MonoBehaviour
         currentHP += delta;
     }
 
-    void ClampCurrentToMaxHPField()
+    private void ClampCurrentToMaxHPField()
     {
         currentHP = Mathf.Clamp(currentHP, 0, maxHP);
     }
 
-    float GetBaseValue(StatType type)
+    private float GetBaseValue(StatType type)
     {
         switch (type)
         {
@@ -164,7 +160,7 @@ public class CharacterStats : MonoBehaviour
             case StatType.Attack: return baseAttack;
             case StatType.Defense: return baseDefense;
             case StatType.MoveSpeed: return baseMoveSpeed;
-            default: return 0;
+            default: return 0f;
         }
     }
 }

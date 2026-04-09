@@ -4,47 +4,53 @@ using UnityEngine;
 
 public class ItemEffectPlayer : MonoBehaviour
 {
-    [SerializeField] private GameObject healEffectPrefab;
-    [SerializeField] private GameObject buffEffectPrefab;
+    [Header("Effects")]
     [SerializeField] private Transform effectSpawnPoint;
     [SerializeField] private FloatingTextSpawner floatingTextSpawner;
     [SerializeField] private EffectPool healEffectPool;
     [SerializeField] private EffectPool buffEffectPool;
 
-    void OnEnable()
+    private void OnEnable()
     {
         InventoryEvents.ItemConsumed += PlayEffect;
     }
 
-    void OnDisable()
+    private void OnDisable()
     {
         InventoryEvents.ItemConsumed -= PlayEffect;
     }
 
-    void PlayEffect(ConsumableData item)
+    private void PlayEffect(ConsumableData item)
     {
-        if (item.InstantModifiers.Any(m => m.StatType == StatType.Health))
+        if (item == null || effectSpawnPoint == null)
+            return;
+
+        if (item.InstantModifiers.Any(m => m.StatType == StatType.Health) && healEffectPool != null)
         {
             var effect = healEffectPool.Get();
             effect.transform.position = effectSpawnPoint.position;
 
             var ps = effect.GetComponent<ParticleSystem>();
-            ps.Play();
+            if (ps != null)
+            {
+                ps.Play();
+                StartCoroutine(ReturnAfter(ps.main.duration, effect, healEffectPool));
+            }
 
-            StartCoroutine(ReturnAfter(ps.main.duration, effect, healEffectPool));
-
-            floatingTextSpawner.Spawn("+HP", effectSpawnPoint.position);
+            floatingTextSpawner?.Spawn("+HP", effectSpawnPoint.position);
         }
 
-        if (item.DurationModifiers.Count > 0)
+        if (item.DurationModifiers.Count > 0 && buffEffectPool != null)
         {
             var effect = buffEffectPool.Get();
             effect.transform.position = effectSpawnPoint.position;
 
             var ps = effect.GetComponent<ParticleSystem>();
-            ps.Play();
-
-            StartCoroutine(ReturnAfter(ps.main.duration, effect, buffEffectPool));
+            if (ps != null)
+            {
+                ps.Play();
+                StartCoroutine(ReturnAfter(ps.main.duration, effect, buffEffectPool));
+            }
         }
     }
 

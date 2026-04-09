@@ -3,10 +3,11 @@ using UnityEngine;
 
 public class EffectPool : MonoBehaviour
 {
+    [Header("Prefab")]
     [SerializeField] private GameObject prefab;
     [SerializeField] private int initialSize = 5;
 
-    private Queue<GameObject> pool = new Queue<GameObject>();
+    private readonly Queue<GameObject> _pool = new Queue<GameObject>();
 
     private void Awake()
     {
@@ -14,26 +15,25 @@ public class EffectPool : MonoBehaviour
         {
             var obj = Instantiate(prefab, transform);
             obj.SetActive(false);
-            pool.Enqueue(obj);
+            _pool.Enqueue(obj);
         }
     }
 
     public GameObject Get()
     {
-        if (pool.Count > 0)
+        if (_pool.Count > 0)
         {
-            var obj = pool.Dequeue();
+            var obj = _pool.Dequeue();
             obj.SetActive(true);
             return obj;
         }
 
-        var newObj = Instantiate(prefab, transform);
-        return newObj;
+        return Instantiate(prefab, transform);
     }
 
     public void Return(GameObject obj)
     {
         obj.SetActive(false);
-        pool.Enqueue(obj);
+        _pool.Enqueue(obj);
     }
 }

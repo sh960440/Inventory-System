@@ -3,23 +3,24 @@ using UnityEngine.InputSystem;
 
 public class InventoryInputHandler : MonoBehaviour, InputSystem_Actions.IInventoryActions
 {
+    [Header("Systems")]
     [SerializeField] private Inventory inventory;
     [SerializeField] private Hotbar hotbar;
     [SerializeField] private ObjectPool pool;
     [SerializeField] private SlotHoverService slotHoverService;
 
-    private InputSystem_Actions actions;
+    private InputSystem_Actions _actions;
 
-    void Awake()
+    private void Awake()
     {
-        actions = new InputSystem_Actions();
+        _actions = new InputSystem_Actions();
     }
 
-    void OnEnable()
+    private void OnEnable()
     {
-        actions.Enable();
-        actions.Inventory.SetCallbacks(this);
-        actions.Inventory.Enable();
+        _actions.Enable();
+        _actions.Inventory.SetCallbacks(this);
+        _actions.Inventory.Enable();
 
         InventoryEvents.ItemDropped += DropItem;
         InventoryEvents.InventoryToggleRequested += OnInventoryToggled;
@@ -28,40 +29,20 @@ public class InventoryInputHandler : MonoBehaviour, InputSystem_Actions.IInvento
         UpdateActionMap();
     }
 
-    void OnDisable()
+    private void OnDisable()
     {
-        actions.Inventory.SetCallbacks(null);
-        actions.Disable();
+        _actions.Inventory.SetCallbacks(null);
+        _actions.Disable();
 
         InventoryEvents.ItemDropped -= DropItem;
         InventoryEvents.InventoryToggleRequested -= OnInventoryToggled;
         InventoryEvents.InventoryCloseRequested -= OnInventoryClosed;
     }
 
-    void OnInventoryToggled(bool open) => UpdateActionMap();
-    void OnInventoryClosed() => UpdateActionMap();
-
-    private void UpdateActionMap()
-    {
-        if (inventory.IsOpen)
-        {
-            actions.Player.Disable();
-            actions.UI.Enable();
-        }
-        else
-        {
-            actions.UI.Disable();
-            actions.Player.Enable();
-        }
-    }
-
-    // =========================
-    // Inventory Actions
-    // =========================
-
     public void OnToggleInventory(InputAction.CallbackContext context)
     {
-        if (!context.performed) return;
+        if (!context.performed)
+            return;
 
         inventory.SetOpen(!inventory.IsOpen);
         UpdateActionMap();
@@ -69,7 +50,8 @@ public class InventoryInputHandler : MonoBehaviour, InputSystem_Actions.IInvento
 
     public void OnCloseInventory(InputAction.CallbackContext context)
     {
-        if (!context.performed) return;
+        if (!context.performed)
+            return;
 
         inventory.SetOpen(false);
         UpdateActionMap();
@@ -77,12 +59,12 @@ public class InventoryInputHandler : MonoBehaviour, InputSystem_Actions.IInvento
 
     public void OnSplitStack(InputAction.CallbackContext context)
     {
-        if (!context.performed) return;
-
-        if (!inventory.IsOpen) return;
+        if (!context.performed || !inventory.IsOpen)
+            return;
 
         int index = slotHoverService != null ? slotHoverService.CurrentHoveredIndex : -1;
-        if (index < 0) return;
+        if (index < 0)
+            return;
 
         InventoryEvents.SplitStackRequested?.Invoke(index);
     }
@@ -97,14 +79,50 @@ public class InventoryInputHandler : MonoBehaviour, InputSystem_Actions.IInvento
     public void OnUseHotbar8(InputAction.CallbackContext context) => UseHotbar(7, context);
     public void OnUseHotbar9(InputAction.CallbackContext context) => UseHotbar(8, context);
 
-    // =========================
-    // Core Logic
-    // =========================
+    private void OnInventoryToggled(bool _) => UpdateActionMap();
+    private void OnInventoryClosed() => UpdateActionMap();
+
+    private void UpdateActionMap()
+    {
+        if (inventory.IsOpen)
+        {
+            _actions.Player.Disable();
+            _actions.UI.Enable();
+        }
+        else
+        {
+            _actions.UI.Disable();
+            _actions.Player.Enable();
+        }
+    }
+
+    private void DropItem(ItemData item, int amount)
+    {
+        if (item == null || item.WorldPrefab == null || pool == null)
+            return;
+
+        var t = transform;
+
+        for (int i = 0; i < amount; i++)
+        {
+            var obj = pool.Get(item.WorldPrefab);
+            obj.transform.position =
+                t.position + t.forward * 1.2f + Vector3.up * 2.0f;
+            obj.transform.rotation = Quaternion.identity;
+
+            var pickup = obj.GetComponent<ItemPickup>();
+            if (pickup != null)
+            {
+                pickup.ItemData = item;
+                pickup.Amount = 1;
+            }
+        }
+    }
 
     private void UseHotbar(int index, InputAction.CallbackContext context)
     {
-        if (!context.performed) return;
-
+        if (!context.performed)
+            return;
         if (!hotbar.ValidHotbarIndex(index))
             return;
 
@@ -117,45 +135,5 @@ public class InventoryInputHandler : MonoBehaviour, InputSystem_Actions.IInvento
         }
 
         InventoryEvents.HotbarUseRequested?.Invoke(slot);
-    }
-
-    //public void DropItem(ItemData item, int amount)
-    //{
-    //    if (item.worldPrefab != null)
-    //    {
-    //        var t = transform;
-    //        for (int i = 0; i < amount; i++)
-    //        {
-    //            Instantiate(
-    //                item.worldPrefab,
-    //                t.position + t.forward * 1.2f + Vector3.up * 2.0f,
-    //                Quaternion.identity
-    //            );
-    //        }
-    //    }
-    //}
-
-    public void DropItem(ItemData item, int amount)
-    {
-        if (item.WorldPrefab == null) return;
-
-        var t = transform;
-
-        for (int i = 0; i < amount; i++)
-        {
-            var obj = pool.Get(item.WorldPrefab);
-
-            obj.transform.position =
-                t.position + t.forward * 1.2f + Vector3.up * 2.0f;
-
-            obj.transform.rotation = Quaternion.identity;
-
-            var pickup = obj.GetComponent<ItemPickup>();
-            if (pickup != null)
-            {
-                pickup.itemData = item;
-                pickup.amount = 1;
-            }
-        }
     }
 }

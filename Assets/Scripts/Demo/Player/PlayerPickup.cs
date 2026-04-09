@@ -2,48 +2,45 @@ using UnityEngine;
 
 public class PlayerPickup : MonoBehaviour
 {
-    private ItemPickup currentPickup;
-    public Inventory playerInventory;
-    public ObjectPool pool;
+    [Header("References")]
+    [SerializeField] private Inventory playerInventory;
+    [SerializeField] private ObjectPool pool;
+
+    private ItemPickup _currentPickup;
 
     public void TryPickup()
     {
-        if (currentPickup != null)
-        {
+        if (_currentPickup != null)
             PickupItem();
-        }
     }
 
     private void OnTriggerEnter(Collider other)
     {
         var ip = other.GetComponent<ItemPickup>();
         if (ip != null)
-        {
-            currentPickup = ip;
-            Debug.Log("Enter pickup range: " + ip.itemData.ItemName);
-        }
+            _currentPickup = ip;
     }
 
     private void OnTriggerExit(Collider other)
     {
         var ip = other.GetComponent<ItemPickup>();
-        if (ip != null && ip == currentPickup)
-        {
-            currentPickup = null;
-            Debug.Log("Exit pickup range");
-        }
+        if (ip != null && ip == _currentPickup)
+            _currentPickup = null;
     }
 
     private void PickupItem()
     {
-        if (playerInventory == null || currentPickup == null) return;
+        if (playerInventory == null || _currentPickup == null || pool == null)
+            return;
 
-        //playerInventory.AddItem(currentPickup.itemData, currentPickup.amount);
-        InventoryEvents.AddItemRequested?.Invoke(currentPickup.itemData, currentPickup.amount);
+        var data = _currentPickup.ItemData;
+        if (data == null)
+            return;
 
-        var prefab = currentPickup.itemData.WorldPrefab;
-        pool.Return(prefab, currentPickup.gameObject);
+        InventoryEvents.AddItemRequested?.Invoke(data, _currentPickup.Amount);
 
-        currentPickup = null;
+        pool.Return(data.WorldPrefab, _currentPickup.gameObject);
+
+        _currentPickup = null;
     }
 }

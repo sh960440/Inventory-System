@@ -3,14 +3,15 @@ using UnityEngine;
 
 public class ObjectPool : MonoBehaviour
 {
-    private Dictionary<GameObject, Queue<GameObject>> pools = new();
+    private readonly Dictionary<GameObject, Queue<GameObject>> _pools = new();
 
     public GameObject Get(GameObject prefab)
     {
-        if (!pools.ContainsKey(prefab))
-            pools[prefab] = new Queue<GameObject>();
-
-        var pool = pools[prefab];
+        if (!_pools.TryGetValue(prefab, out var pool))
+        {
+            pool = new Queue<GameObject>();
+            _pools[prefab] = pool;
+        }
 
         if (pool.Count > 0)
         {
@@ -26,9 +27,12 @@ public class ObjectPool : MonoBehaviour
     {
         obj.SetActive(false);
 
-        if (!pools.ContainsKey(prefab))
-            pools[prefab] = new Queue<GameObject>();
+        if (!_pools.TryGetValue(prefab, out var pool))
+        {
+            pool = new Queue<GameObject>();
+            _pools[prefab] = pool;
+        }
 
-        pools[prefab].Enqueue(obj);
+        pool.Enqueue(obj);
     }
 }

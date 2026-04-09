@@ -3,48 +3,51 @@ using UnityEngine;
 
 public class FloatingText : MonoBehaviour
 {
+    [Header("Text")]
     [SerializeField] private TextMeshProUGUI text;
 
+    [Header("Motion")]
     [SerializeField] private float moveSpeed = 1f;
     [SerializeField] private float lifetime = 1.2f;
 
-    private float timer;
-    private Color originalColor;
-
-    private EffectPool pool;
+    private float _timer;
+    private Color _originalColor;
+    private EffectPool _pool;
 
     private void Awake()
     {
-        originalColor = text.color;
+        if (text != null)
+            _originalColor = text.color;
     }
 
     public void Init(EffectPool poolRef)
     {
-        pool = poolRef;
-        timer = 0f;
-        text.color = originalColor;
+        _pool = poolRef;
+        _timer = 0f;
+        if (text != null)
+            text.color = _originalColor;
     }
 
     public void SetText(string value)
     {
-        text.text = value;
+        if (text != null)
+            text.text = value;
     }
 
     private void Update()
     {
-        // Move up
-        transform.position += Vector3.up * moveSpeed * Time.deltaTime;
+        if (text == null || _pool == null)
+            return;
 
-        // Timer
-        timer += Time.deltaTime;
+        // Move up
+        transform.position += Vector3.up * (moveSpeed * Time.deltaTime);
 
         // Fade out
-        float alpha = Mathf.Lerp(1f, 0f, timer / lifetime);
-        text.color = new Color(originalColor.r, originalColor.g, originalColor.b, alpha);
+        _timer += Time.deltaTime;
+        float alpha = Mathf.Lerp(1f, 0f, _timer / lifetime);
+        text.color = new Color(_originalColor.r, _originalColor.g, _originalColor.b, alpha);
 
-        if (timer >= lifetime)
-        {
-            pool.Return(gameObject);
-        }
+        if (_timer >= lifetime)
+            _pool.Return(gameObject);
     }
 }

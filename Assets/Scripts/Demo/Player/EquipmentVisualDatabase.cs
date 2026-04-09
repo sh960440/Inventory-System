@@ -14,25 +14,29 @@ public class EquipmentVisualDatabase : ScriptableObject
 
     [SerializeField] private List<Entry> entries;
 
-    private Dictionary<string, GameObject> lookup;
-
-    public void Initialize()
-    {
-        lookup = new Dictionary<string, GameObject>();
-
-        foreach (var e in entries)
-        {
-            if (!lookup.ContainsKey(e.itemId))
-                lookup.Add(e.itemId, e.prefab);
-        }
-    }
+    private Dictionary<string, GameObject> _lookup;
 
     public GameObject GetPrefab(string itemId)
     {
-        if (lookup == null)
-            Initialize();
-
-        lookup.TryGetValue(itemId, out var prefab);
+        EnsureLookup();
+        _lookup.TryGetValue(itemId, out var prefab);
         return prefab;
+    }
+
+    private void EnsureLookup()
+    {
+        if (_lookup != null)
+            return;
+
+        _lookup = new Dictionary<string, GameObject>();
+        if (entries == null)
+            return;
+
+        foreach (var e in entries)
+        {
+            if (string.IsNullOrEmpty(e.itemId) || _lookup.ContainsKey(e.itemId))
+                continue;
+            _lookup.Add(e.itemId, e.prefab);
+        }
     }
 }

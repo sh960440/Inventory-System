@@ -2,12 +2,24 @@ using UnityEngine;
 
 public class ItemPickup : MonoBehaviour
 {
-    public ItemData itemData;
-    public int amount = 1;
+    [SerializeField] private ItemData itemData;
+    [SerializeField] private int amount = 1;
 
-    void Start()
+    public ItemData ItemData
+    {
+        get => itemData;
+        set => itemData = value;
+    }
+
+    public int Amount
+    {
+        get => amount;
+        set => amount = value;
+    }
+
+    private void Start()
     {
         if (itemData == null)
-            Debug.LogWarning("itemData doesn't exist");
+            Debug.LogWarning("itemData is not assigned.", this);
     }
 }

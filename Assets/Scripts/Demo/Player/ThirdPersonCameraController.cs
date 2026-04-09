@@ -4,62 +4,63 @@ using UnityEngine.InputSystem;
 
 public class ThirdPersonCameraController : MonoBehaviour
 {
+    [Header("Zoom")]
     [SerializeField] private float zoomSpeed = 2f;
     [SerializeField] private float zoomLerpSpeed = 10f;
     [SerializeField] private float minDistance = 3f;
     [SerializeField] private float maxDistance = 15f;
 
-    private CinemachineOrbitalFollow orbital;
-    private CinemachineInputAxisController axisController;
+    private CinemachineOrbitalFollow _orbital;
+    private CinemachineInputAxisController _axisController;
+    private float _targetZoom;
+    private float _currentZoom;
 
-    private float targetZoom;
-    private float currentZoom;
-
-    void Start()
+    private void Start()
     {
-        orbital = GetComponent<CinemachineOrbitalFollow>();
-        axisController = GetComponent<CinemachineInputAxisController>();
+        _orbital = GetComponent<CinemachineOrbitalFollow>();
+        _axisController = GetComponent<CinemachineInputAxisController>();
 
-        targetZoom = currentZoom = orbital.Radius;
+        _targetZoom = _currentZoom = _orbital.Radius;
     }
 
-    void Update()
+    private void Update()
     {
         HandleRightMouseMode();
         HandleZoom();
     }
 
-    void HandleRightMouseMode()
+    private void HandleRightMouseMode()
     {
-        bool rightMouse = Mouse.current.rightButton.isPressed;
+        bool rightMouse = Mouse.current != null && Mouse.current.rightButton.isPressed;
 
         // Only enable camera rotation when right mouse is held
-        axisController.enabled = rightMouse;
+        if (_axisController != null) 
+            _axisController.enabled = rightMouse;
 
-        Cursor.lockState = rightMouse ?
-            CursorLockMode.Locked :
-            CursorLockMode.None;
-
+        Cursor.lockState = rightMouse ? CursorLockMode.Locked : CursorLockMode.None;
         Cursor.visible = !rightMouse;
     }
 
-    void HandleZoom()
+    private void HandleZoom()
     {
+        if (Mouse.current == null || _orbital == null)
+            return;
+
         float scroll = Mouse.current.scroll.ReadValue().y;
 
-        if (scroll != 0)
+        if (scroll != 0f)
         {
-            targetZoom = Mathf.Clamp(
-                orbital.Radius - scroll * zoomSpeed,
+            _targetZoom = Mathf.Clamp(
+                _orbital.Radius - scroll * zoomSpeed,
                 minDistance,
                 maxDistance);
         }
 
-        currentZoom = Mathf.Lerp(
-            currentZoom,
-            targetZoom,
+        _currentZoom = Mathf.Lerp(
+            _currentZoom,
+            _targetZoom,
             Time.deltaTime * zoomLerpSpeed);
 
-        orbital.Radius = currentZoom;
+        _orbital.Radius = _currentZoom;
     }
 }

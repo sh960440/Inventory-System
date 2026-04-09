@@ -1,38 +1,41 @@
-using System.Collections.Generic;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class ConsumableSystem : MonoBehaviour
 {
-    private CharacterStats stats;
+    private CharacterStats _stats;
 
-    void Awake()
+    private void Awake()
     {
-        stats = GetComponent<CharacterStats>();
+        _stats = GetComponent<CharacterStats>();
     }
 
-    void OnEnable()
+    private void OnEnable()
     {
         InventoryEvents.ItemConsumed += Apply;
     }
 
-    void OnDisable()
+    private void OnDisable()
     {
         InventoryEvents.ItemConsumed -= Apply;
     }
 
-    void Apply(ConsumableData item)
+    private void Apply(ConsumableData item)
     {
+        if (_stats == null || item == null)
+            return;
+
         // Instant effects
         foreach (var mod in item.InstantModifiers)
-            stats.AddModifier(mod.Clone());
+            _stats.AddModifier(mod.Clone());
 
         // Duration effects
         if (item.DurationModifiers.Count > 0)
             StartCoroutine(ApplyDuration(item));
     }
 
-    IEnumerator ApplyDuration(ConsumableData item)
+    private IEnumerator ApplyDuration(ConsumableData item)
     {
         var runtimeMods = new List<StatModifier>();
 
@@ -40,12 +43,12 @@ public class ConsumableSystem : MonoBehaviour
         {
             var clone = mod.Clone();
             runtimeMods.Add(clone);
-            stats.AddModifier(clone);
+            _stats.AddModifier(clone);
         }
 
         yield return new WaitForSeconds(item.Duration);
 
         foreach (var mod in runtimeMods)
-            stats.RemoveModifier(mod);
+            _stats.RemoveModifier(mod);
     }
 }

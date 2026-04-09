@@ -1,8 +1,9 @@
-using UnityEngine;
 using TMPro;
+using UnityEngine;
 
 public class DemoStatsPanel : MonoBehaviour
 {
+    [Header("Source")]
     [SerializeField] private CharacterStats characterStats;
 
     [Header("UI")]
@@ -11,26 +12,33 @@ public class DemoStatsPanel : MonoBehaviour
     [SerializeField] private TMP_Text defText;
     [SerializeField] private TMP_Text spdText;
 
-    void OnEnable()
+    private void OnEnable()
     {
         CharacterStats.OnStatsChanged += Refresh;
         CharacterStats.OnHPChanged += OnHPChanged;
         Refresh();
     }
 
-    void OnDisable()
+    private void OnDisable()
     {
         CharacterStats.OnStatsChanged -= Refresh;
         CharacterStats.OnHPChanged -= OnHPChanged;
     }
 
-    void OnHPChanged(int _) => Refresh();
+    private void OnHPChanged(int _) => Refresh();
 
     private void Refresh()
     {
-        hpText.text = $"HP: {characterStats.CurrentHP} / {characterStats.GetMaxHP()}";
-        atkText.text = $"ATK: {characterStats.GetFinalValue(StatType.Attack)}";
-        defText.text = $"DEF: {characterStats.GetFinalValue(StatType.Defense)}";
-        spdText.text = $"SPD: {characterStats.GetFinalValue(StatType.MoveSpeed)}";
+        if (characterStats == null)
+            return;
+
+        if (hpText != null)
+            hpText.text = $"HP: {characterStats.CurrentHP} / {characterStats.GetMaxHP()}";
+        if (atkText != null)
+            atkText.text = $"ATK: {characterStats.GetFinalValue(StatType.Attack)}";
+        if (defText != null)
+            defText.text = $"DEF: {characterStats.GetFinalValue(StatType.Defense)}";
+        if (spdText != null)
+            spdText.text = $"SPD: {characterStats.GetFinalValue(StatType.MoveSpeed)}";
     }
 }
