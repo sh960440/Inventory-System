@@ -276,7 +276,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 264, y: 37}
+  m_AnchoredPosition: {x: 340, y: 37}
   m_SizeDelta: {x: 180, y: 30}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &38989980
@@ -4756,6 +4756,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac39e16defef6a645a1d1120d7523b2d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ThirdPersonCameraController
+  inventory: {fileID: 676156576}
   zoomSpeed: 2
   zoomLerpSpeed: 10
   minDistance: 3
@@ -9594,8 +9595,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 177, y: 162}
-  m_SizeDelta: {x: 348, y: 324}
+  m_AnchoredPosition: {x: 220, y: 162}
+  m_SizeDelta: {x: 438, y: 324}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1308251946
 MonoBehaviour:
@@ -10686,6 +10687,7 @@ MonoBehaviour:
   inventory: {fileID: 676156576}
   hotbar: {fileID: 1720750663}
   equipment: {fileID: 1344638775}
+  itemSystemConfiguration: {fileID: 11400000, guid: 2fe5c24ce8b2ef540a37afc3b7588707, type: 2}
   itemDatabaseProvider: {fileID: 0}
 --- !u!4 &1394153635
 Transform:
@@ -16622,8 +16624,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 95, y: 22}
-  m_SizeDelta: {x: 160, y: 28}
+  m_AnchoredPosition: {x: 130, y: 22}
+  m_SizeDelta: {x: 235, y: 28}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2101972790
 MonoBehaviour:
@@ -16897,14 +16899,14 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2129883506}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
-  m_RaycastTarget: 1
+  m_Color: {r: 0, g: 0, b: 0, a: 0.39215687}
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -17307,6 +17309,22 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3856507716882567596, guid: ddb12ee465978834bae3807f4cd29dce, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5012816865909749893, guid: ddb12ee465978834bae3807f4cd29dce, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5012816865909749893, guid: ddb12ee465978834bae3807f4cd29dce, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5012816865909749893, guid: ddb12ee465978834bae3807f4cd29dce, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5012816865909749893, guid: ddb12ee465978834bae3807f4cd29dce, type: 3}
+      propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5399574548675923381, guid: ddb12ee465978834bae3807f4cd29dce, type: 3}

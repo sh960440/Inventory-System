@@ -37,10 +37,11 @@ public class PlayerPickup : MonoBehaviour
         if (data == null)
             return;
 
-        InventoryEvents.AddItemRequested?.Invoke(data, _currentPickup.Amount);
+        int amount = _currentPickup.Amount;
+        if (!playerInventory.AddItem(data, amount))
+            return;
 
         pool.Return(data.WorldPrefab, _currentPickup.gameObject);
-
         _currentPickup = null;
     }
 }

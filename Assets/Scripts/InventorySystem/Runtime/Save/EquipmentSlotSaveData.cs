@@ -6,9 +6,5 @@ public class EquipmentSlotSaveData
 {
     public string slotName;
     public string itemId;
-
-    /// <summary>
-    /// The inventory slot index the equipped item originated from, or -1 if unknown.
-    /// </summary>
-    public int sourceInventorySlotIndex = -1;
+    public int inventorySlotIndex = -1;
 }

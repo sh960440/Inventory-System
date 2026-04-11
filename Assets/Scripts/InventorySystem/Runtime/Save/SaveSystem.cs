@@ -12,6 +12,9 @@ public class SaveSystem : MonoBehaviour
     [SerializeField] private Hotbar hotbar;
     [SerializeField] private Equipment equipment;
 
+    [Header("Layout validation")]
+    [SerializeField] private ItemSystemConfiguration itemSystemConfiguration;
+
     [Header("Database")]
     [SerializeField] private MonoBehaviour itemDatabaseProvider;
 
@@ -22,14 +25,31 @@ public class SaveSystem : MonoBehaviour
     /// </summary>
     public void Save()
     {
+        if (inventory == null && hotbar == null && equipment == null)
+            return;
+
         var data = new SaveData
         {
-            inventory = inventory.ToSaveData(),
-            hotbar = hotbar.ToSaveData(),
-            equipment = equipment.ToSaveData()
+            version = 1,
+            inventory = inventory != null ? inventory.ToSaveData() : new InventorySaveData()
         };
 
-        File.WriteAllText(SavePath, JsonUtility.ToJson(data, true));
+        if (hotbar != null)
+            data.hotbar = hotbar.ToSaveData();
+
+        if (equipment != null)
+            data.equipment = equipment.ToSaveData();
+
+        try
+        {
+            File.WriteAllText(SavePath, JsonUtility.ToJson(data, true));
+        }
+        catch (Exception e)
+        {
+            Debug.LogError("SaveSystem: failed to write file");
+            return;
+        }
+
         Debug.Log($"Saved to {SavePath}");
     }
 
@@ -83,12 +103,27 @@ public class SaveSystem : MonoBehaviour
 
     private void LoadV1(SaveData data)
     {
+        if (inventory == null)
+            return;
+
         var db = itemDatabaseProvider as IItemDatabase;
         if (db == null)
             db = ItemDatabase.Instance;
 
-        inventory.LoadFromSaveData(data.inventory, db);
-        hotbar.LoadFromSaveData(data.hotbar, inventory, db);
-        equipment.LoadFromSaveData(data.equipment, db);
+        int expectedInventorySlots = itemSystemConfiguration != null
+            ? itemSystemConfiguration.InventorySlotCount
+            : inventory.SlotCount;
+
+        if (!inventory.TryLoadFromSaveData(data.inventory, db, expectedInventorySlots))
+        {
+            Debug.LogWarning("Full save load aborted: inventory layout does not match save file.");
+            return;
+        }
+
+        if (hotbar != null)
+            hotbar.LoadFromSaveData(data.hotbar ?? new HotbarSaveData(), inventory, db);
+
+        if (equipment != null)
+            equipment.LoadFromSaveData(data.equipment, db);
     }
 }

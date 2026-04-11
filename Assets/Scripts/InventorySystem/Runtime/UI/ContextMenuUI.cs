@@ -17,6 +17,7 @@ public class ContextMenuUI : MonoBehaviour
     [SerializeField] private Button inspectButton;
     [SerializeField] private Button equipButton;
     [SerializeField] private Button unequipButton;
+    [SerializeField] private Button cancelButton;
 
     private ItemUIContext _context;
 
@@ -32,6 +33,8 @@ public class ContextMenuUI : MonoBehaviour
             equipButton.onClick.AddListener(OnEquipClicked);
         if (unequipButton != null)
             unequipButton.onClick.AddListener(OnUnequipClicked);
+        if (cancelButton != null)
+            cancelButton.onClick.AddListener(OnCancelClicked);
 
         InventoryEvents.ContextMenuRequested += Show;
         InventoryEvents.InventoryCloseRequested += Hide;
@@ -49,9 +52,40 @@ public class ContextMenuUI : MonoBehaviour
             equipButton.onClick.RemoveListener(OnEquipClicked);
         if (unequipButton != null)
             unequipButton.onClick.RemoveListener(OnUnequipClicked);
+        if (cancelButton != null)
+            cancelButton.onClick.RemoveListener(OnCancelClicked);
 
         InventoryEvents.ContextMenuRequested -= Show;
         InventoryEvents.InventoryCloseRequested -= Hide;
+    }
+
+    private void LateUpdate()
+    {
+        if (canvasGroup == null || canvasGroup.alpha < 0.99f || Mouse.current == null)
+            return;
+        if (!Mouse.current.leftButton.wasPressedThisFrame)
+            return;
+        if (rectTransform == null)
+            return;
+
+        var screenPoint = Mouse.current.position.ReadValue();
+        var cam = GetCanvasCamera();
+        if (RectTransformUtility.RectangleContainsScreenPoint(rectTransform, screenPoint, cam))
+            return;
+
+        Hide();
+    }
+
+    private Camera GetCanvasCamera()
+    {
+        if (rectTransform == null)
+            return null;
+        var canvas = rectTransform.GetComponentInParent<Canvas>();
+        if (canvas == null)
+            return null;
+        if (canvas.renderMode == RenderMode.ScreenSpaceOverlay)
+            return null;
+        return canvas.worldCamera != null ? canvas.worldCamera : Camera.main;
     }
 
     /// <summary>
@@ -79,6 +113,8 @@ public class ContextMenuUI : MonoBehaviour
             equipButton.gameObject.SetActive(false);
         if (unequipButton != null)
             unequipButton.gameObject.SetActive(false);
+        if (cancelButton != null)
+            cancelButton.gameObject.SetActive(false);
 
         if (ctx.Item == null || canvasGroup == null)
             return;
@@ -102,6 +138,9 @@ public class ContextMenuUI : MonoBehaviour
 
         if (rectTransform != null && Mouse.current != null)
             rectTransform.position = Mouse.current.position.ReadValue();
+
+        if (cancelButton != null)
+            cancelButton.gameObject.SetActive(true);
 
         canvasGroup.alpha = 1f;
         canvasGroup.blocksRaycasts = true;
@@ -142,6 +181,11 @@ public class ContextMenuUI : MonoBehaviour
     {
         if (_context.Item is EquipmentData eq)
             InventoryEvents.UnequipRequested?.Invoke(eq.EquipSlot);
+        Hide();
+    }
+
+    private void OnCancelClicked()
+    {
         Hide();
     }
 }

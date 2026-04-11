@@ -5,4 +5,5 @@
 public class HotbarSlotSaveData
 {
     public string itemId;
+    public int inventorySlotIndex = -1;
 }

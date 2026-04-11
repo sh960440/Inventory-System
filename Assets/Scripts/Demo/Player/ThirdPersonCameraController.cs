@@ -4,6 +4,9 @@ using UnityEngine.InputSystem;
 
 public class ThirdPersonCameraController : MonoBehaviour
 {
+    [Header("Gameplay")]
+    [SerializeField] private Inventory inventory;
+
     [Header("Zoom")]
     [SerializeField] private float zoomSpeed = 2f;
     [SerializeField] private float zoomLerpSpeed = 10f;
@@ -25,6 +28,15 @@ public class ThirdPersonCameraController : MonoBehaviour
 
     private void Update()
     {
+        if (inventory != null && inventory.IsOpen)
+        {
+            if (_axisController != null)
+                _axisController.enabled = false;
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+            return;
+        }
+
         HandleRightMouseMode();
         HandleZoom();
     }

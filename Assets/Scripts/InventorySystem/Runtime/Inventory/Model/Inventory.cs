@@ -114,7 +114,21 @@ public class Inventory : MonoBehaviour, IInventoryReadOnly
     }
 
     public bool Valid(int i) => i >= 0 && i < _slots.Count;
-    
+
+    /// <summary>
+    /// Returns whether the specified inventory slot corresponds to the currently equipped item.
+    /// </summary>
+    public bool IsEquippedItemSourceSlot(int slotIndex)
+    {
+        if (_equipmentManager == null || !Valid(slotIndex))
+            return false;
+
+        if (_slots[slotIndex].Item is not EquipmentData eq)
+            return false;
+
+        return _equipmentManager.IsInventorySlotSourceOfEquippedItem(slotIndex, eq);
+    }
+
     public InventorySlot GetSlot(int index)
     {
         if (!Valid(index))
@@ -384,8 +398,30 @@ public class Inventory : MonoBehaviour, IInventoryReadOnly
     /// </summary>
     public void LoadFromSaveData(InventorySaveData data, IItemDatabase itemDatabase)
     {
+        TryLoadFromSaveData(data, itemDatabase, _slots.Count);
+    }
+
+    /// <summary>
+    /// Loads save data only when slots.Count equals expectedSlotCount.
+    /// </summary>
+    public bool TryLoadFromSaveData(InventorySaveData data, IItemDatabase itemDatabase, int expectedSlotCount)
+    {
+        if (data?.slots == null)
+        {
+            Debug.LogWarning("Inventory save not loaded: inventory data or slots list is null.");
+            return false;
+        }
+
+        if (expectedSlotCount < 0 || data.slots.Count != expectedSlotCount)
+        {
+            Debug.LogWarning(
+                $"Inventory save not loaded: saved slot count ({data.slots.Count}) does not match expected capacity ({expectedSlotCount}).");
+            return false;
+        }
+
         InventorySaveDataMapper.LoadFromSaveData(data, _slots, itemDatabase);
         InventoryEvents.InventoryChanged?.Invoke();
+        return true;
     }
 
     private void OnItemAddedHandler(ItemData item, int amount)

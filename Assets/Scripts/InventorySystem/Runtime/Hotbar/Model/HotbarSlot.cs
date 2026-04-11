@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 /// <summary>
@@ -8,7 +9,7 @@ public class HotbarSlot
 {
     [SerializeField] private Inventory inventory;
     [SerializeField] private ItemData item;
-    [SerializeField] private int boundInventorySlotIndex = -1;
+    [NonSerialized] private InventorySlot boundInventoryCell;
 
     public Inventory Inventory
     {
@@ -22,18 +23,18 @@ public class HotbarSlot
         set => item = value;
     }
 
-    public int BoundInventorySlotIndex
-    {
-        get => boundInventorySlotIndex;
-        set => boundInventorySlotIndex = value;
-    }
-
     public bool IsEmpty => item == null;
+
+    public InventorySlot BoundInventoryCell
+    {
+        get => boundInventoryCell;
+        set => boundInventoryCell = value;
+    }
 
     public void Clear()
     {
         item = null;
-        boundInventorySlotIndex = -1;
+        boundInventoryCell = null;
         inventory = null;
     }
 }

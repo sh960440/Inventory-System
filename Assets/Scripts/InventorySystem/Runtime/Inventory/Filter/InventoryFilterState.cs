@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 /// <summary>
@@ -5,7 +6,10 @@ using System.Collections.Generic;
 /// </summary>
 public sealed class InventoryFilterState
 {
-    public ItemCategory[] CurrentCategories { get; private set; }
+    /// <summary>
+    /// Empty array means no category restriction.
+    /// </summary>
+    public ItemCategory[] CurrentCategories { get; private set; } = Array.Empty<ItemCategory>();
 
     private string _searchRaw = "";
     private string _searchTrimmed = "";
@@ -15,7 +19,9 @@ public sealed class InventoryFilterState
     /// </summary>
     public void SetCategoryFilter(ItemCategory[] categories)
     {
-        CurrentCategories = categories;
+        CurrentCategories = categories == null || categories.Length == 0
+            ? Array.Empty<ItemCategory>()
+            : categories;
     }
 
     /// <summary>

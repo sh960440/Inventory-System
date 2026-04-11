@@ -24,6 +24,12 @@ public class GlobalDropArea : MonoBehaviour, IDropHandler
         // Inventory: remove from slot + drop item
         else if (ctx.Inventory != null && ctx.InventorySlotIndex >= 0)
         {
+            if (ctx.Inventory.IsEquippedItemSourceSlot(ctx.InventorySlotIndex))
+            {
+                dragUI.EndDrag();
+                return;
+            }
+
             InventoryEvents.RemoveItemRequested?.Invoke(ctx.InventorySlotIndex, 1);
             InventoryEvents.ItemDropped?.Invoke(ctx.Item, 1);
         }

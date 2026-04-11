@@ -11,7 +11,7 @@ using System.Collections.Generic;
 public static class InventoryEvents
 {
     // =========================
-    // Invnetory Panel
+    // Inventory Panel
     // =========================
     /// <summary>Request to toggle/open inventory panel. Subscribed by InventoryUIController.</summary>
     public static Action<bool> InventoryToggleRequested;

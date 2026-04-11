@@ -7,24 +7,30 @@ using UnityEngine;
 public class Hotbar : MonoBehaviour
 {
     private readonly List<HotbarSlot> _slots = new List<HotbarSlot>();
+    
+    private Equipment _equipment;
 
     public bool AllowDoubleClickUse { get; private set; }
 
     private void OnEnable()
     {
         InventoryEvents.InventoryChanged += ValidateSlots;
+        InventoryEvents.InventorySlotsSwapped += OnInventorySlotsSwapped;
     }
 
     private void OnDisable()
     {
         InventoryEvents.InventoryChanged -= ValidateSlots;
+        InventoryEvents.InventorySlotsSwapped -= OnInventorySlotsSwapped;
     }
 
     /// <summary>
     /// Sets the hotbar size and applies interaction flags from config.
     /// </summary>
-    public void ApplyConfig(ItemSystemConfiguration config)
+    public void ApplyConfig(ItemSystemConfiguration config, Equipment equipment = null)
     {
+        _equipment = equipment;
+
         _slots.Clear();
         for (int i = 0; i < config.HotkeyCount; i++)
             _slots.Add(new HotbarSlot());
@@ -49,7 +55,7 @@ public class Hotbar : MonoBehaviour
         var hb = _slots[hotbarIndex];
         hb.Inventory = inventory;
         hb.Item = invSlot.Item;
-        hb.BoundInventorySlotIndex = inventorySlotIndex;
+        hb.BoundInventoryCell = invSlot;
 
         InventoryEvents.HotbarChanged?.Invoke();
     }
@@ -93,23 +99,31 @@ public class Hotbar : MonoBehaviour
         if (hb.Inventory == null || hb.Item == null)
             return null;
 
-        // Try using the original binding index
-        if (hb.BoundInventorySlotIndex >= 0)
+        if (hb.Inventory is not Inventory invTyped)
+            return null;
+
+        if (hb.BoundInventoryCell != null)
         {
-            var s = hb.Inventory.GetSlot(hb.BoundInventorySlotIndex);
-            if (s != null && s.Item == hb.Item)
-                return s;
+            int idx = invTyped.IndexOfSlot(hb.BoundInventoryCell);
+            if (idx >= 0 && hb.BoundInventoryCell.Item != null && hb.BoundInventoryCell.Item == hb.Item)
+                return hb.BoundInventoryCell;
+
+            var relocated = TryRelocateItemCell(invTyped, hb);
+            if (relocated != null)
+            {
+                hb.BoundInventoryCell = relocated;
+                return relocated;
+            }
+
+            hb.Clear();
+            return null;
         }
 
-        // fallback = search inventory
-        for (int i = 0; i < hb.Inventory.SlotCount; i++)
+        var found = TryRelocateItemCell(invTyped, hb);
+        if (found != null)
         {
-            var s = hb.Inventory.GetSlot(i);
-            if (s.Item == hb.Item)
-            {
-                hb.BoundInventorySlotIndex = i;
-                return s;
-            }
+            hb.BoundInventoryCell = found;
+            return found;
         }
 
         // Unable to find = inventory no longer has the item, clear hotbar slot
@@ -118,14 +132,19 @@ public class Hotbar : MonoBehaviour
     }
 
     /// <summary>
-    /// Get inventory slot index for this hotbar cell, or -1 when invalid or empty.
+    /// Returns the inventory slot index bound to the specified hotbar entry, or -1 if none is assigned.
     /// </summary>
     public int GetBoundInventorySlotIndex(int hotbarIndex)
     {
         if (!ValidHotbarIndex(hotbarIndex))
             return -1;
 
-        return _slots[hotbarIndex].BoundInventorySlotIndex;
+        var hb = _slots[hotbarIndex];
+        if (hb.Inventory is not Inventory inv || hb.BoundInventoryCell == null)
+            return -1;
+
+        int idx = inv.IndexOfSlot(hb.BoundInventoryCell);
+        return idx;
     }
 
     /// <summary>Returns true if i is a valid hotbar index.</summary>
@@ -144,9 +163,20 @@ public class Hotbar : MonoBehaviour
 
         foreach (var slot in _slots)
         {
+            if (slot.IsEmpty)
+            {
+                data.itemIds.Add(new HotbarSlotSaveData { itemId = null, inventorySlotIndex = -1 });
+                continue;
+            }
+
+            int idx = -1;
+            if (slot.Inventory is Inventory inv && slot.BoundInventoryCell != null)
+                idx = inv.IndexOfSlot(slot.BoundInventoryCell);
+
             data.itemIds.Add(new HotbarSlotSaveData
             {
-                itemId = slot.Item != null ? slot.Item.Id : null
+                itemId = slot.Item != null ? slot.Item.Id : null,
+                inventorySlotIndex = idx
             });
         }
 
@@ -166,18 +196,27 @@ public class Hotbar : MonoBehaviour
     /// </summary>
     public void LoadFromSaveData(HotbarSaveData data, Inventory inventory, IItemDatabase itemDatabase)
     {
+        if (data == null || data.itemIds == null)
+            data = new HotbarSaveData();
+
         for (int i = 0; i < _slots.Count; i++)
             _slots[i].Clear();
 
         for (int i = 0; i < data.itemIds.Count && i < _slots.Count; i++)
         {
-            var itemId = data.itemIds[i].itemId;
-            if (string.IsNullOrEmpty(itemId))
+            var entry = data.itemIds[i];
+            if (string.IsNullOrEmpty(entry.itemId))
                 continue;
 
-            var targetItem = itemDatabase?.Get(itemId);
+            var targetItem = itemDatabase?.Get(entry.itemId);
             if (targetItem == null)
                 continue;
+
+            if (ItemInventoryBindingSaveData.IsBindingValid(inventory, itemDatabase, entry.itemId, entry.inventorySlotIndex))
+            {
+                Assign(i, inventory, entry.inventorySlotIndex);
+                continue;
+            }
 
             for (int invIndex = 0; invIndex < inventory.SlotCount; invIndex++)
             {
@@ -193,6 +232,57 @@ public class Hotbar : MonoBehaviour
 
         InventoryEvents.HotbarChanged?.Invoke();
     }
+
+    /// <summary>
+    /// Updates hotbar bindings after two inventory slots swap their item contents.
+    /// </summary>
+    private void OnInventorySlotsSwapped(int fromIndex, int toIndex)
+    {
+        foreach (var hb in _slots)
+        {
+            if (hb.IsEmpty || hb.Inventory is not Inventory inv || hb.BoundInventoryCell == null)
+                continue;
+
+            var fromSlot = inv.GetSlot(fromIndex);
+            var toSlot = inv.GetSlot(toIndex);
+
+            if (!ReferenceEquals(hb.BoundInventoryCell, fromSlot) && !ReferenceEquals(hb.BoundInventoryCell, toSlot))
+                continue;
+
+            if (hb.BoundInventoryCell.Item != null && hb.BoundInventoryCell.Item == hb.Item)
+                continue;
+
+            var relocated = TryRelocateItemCell(inv, hb);
+            if (relocated != null)
+                hb.BoundInventoryCell = relocated;
+            else
+                hb.Clear();
+        }
+
+        InventoryEvents.HotbarChanged?.Invoke();
+    }
+
+    private static InventorySlot TryRelocateItemCell(Inventory invTyped, HotbarSlot hb, Equipment equipment)
+    {
+        if (equipment != null && hb.Item is EquipmentData eq)
+        {
+            var src = equipment.GetEquippedSourceInventorySlot(eq);
+            if (src != null && src.Item == hb.Item && invTyped.IndexOfSlot(src) >= 0)
+                return src;
+        }
+
+        for (int i = 0; i < invTyped.SlotCount; i++)
+        {
+            var s = invTyped.GetSlot(i);
+            if (s.Item == hb.Item)
+                return s;
+        }
+
+        return null;
+    }
+
+    private InventorySlot TryRelocateItemCell(Inventory invTyped, HotbarSlot hb) =>
+        TryRelocateItemCell(invTyped, hb, _equipment);
 
     private void ValidateSlots()
     {

@@ -34,6 +34,7 @@ public class ItemSystemConfiguration : ScriptableObject
 
     public int InventoryRows => inventoryRows;
     public int InventoryColumns => inventoryColumns;
+    public int InventorySlotCount => InventoryRows * InventoryColumns;
     public IReadOnlyList<CategoryButtonConfig> CategoryButtons => categoryButtons;
     public int HotkeyCount => hotkeyCount;
     public bool AllowStacking => allowStacking;

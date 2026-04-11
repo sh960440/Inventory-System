@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: ItemSystemConfig
   m_EditorClassIdentifier: InventorySystem.Runtime::ItemSystemConfiguration
   inventoryRows: 3
-  inventoryColumns: 4
+  inventoryColumns: 5
   categoryButtons:
   - label: ALL
     categories: 
@@ -30,3 +30,4 @@ MonoBehaviour:
   allowHotbarDoubleClickUse: 1
   useFadeAnimation: 1
   fadeDuration: 0.25
+  dragIconOffset: {x: 18, y: -18}

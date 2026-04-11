@@ -88,7 +88,7 @@ public class ItemSystemConfigurator : MonoBehaviour
         //    equipmentUI.ApplyConfig(config);
 
         if (hotbar != null)
-            hotbar.ApplyConfig(config);
+            hotbar.ApplyConfig(config, equipment);
 
         if (hotbarUI != null)
             hotbarUI.ApplyConfig(config, equipment);

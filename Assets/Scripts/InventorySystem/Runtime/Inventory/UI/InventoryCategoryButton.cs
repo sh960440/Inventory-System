@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using TMPro;
 using UnityEngine;
@@ -56,10 +57,12 @@ public class InventoryCategoryButton : MonoBehaviour
         if (highlightImage == null || _inventory == null)
             return;
 
+        var chipFilter = categories ?? Array.Empty<ItemCategory>();
+        var current = _inventory.CurrentCategories ?? Array.Empty<ItemCategory>();
+
         bool isActive =
-            _inventory.CurrentCategories != null &&
-            _inventory.CurrentCategories.Length == categories.Length &&
-            _inventory.CurrentCategories.All(c => categories.Contains(c));
+            current.Length == chipFilter.Length &&
+            current.All(c => chipFilter.Contains(c));
 
         highlightImage.gameObject.SetActive(isActive);
     }

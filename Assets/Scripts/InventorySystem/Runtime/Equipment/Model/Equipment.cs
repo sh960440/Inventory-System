@@ -63,6 +63,23 @@ public class Equipment : MonoBehaviour, IEquippedItemLookup
     }
 
     /// <summary>
+    /// Returns the inventory slot that served as the source for the specified equipped item, or null if none exists.
+    /// </summary>
+    public InventorySlot GetEquippedSourceInventorySlot(EquipmentData item)
+    {
+        if (item == null)
+            return null;
+
+        if (!equipped.TryGetValue(item.EquipSlot, out var equippedItem) || equippedItem != item)
+            return null;
+
+        if (!equippedSourceInventorySlot.TryGetValue(item.EquipSlot, out var cell))
+            return null;
+
+        return cell;
+    }
+
+    /// <summary>
     /// Unequips all currently equipped items.
     /// </summary>
     public void UnequipAll()
@@ -87,7 +104,7 @@ public class Equipment : MonoBehaviour, IEquippedItemLookup
             {
                 slotName = entry.Key.ToString(),
                 itemId = entry.Value != null ? entry.Value.Id : null,
-                sourceInventorySlotIndex = sourceIndex
+                inventorySlotIndex = sourceIndex
             });
         }
 
@@ -122,8 +139,15 @@ public class Equipment : MonoBehaviour, IEquippedItemLookup
 
             var item = itemDatabase?.Get(savedSlot.itemId);
 
-            if (item is EquipmentData equipmentData)
-                ApplyEquippedState(equipmentData, savedSlot.sourceInventorySlotIndex);
+            if (item is not EquipmentData equipmentData)
+                continue;
+
+            int sourceIdx = savedSlot.inventorySlotIndex;
+
+            if (!ItemInventoryBindingSaveData.IsBindingValid(inventory, itemDatabase, savedSlot.itemId, sourceIdx))
+                sourceIdx = -1;
+
+            ApplyEquippedState(equipmentData, sourceIdx);
         }
 
         ResolveEquippedSourcesFromInventory();
@@ -202,7 +226,7 @@ public class Equipment : MonoBehaviour, IEquippedItemLookup
         Debug.Log($"Unequipped {item.ItemName}");
     }
 
-    private void ApplyEquippedState(EquipmentData item, int sourceInventorySlotIndex)
+    private void ApplyEquippedState(EquipmentData item, int inventorySlotIndex)
     {
         if (item == null)
             return;
@@ -211,13 +235,13 @@ public class Equipment : MonoBehaviour, IEquippedItemLookup
 
         if (equipped.TryGetValue(equipSlot, out var existing) && existing == item)
         {
-            SetEquippedSourceCell(equipSlot, sourceInventorySlotIndex);
+            SetEquippedSourceCell(equipSlot, inventorySlotIndex);
             InventoryEvents.EquipmentChanged?.Invoke();
             return;
         }
 
         equipped[equipSlot] = item;
-        SetEquippedSourceCell(equipSlot, sourceInventorySlotIndex);
+        SetEquippedSourceCell(equipSlot, inventorySlotIndex);
 
         var copies = new List<StatModifier>();
         foreach (var mod in item.Modifiers)
@@ -231,17 +255,17 @@ public class Equipment : MonoBehaviour, IEquippedItemLookup
         Debug.Log($"Equipped {item.ItemName}");
     }
 
-    private void SetEquippedSourceCell(EquipmentSlot equipSlot, int sourceInventorySlotIndex)
+    private void SetEquippedSourceCell(EquipmentSlot equipSlot, int inventorySlotIndex)
     {
-        if (inventory == null || sourceInventorySlotIndex < 0 || !inventory.Valid(sourceInventorySlotIndex))
+        if (inventory == null || inventorySlotIndex < 0 || !inventory.Valid(inventorySlotIndex))
         {
             equippedFromInventorySlotIndex.Remove(equipSlot);
             equippedSourceInventorySlot.Remove(equipSlot);
             return;
         }
 
-        equippedFromInventorySlotIndex[equipSlot] = sourceInventorySlotIndex;
-        equippedSourceInventorySlot[equipSlot] = inventory.GetSlot(sourceInventorySlotIndex);
+        equippedFromInventorySlotIndex[equipSlot] = inventorySlotIndex;
+        equippedSourceInventorySlot[equipSlot] = inventory.GetSlot(inventorySlotIndex);
     }
 
     private void RemoveEquippedSilent(EquipmentSlot slot)
