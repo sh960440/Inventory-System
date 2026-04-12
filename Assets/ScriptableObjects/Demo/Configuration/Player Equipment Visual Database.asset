@@ -19,3 +19,7 @@ MonoBehaviour:
     prefab: {fileID: 3637837982845925108, guid: 9077019dd32137e47badefae4442fb43, type: 3}
   - itemId: equipment_meattenderizer_01
     prefab: {fileID: 7973590988087124676, guid: d36b0b6d4f0cf42429f5e4b31db62741, type: 3}
+  - itemId: equipment_rollingpin_01
+    prefab: {fileID: 4727166997372129953, guid: f84d1cc26223f7c45bfadd499b25c344, type: 3}
+  - itemId: equipment_whisk_01
+    prefab: {fileID: 2661158713361465668, guid: 5939fbce62dde7d449cfb7833efe7f0d, type: 3}

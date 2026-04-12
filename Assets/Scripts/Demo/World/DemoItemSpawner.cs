@@ -32,10 +32,10 @@ public class DemoItemSpawner : MonoBehaviour
         if (pool == null || itemContainer == null || randomItems == null || randomItems.Count == 0)
             return;
 
-        var points = GeneratePoints(25);
+        var points = GeneratePoints(randomItemCount);
         int index = 0;
 
-        for (int i = 0; i < randomItemCount && index < points.Count; i++)
+        for (int i = 0; i < randomItemCount - fixedItems.Count && index < points.Count; i++)
         {
             var prefab = randomItems[Random.Range(0, randomItems.Count)];
             Spawn(prefab, points[index++]);

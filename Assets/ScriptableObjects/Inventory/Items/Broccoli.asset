@@ -15,13 +15,13 @@ MonoBehaviour:
   id: consumable_broccoli_01
   itemName: Broccoli
   icon: {fileID: 21300000, guid: 5a9bed9a3b1302544b0559de6bbffa15, type: 3}
-  description: A head of broccoli
+  description: Looks like a tiny tree.
   rarity: 1
+  category: 3
   stackable: 1
   maxStack: 99
   worldPrefab: {fileID: 5321906221883757820, guid: d8a8b868779cfc44c84a9a2556117205, type: 3}
   consumable: 1
-  category: 3
   instantModifiers: []
   durationModifiers:
   - statType: 2

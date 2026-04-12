@@ -15,13 +15,14 @@ MonoBehaviour:
   id: consumable_carrot_01
   itemName: Carrot
   icon: {fileID: 21300000, guid: d5dfc9ec12a76bd498b61e97e8101068, type: 3}
-  description: A carrot
+  description: Good for the eyes and even better for the rabbits. Eat it raw for
+    maximum crunch.
   rarity: 1
+  category: 3
   stackable: 1
   maxStack: 99
   worldPrefab: {fileID: 6294453906895986171, guid: 62ffdb6ff9023e24d98c5e2676d79988, type: 3}
   consumable: 1
-  category: 3
   instantModifiers: []
   durationModifiers:
   - statType: 1

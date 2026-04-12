@@ -10,21 +10,22 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ce96e7bd984c8fe4a9e42466cbbe7b7f, type: 3}
-  m_Name: Apple
+  m_Name: Corn
   m_EditorClassIdentifier: InventorySystem.Runtime::ConsumableData
-  id: consumable_apple_01
-  itemName: Apple
-  icon: {fileID: 21300000, guid: 26e898a919458c543bb696fb7ebc9c8b, type: 3}
-  description: An apple a day keeps the doctor away.
+  id: consumable_corn_01
+  itemName: Corn
+  icon: {fileID: 21300000, guid: 8167768d74cd2cc4abac8e3f82ee75d2, type: 3}
+  description: 'Warning: This item contains a high volume of ''corny'' jokes. A-maize-ing
+    for your health!'
   rarity: 0
   category: 3
   stackable: 1
   maxStack: 99
-  worldPrefab: {fileID: 8642970100882730276, guid: 2fb145a11da3e3e4a9949b6fec9c0710, type: 3}
+  worldPrefab: {fileID: 7357636335713543456, guid: ba9b1135207e5a846a903aae7ca4a802, type: 3}
   consumable: 1
   instantModifiers:
   - statType: 0
-    value: 20
-    modifierType: 0
+    value: 15
+    modifierType: 1
   durationModifiers: []
   duration: 0

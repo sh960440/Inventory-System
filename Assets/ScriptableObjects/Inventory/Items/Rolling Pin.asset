@@ -10,23 +10,21 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bc4a56c3bd9960949860fea1678f515c, type: 3}
-  m_Name: Pizza Cutter
+  m_Name: Rolling Pin
   m_EditorClassIdentifier: Assembly-CSharp::EquipmentData
-  id: equipment_pizzacutter_01
-  itemName: Pizza Cutter
-  icon: {fileID: 21300000, guid: 34ef2689fb549cd4ea49edd19f259391, type: 3}
-  description: Excellent for slicing through cheese.
-  rarity: 3
+  id: equipment_rollingpin_01
+  itemName: Rolling Pin
+  icon: {fileID: 21300000, guid: 2249b03e3de94a349b4e3efa168b23b1, type: 3}
+  description: "Perfect for flattening dough\u2014and anyone who interrupts your
+    work."
+  rarity: 0
   category: 1
   stackable: 0
   maxStack: 1
-  worldPrefab: {fileID: 7721733643825755965, guid: b9454d66b2ec6eb45be45dcb56e4080d, type: 3}
+  worldPrefab: {fileID: 2070217251844057733, guid: 551a298fc7f88aa43b74f821eadd7cc8, type: 3}
   consumable: 0
   equipSlot: 2
   modifiers:
   - statType: 1
-    value: 20
-    modifierType: 1
-  - statType: 3
-    value: 5
+    value: 2
     modifierType: 0
