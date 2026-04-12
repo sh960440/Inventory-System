@@ -34,9 +34,9 @@ Wire the following components in the Inspector:
 
 | Role | Components |
 |------|------------|
-| Items | `ItemDatabase` — assign your `ItemData` / `EquipmentData` / `ConsumableData` assets. |
-| Gameplay | `Inventory`, `Equipment`, `Hotbar` (optional). |
-| UI | `InventoryUIController`, `EquipmentUIController`, `HotbarUIController` as needed; `ContextMenuUI`, `TooltipUI`, drag ghost, slot prefabs. |
+| Items | `ItemDatabase` — assign `ItemData` / `EquipmentData` / `ConsumableData` assets. |
+| Gameplay | `Inventory`, `Equipment`, `Hotbar`. |
+| UI | `InventoryUIController`, `EquipmentUIController`, `HotbarUIController` as needed; `ContextMenuUI`, `TooltipUI`, drag icon, slot prefabs. |
 | Wiring | `ItemSystemConfigurator` — drag references above, assign a `ItemSystemConfiguration` asset. |
 | Save | `SaveSystem` — references to `Inventory`, `Equipment`, `Hotbar`, and an `IItemDatabase` provider. |
 
@@ -44,3 +44,173 @@ Wire the following components in the Inspector:
 
 - `Assets/Scripts/InventorySystem/Runtime/` — inventory, equipment, hotbar, UI, save DTOs, events.  
 - `Assets/Scripts/Demo/` — player, camera, spawners, demo-only helpers.
+
+## Class Diagrams
+- Core Domain
+```mermaid
+classDiagram
+  direction TB
+
+  class InventoryEvents {
+    <<static>>
+  }
+
+  class IInventoryReadOnly {
+    <<interface>>
+  }
+  class IEquippedItemLookup {
+    <<interface>>
+  }
+  class IItemUseHandler {
+    <<interface>>
+  }
+
+  class ItemUseContext {
+    <<struct>>
+  }
+
+  class Inventory {
+    <<MonoBehaviour>>
+  }
+  class Equipment {
+    <<MonoBehaviour>>
+  }
+  class Hotbar {
+    <<MonoBehaviour>>
+  }
+
+  class InventorySlot
+  class HotbarSlot
+  class InventoryFilterState
+
+  class InventoryUseHandlerRegistry
+  class ConsumableUseHandler
+  class EquipmentUseHandler
+
+  class ItemData {
+    <<ScriptableObject>>
+  }
+  class EquipmentData
+  class ConsumableData
+
+  IInventoryReadOnly <|.. Inventory
+  IEquippedItemLookup <|.. Equipment
+  IItemUseHandler <|.. ConsumableUseHandler
+  IItemUseHandler <|.. EquipmentUseHandler
+
+  Inventory *-- InventorySlot
+  Inventory *-- InventoryFilterState
+  Inventory *-- InventoryUseHandlerRegistry
+  InventoryUseHandlerRegistry o-- IItemUseHandler
+
+  Hotbar *-- HotbarSlot
+  HotbarSlot --> Inventory
+  HotbarSlot --> ItemData
+
+  InventorySlot --> ItemData
+  Equipment --> Inventory
+
+  ItemData <|-- EquipmentData
+  ItemData <|-- ConsumableData
+
+  Inventory ..> InventoryEvents
+  Equipment ..> InventoryEvents
+  Hotbar ..> InventoryEvents
+  IItemUseHandler ..> ItemUseContext
+```
+- UI
+```mermaid
+classDiagram
+  direction TB
+
+  class InventoryEvents {
+    <<static>>
+  }
+
+  class UISlotBase {
+    <<abstract>>
+    <<MonoBehaviour>>
+  }
+  class InventorySlotUI
+  class EquipmentSlotUI
+  class HotbarSlotUI
+
+  class InventoryUIController {
+    <<MonoBehaviour>>
+  }
+  class EquipmentUIController {
+    <<MonoBehaviour>>
+  }
+  class HotbarUIController {
+    <<MonoBehaviour>>
+  }
+
+  class SlotHoverService {
+    <<MonoBehaviour>>
+  }
+  class DraggableItemUI {
+    <<MonoBehaviour>>
+  }
+  class ContextMenuUI {
+    <<MonoBehaviour>>
+  }
+  class TooltipUI {
+    <<MonoBehaviour>>
+  }
+
+  UISlotBase <|-- InventorySlotUI
+  UISlotBase <|-- EquipmentSlotUI
+  UISlotBase <|-- HotbarSlotUI
+
+  InventoryUIController ..> InventorySlotUI
+  InventoryUIController ..> SlotHoverService
+  InventoryUIController ..> DraggableItemUI
+  EquipmentUIController ..> EquipmentSlotUI
+  HotbarUIController ..> HotbarSlotUI
+
+  ContextMenuUI ..> InventoryEvents
+  TooltipUI ..> InventoryEvents
+  InventorySlotUI ..> InventoryEvents
+  HotbarSlotUI ..> InventoryEvents
+```
+- Save / Load
+```mermaid
+classDiagram
+  direction TB
+
+  class Inventory {
+    <<MonoBehaviour>>
+  }
+  class Hotbar {
+    <<MonoBehaviour>>
+  }
+  class Equipment {
+    <<MonoBehaviour>>
+  }
+
+  class SaveSystem {
+    <<MonoBehaviour>>
+    +Save() Load()
+  }
+  class SaveData {
+    <<serializable>>
+  }
+  class InventorySaveData
+  class HotbarSaveData
+  class EquipmentSaveData
+  class InventorySlotSaveData
+  class HotbarSlotSaveData
+  class EquipmentSlotSaveData
+
+  SaveData *-- InventorySaveData
+  SaveData *-- HotbarSaveData
+  SaveData *-- EquipmentSaveData
+  InventorySaveData *-- InventorySlotSaveData
+  HotbarSaveData *-- HotbarSlotSaveData
+  EquipmentSaveData *-- EquipmentSlotSaveData
+
+  SaveSystem ..> Inventory
+  SaveSystem ..> Hotbar
+  SaveSystem ..> Equipment
+  SaveSystem ..> SaveData : JSON file
+```
