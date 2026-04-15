@@ -89,6 +89,18 @@ public class InventorySlotUI : UISlotBase, IPointerDownHandler, IPointerUpHandle
 
         bool isEquipped = IsEquippedEquipment(slot);
         backgroundImage.sprite = isEquipped ? equippedBackground : defaultBackground;
+
+        // After swaps/stacks the model updates but the pointer may still be over this cell
+        // without a new PointerEnter, so refresh the tooltip from current slot data.
+        if (pass && _hoverService != null && _hoverService.CurrentHoveredIndex == _slotIndex)
+        {
+            InventoryEvents.TooltipRequested?.Invoke(new ItemUIContext(
+                slot.Item,
+                isFromInventory: true,
+                isEquipped: isEquipped,
+                slotIndex: _slotIndex,
+                stackCount: slot.Item.Stackable && slot.Count >= 1 ? slot.Count : -1));
+        }
     }
 
     /// <summary>
